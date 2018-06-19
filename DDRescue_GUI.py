@@ -91,7 +91,7 @@ if sys.version_info[0] == 3:
 
 #Define global variables.
 VERSION = "2.0.0"
-RELEASE_DATE = "13/6/2018"
+RELEASE_DATE = "19/6/2018"
 RELEASE_TYPE = "Stable"
 
 session_ending = False
