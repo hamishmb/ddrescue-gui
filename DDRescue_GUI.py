@@ -84,6 +84,7 @@ import getdevinfo
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
+    #Disable cos necessary to keep supporting python 2.
     unicode = str #pylint: disable=redefined-builtin,invalid-name
 
     #Plist hack for Python 3.
