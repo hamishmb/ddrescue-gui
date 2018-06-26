@@ -1319,7 +1319,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """Get the input file/Disk and set a variable to the selected value"""
         logger.debug("MainWindow().SelectInputFile(): Calling File Choice Handler...")
 
-        #TODO Workaround for macOS?
+        #TODO Later workaround for macOS?
         default_dir = "/dev"
 
         self.file_choice_handler(_type="Input",
@@ -3271,8 +3271,27 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
                     lsblk_output = '\n'.join(cleaned_lsblk_output)
 
-                    #Parse into a dictionary w/ json. TODO Error checking.
-                    lsblk_output = json.loads(lsblk_output)
+                    #Parse into a dictionary w/ json. TODO Specific Error checking.
+                    try:
+                        lsblk_output = json.loads(lsblk_output)
+
+                    except Exception as e:
+                        logger.error("FinishedWindows().mount_disk(): Couldn't find any partitions "
+                                     "to mount! This could indicate a bug in the GUI, or a problem "
+                                     "with your recovered image. It's possible that the data you "
+                                     "recovered is partially corrupted, and you need to use "
+                                     "another tool to extract meaningful data from it.")
+
+                        dlg = wx.MessageDialog(self.panel, "Couldn't find any partitions to mount! "
+                                               "This could indicate a bug in the GUI, or a problem "
+                                               "with your recovered image. It's possible the data you "
+                                               "recovered is partially corrupted, and you need to use "
+                                               "another tool to extract meaningful data from it.",
+                                               "DDRescue-GUI - Error", style=wx.OK | wx.ICON_ERROR)
+                        dlg.ShowModal()
+                        dlg.Destroy()
+
+                        return False
 
                 else:
                     #Do things the older, less reliable way from previous versions of ddrescue-gui.
