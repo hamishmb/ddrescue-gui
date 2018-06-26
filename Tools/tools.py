@@ -382,12 +382,16 @@ def start_process(cmd, return_output=False, privileged=False):
                 #Fix import paths on macOS.
                 #This is necessary because the support for running extra python processes
                 #in py2app is poor.
-                #NOTE: Will proably need to change w/ new major version of Py 3 eg 3.7, 3.8.
-                #FIXME later don't depend on being in /Applications.
-                environ = """LC_ALL="C" PYTHONHOME="/Applications/DDRescue-GUI.app/Contents/Resources" PYTHONPATH="/Applications/DDRescue-GUI.app/Contents/Resources/lib/python36.zip:/Applications/DDRescue-GUI.app/Contents/Resources/lib/python3.6:/Applications/DDRescue-GUI.app/Contents/Resources/lib/python3.6/lib-dynload:/Applications/DDRescue-GUI.app/Contents/Resources/lib/python3.6/site-packages.zip:/Applications/DDRescue-GUI.app/Contents/Resources/lib/python3.6/site-packages" """
+                #TODO: Will probably need to change w/ new major version of Py 3 eg 3.7, 3.8.
+                environ = 'LC_ALL="C" PYTHONHOME="'+RESOURCEPATH+'" PYTHONPATH="'
+                          +RESOURCEPATH+'/lib/python36.zip:'
+                          +RESOURCEPATH+'/lib/python3.6:'
+                          +RESOURCEPATH+'/lib/python3.6/lib-dynload:'
+                          +RESOURCEPATH+'/lib/python3.6/site-packages.zip:'
+                          +RESOURCEPATH+'/lib/python3.6/site-packages" '
 
             else:
-                environ = """LC_ALL="C" """
+                environ = 'LC_ALL="C" '
 
             cmd = "sudo -SH "+environ+cmd
 
@@ -459,7 +463,7 @@ def read(cmd, testing=False): #pylint: disable=redefined-variable-type
             #Reset line.
             line = str(b"")
 
-    #Catch it if there's not a newline at the end. TODO Note fix for WxFixBoot.
+    #Catch it if there's not a newline at the end.
     if line != b"":
         #Interpret as Unicode and remove "NULL" characters.
         line = line.decode("UTF-8", errors="ignore").replace("\x00", "")
