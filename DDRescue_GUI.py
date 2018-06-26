@@ -2202,8 +2202,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                             dlg.Destroy()
 
                         else:
-                            #Copy it to the specified path, using a one-liner, and don't bother
-                            #handling any errors, because this is run as root. FIXME not smart.
+                            #Copy it to the specified path. FIXME handle errors after refactoring.
                             BackendTools.start_process(cmd="cp /tmp/ddrescue-gui.log "+_file,
                                                        return_output=False)
 
@@ -2233,8 +2232,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                 dlg.ShowModal()
                 dlg.Destroy()
 
-            #Delete the log file, and don't bother handling any errors,
-            #because this is run as root. FIXME not smart.
+            #Delete the log file.
             os.remove('/tmp/ddrescue-gui.log')
 
             self.Destroy()
@@ -3212,6 +3210,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                 self.output_file_device_name, self.output_file_mount_point, result \
                 = BackendTools.mac_get_device_name_mount_point(output)
 
+                #Still an issue on py3 builds?
                 if result == "UnicodeError":
                     logger.error("FinishedWindow().mount_disk(): FIXME: Couldn't parse output of "
                                  "hdiutil mount due to UnicodeDecodeError. Cleaning up and "
@@ -3348,7 +3347,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                         choices.append("Partition "+unicode(partition["partition-number"])
                                        + ", with size "+unicode((partition["partition-length"] \
                                                                  * blocksize) // 1000000)
-                                       +" MB") #TODO Round to best size using Unitlist etc?
+                                       +" MB") #TODO Later round to best size using Unitlist etc?
 
             #Check that this list isn't empty.
             if len(choices) == 0:
@@ -3608,7 +3607,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                          "ddrescue", "-v"]
 
         else:
-            exec_list = ["sudo", "-SH", RESOURCEPATH+"/ddrescue", "-v"] #FIXME won't work if credentials have expired.
+            exec_list = ["sudo", "-SH", RESOURCEPATH+"/ddrescue", "-v"]
 
         for option in options_list:
             #Handle direct disk access on OS X.
@@ -3634,6 +3633,10 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 
         #Ensure the rest of the program knows we are recovering data.
         SETTINGS["RecoveringData"] = True
+
+        if not LINUX:
+            #Pre-auth with the auth dialog if needed.
+            BackendTools.start_process(cmd="echo 'Preauthenticating'", privileged=True)
 
         cmd = subprocess.Popen(exec_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         line = ""
