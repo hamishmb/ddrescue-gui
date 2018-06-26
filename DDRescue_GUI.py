@@ -92,7 +92,7 @@ if sys.version_info[0] == 3:
 
 #Define global variables.
 VERSION = "2.0.0"
-RELEASE_DATE = "19/6/2018"
+RELEASE_DATE = "26/6/2018"
 RELEASE_TYPE = "Stable"
 
 session_ending = False
@@ -179,7 +179,7 @@ if __name__ == "__main__":
         elif o in ["-d", "--debug"]:
             LOGGER_LEVEL = logging.DEBUG
         elif o in ["-t", "--tests"]:
-            #Run unit tests. TODO must we use exec()?
+            #Run unit tests. FIXME later must we use exec()?
             with open(RESOURCEPATH+"/tests.py", encoding="utf-8") as File:
                 code = compile(File.read(), RESOURCEPATH+"/tests.py", "exec")
                 exec(code)
@@ -236,8 +236,13 @@ class GetDiskInformation(threading.Thread):
                                             privileged=True)[1]
 
         #Success! Now use ast to convert the returned string to a dictionary.
-        #TODO exception handling.
-        return ast.literal_eval(output)
+        try:
+            return ast.literal_eval(output)
+
+        except Exception as e:
+            #If this fails for some reason, just return an empty dictionary.
+            #TODO Try again to find specific exceptions in next release.
+            return {}
 
 #End Disk Information Handler thread.
 #Begin Starter Class
