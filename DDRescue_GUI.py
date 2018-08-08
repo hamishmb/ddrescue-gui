@@ -92,7 +92,7 @@ if sys.version_info[0] == 3:
 
 #Define global variables.
 VERSION = "2.0.0"
-RELEASE_DATE = "19/6/2018"
+RELEASE_DATE = "29/6/2018"
 RELEASE_TYPE = "Stable"
 
 session_ending = False
@@ -179,7 +179,7 @@ if __name__ == "__main__":
         elif o in ["-d", "--debug"]:
             LOGGER_LEVEL = logging.DEBUG
         elif o in ["-t", "--tests"]:
-            #Run unit tests. TODO must we use exec()?
+            #Run unit tests. FIXME later must we use exec()?
             with open(RESOURCEPATH+"/tests.py", encoding="utf-8") as File:
                 code = compile(File.read(), RESOURCEPATH+"/tests.py", "exec")
                 exec(code)
@@ -236,8 +236,13 @@ class GetDiskInformation(threading.Thread):
                                             privileged=True)[1]
 
         #Success! Now use ast to convert the returned string to a dictionary.
-        #TODO exception handling.
-        return ast.literal_eval(output)
+        try:
+            return ast.literal_eval(output)
+
+        except Exception as e:
+            #If this fails for some reason, just return an empty dictionary.
+            #TODO Try again to find specific exceptions in next release.
+            return {}
 
 #End Disk Information Handler thread.
 #Begin Starter Class
@@ -1314,7 +1319,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """Get the input file/Disk and set a variable to the selected value"""
         logger.debug("MainWindow().SelectInputFile(): Calling File Choice Handler...")
 
-        #TODO Workaround for macOS?
+        #TODO Later workaround for macOS?
         default_dir = "/dev"
 
         self.file_choice_handler(_type="Input",
@@ -2197,8 +2202,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                             dlg.Destroy()
 
                         else:
-                            #Copy it to the specified path, using a one-liner, and don't bother
-                            #handling any errors, because this is run as root. FIXME not smart.
+                            #Copy it to the specified path. FIXME handle errors after refactoring.
                             BackendTools.start_process(cmd="cp /tmp/ddrescue-gui.log "+_file,
                                                        return_output=False)
 
@@ -2228,8 +2232,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                 dlg.ShowModal()
                 dlg.Destroy()
 
-            #Delete the log file, and don't bother handling any errors,
-            #because this is run as root. FIXME not smart.
+            #Delete the log file.
             os.remove('/tmp/ddrescue-gui.log')
 
             self.Destroy()
@@ -3207,6 +3210,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                 self.output_file_device_name, self.output_file_mount_point, result \
                 = BackendTools.mac_get_device_name_mount_point(output)
 
+                #Still an issue on py3 builds?
                 if result == "UnicodeError":
                     logger.error("FinishedWindow().mount_disk(): FIXME: Couldn't parse output of "
                                  "hdiutil mount due to UnicodeDecodeError. Cleaning up and "
@@ -3266,8 +3270,27 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
                     lsblk_output = '\n'.join(cleaned_lsblk_output)
 
-                    #Parse into a dictionary w/ json. TODO Error checking.
-                    lsblk_output = json.loads(lsblk_output)
+                    #Parse into a dictionary w/ json. TODO Specific Error checking.
+                    try:
+                        lsblk_output = json.loads(lsblk_output)
+
+                    except Exception as e:
+                        logger.error("FinishedWindows().mount_disk(): Couldn't find any partitions "
+                                     "to mount! This could indicate a bug in the GUI, or a problem "
+                                     "with your recovered image. It's possible that the data you "
+                                     "recovered is partially corrupted, and you need to use "
+                                     "another tool to extract meaningful data from it.")
+
+                        dlg = wx.MessageDialog(self.panel, "Couldn't find any partitions to mount! "
+                                               "This could indicate a bug in the GUI, or a problem "
+                                               "with your recovered image. It's possible the data you "
+                                               "recovered is partially corrupted, and you need to use "
+                                               "another tool to extract meaningful data from it.",
+                                               "DDRescue-GUI - Error", style=wx.OK | wx.ICON_ERROR)
+                        dlg.ShowModal()
+                        dlg.Destroy()
+
+                        return False
 
                 else:
                     #Do things the older, less reliable way from previous versions of ddrescue-gui.
@@ -3324,7 +3347,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                         choices.append("Partition "+unicode(partition["partition-number"])
                                        + ", with size "+unicode((partition["partition-length"] \
                                                                  * blocksize) // 1000000)
-                                       +" MB") #TODO Round to best size using Unitlist etc?
+                                       +" MB") #TODO Later round to best size using Unitlist etc?
 
             #Check that this list isn't empty.
             if len(choices) == 0:
@@ -3584,7 +3607,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                          "ddrescue", "-v"]
 
         else:
-            exec_list = ["sudo", "-SH", RESOURCEPATH+"/ddrescue", "-v"] #FIXME won't work if credentials have expired.
+            exec_list = ["sudo", "-SH", RESOURCEPATH+"/ddrescue", "-v"]
 
         for option in options_list:
             #Handle direct disk access on OS X.
@@ -3610,6 +3633,10 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 
         #Ensure the rest of the program knows we are recovering data.
         SETTINGS["RecoveringData"] = True
+
+        if not LINUX:
+            #Pre-auth with the auth dialog if needed.
+            BackendTools.start_process(cmd="echo 'Preauthenticating'", privileged=True)
 
         cmd = subprocess.Popen(exec_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         line = ""
