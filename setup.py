@@ -18,7 +18,7 @@ OPTIONS = {'arch': 'x86_64',
            'iconfile': './images/Logo.icns',
            'includes': 'wx,wx.animate,wx.lib.stattext,wx.lib.statbmp,threading,getopt,logging,'
                        + 'time,subprocess,re,os,sys,plistlib,BeautifulSoup,traceback,'
-                       + 'unittest,getdevinfo',
+                       + 'unittest,getdevinfo,ast',
            'packages': 'Tools,Tests'}
 
 if __name__ == "__main__":
