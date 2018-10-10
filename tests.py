@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # Disabled coding declaration to maintain py2 compatibility for now.
 # Unit tests for DDRescue-GUI version 2.0.0
 # This file is part of DDRescue-GUI.
