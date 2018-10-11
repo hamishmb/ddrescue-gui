@@ -1607,6 +1607,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
             for disk in [SETTINGS["InputFile"], SETTINGS["OutputFile"]]:
                 if disk not in DISKINFO:
+                    #FIXME do a better check - in case output file is mounted.
                     logger.info("MainWindow().on_start(): "+disk+" is a file (or not in collected "
                                 "disk info), ignoring it...")
                     continue
