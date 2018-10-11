@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 # GetDevInfo Tests Package for DDRescue-GUI Version 2.0.0
 # This file is part of DDRescue-GUI.
