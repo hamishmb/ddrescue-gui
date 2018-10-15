@@ -384,11 +384,11 @@ def start_process(cmd, return_output=False, privileged=False):
                 #in py2app is poor.
                 #TODO: Will probably need to change w/ new major version of Py 3 eg 3.7, 3.8.
                 environ = 'LC_ALL="C" PYTHONHOME="'+RESOURCEPATH+'" PYTHONPATH="' \
-                          + RESOURCEPATH+'/lib/python36.zip:' \
-                          + RESOURCEPATH+'/lib/python3.6:' \
-                          + RESOURCEPATH+'/lib/python3.6/lib-dynload:' \
-                          + RESOURCEPATH+'/lib/python3.6/site-packages.zip:' \
-                          + RESOURCEPATH+'/lib/python3.6/site-packages" '
+                          + RESOURCEPATH+'/lib/python37.zip:' \
+                          + RESOURCEPATH+'/lib/python3.7:' \
+                          + RESOURCEPATH+'/lib/python3.7/lib-dynload:' \
+                          + RESOURCEPATH+'/lib/python3.7/site-packages.zip:' \
+                          + RESOURCEPATH+'/lib/python3.7/site-packages" '
 
             else:
                 environ = 'LC_ALL="C" '
