@@ -1167,6 +1167,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             file_dialog = wx.FileDialog(self.panel, "Select "+_type+" Path/File...",
                                         defaultDir=default_dir, wildcard=wildcard, style=style)
 
+            #Attempt to fix an oddity with the default wildcard on macos.
+            file_dialog.SetWildcard(wildcard)
+
             #Gracefully handle it if the user closed the dialog without selecting a file.
             if file_dialog.ShowModal() != wx.ID_OK:
                 logger.info("MainWindow().file_choice_handler(): User declined custom file "
