@@ -1180,7 +1180,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             user_selection = file_dialog.GetPath()
 
             #Handle it according to cases depending on its _type.
-            if _type in ["Output", "Log"]:
+            if _type in ["Output", "Map"]:
                 if _type == "Output":
                     #Automatically add a file extension of .img if there isn't any (3-letter)
                     #file extension (fixes bugs on OS X).
