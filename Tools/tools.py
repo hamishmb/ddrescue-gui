@@ -229,7 +229,7 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         self.throbber.Play()
 
         while cmd.poll() is None:
-            #wx.Yield()
+            #wx.GetApp().Yield()
             time.sleep(0.04)
 
         output = cmd.stdout.read().decode("utf-8")
@@ -262,7 +262,7 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
                 time.sleep(0.02)
                 self.SetPosition((x_pos, y_pos))
-                #wx.Yield()
+                #wx.GetApp().Yield()
                 count += 1
 
             #Set the password field colour to pink, and select its text.
@@ -373,7 +373,7 @@ def start_process(cmd, return_output=False, privileged=False):
                 AUTH_DIALOG_OPEN = True
 
             while AUTH_DIALOG_OPEN:
-                wx.Yield()
+                wx.GetApp().Yield()
                 time.sleep(0.04)
 
             #Set up the environemt here - sudo will clear it if we do it the

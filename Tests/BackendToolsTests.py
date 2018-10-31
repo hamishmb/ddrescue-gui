@@ -134,7 +134,7 @@ class TestSendNotification(unittest.TestCase):
         result = dlg.ShowModal()
         dlg.Destroy()
 
-        wx.Yield()
+        wx.GetApp().Yield()
 
         self.assertEqual(result, wx.ID_YES)
 

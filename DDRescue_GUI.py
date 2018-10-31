@@ -299,7 +299,7 @@ class ShowSplash(wxSplashScreen): #pylint: disable=too-few-public-methods,no-mem
 
         #Make sure it's painted, which fixes the problem with the previous
         #temperamental splash screen.
-        wx.Yield()
+        wx.GetApp().Yield()
 
     def on_exit(self, event=None):
         """Close the splash screen and start MainWindow"""
@@ -1622,7 +1622,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                         self.update_status_bar("Unmounting "+disk+". This may take a "
                                                "few moments...")
 
-                        wx.Yield()
+                        wx.GetApp().Yield()
                         retval = BackendTools.unmount_disk(disk)
 
                     else:
@@ -1633,7 +1633,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                         self.update_status_bar("Unmounting "+disk+"'s partitions. This may take "
                                                "a few moments...")
 
-                        wx.Yield()
+                        wx.GetApp().Yield()
 
                         retvals = []
                         retval = 0
@@ -1707,7 +1707,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                         "BackendThread()...")
 
             self.update_status_bar("Starting up ddrescue...")
-            wx.Yield()
+            wx.GetApp().Yield()
 
             #Notify the user.
             BackendTools.send_notification("Beginning Recovery...")
@@ -3083,7 +3083,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         wx.CallAfter(self.parent.update_status_bar, "Unmounting output file. This may take a "
                      "few moments...")
 
-        wx.Yield()
+        wx.GetApp().Yield()
 
         #Try to umount the output file, if it has been mounted.
         if self.output_file_mount_point != None:
@@ -3148,7 +3148,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         wx.CallAfter(self.parent.update_status_bar, "Preparing to mount output file. "
                      "Please Wait...")
 
-        wx.Yield()
+        wx.GetApp().Yield()
 
         #Determine what type of OutputFile we have (Partition or Device).
         (self.output_file_type, retval, output) = \
@@ -3172,7 +3172,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
             wx.CallAfter(self.parent.update_status_bar, "Mounting output file. This may take "
                          "a few moments...")
 
-            wx.Yield()
+            wx.GetApp().Yield()
 
             #Attempt to mount the disk.
             if LINUX:
@@ -3401,7 +3401,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
             wx.CallAfter(self.parent.update_status_bar, "Mounting output file. "
                          "This may take a few moments...")
 
-            wx.Yield()
+            wx.GetApp().Yield()
 
             if LINUX:
                 partition_to_mount = "/dev/mapper/"+selected_partition
