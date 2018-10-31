@@ -619,8 +619,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                  "DMG Disk Image (*.dmg)|*.dmg|ISO (CD/DVD) Disk Image (*.iso)|" \
                                  "*.iso|All Files/Disks (*)|*"
 
-            self.output_wildcard = "IMG Disk Image (*.img)|*.img|DMG Disk Image (*.dmg)|*.dmg|" \
-                                  "ISO (CD/DVD) Disk Image (*.iso)|*.iso|All Files/Disks (*)|*"
+#img,dmg,iso,all
+
+            self.output_wildcard = "All Files/Disks (*)|*|ISO (CD/DVD) Disk Image (*.iso)|*.iso|" \
+                                   "DMG Disk Image (*.dmg)|*.dmg|IMG Disk Image (*.img)|*.img"
 
         self.user_homedir = os.environ['HOME']
 
@@ -1166,9 +1168,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         elif user_selection == "Specify Path/File":
             file_dialog = wx.FileDialog(self.panel, "Select "+_type+" Path/File...",
                                         defaultDir=default_dir, wildcard=wildcard, style=style)
-
-            #Attempt to fix an oddity with the default wildcard on macos.
-            file_dialog.SetWildcard(wildcard)
 
             #Gracefully handle it if the user closed the dialog without selecting a file.
             if file_dialog.ShowModal() != wx.ID_OK:
