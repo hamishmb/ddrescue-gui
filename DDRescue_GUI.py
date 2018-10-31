@@ -620,7 +620,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                  "*.iso|All Files/Disks (*)|*"
 
             self.output_wildcard = "IMG Disk Image (*.img)|*.img|DMG Disk Image (*.dmg)|*.dmg|" \
-                                  "ISO (CD/DVD) Disk Image (*.iso)|*.iso|All Files/Disks (*)|*"
+                                  "ISO (CD/DVD) Disk Image (*.iso)|*.iso"
 
         self.user_homedir = os.environ['HOME']
 
