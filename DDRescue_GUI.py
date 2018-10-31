@@ -1391,12 +1391,17 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                            "Terminal-notifier is released under the MIT license (compatible " \
                            "with the GPL),\nmay be redistributed with GPL software, and is also\n" \
                            "bundled with the macOS version of DDRescue-GUI.\n\n" \
-                           "Please note: I am NOT\nthe author of GNU ddrescue, or of " \
-                           "terminal-notifier.\n\nFor more " \
+                           "Python and wxPython are also bundled with the macOS version of\n" \
+                           "DDRescue-GUI.\n\n" \
+                           "Please note: I am NOT\nthe author of GNU ddrescue," \
+                           "terminal-notifier, Python, or wxPython.\n\nFor more " \
                            "information on GNU ddrescue, and\nfor the source code, visit\n" \
                            "http://www.gnu.org/software/ddrescue/ddrescue.html\n\nFor more " \
                            "information on terminal-notifier, and\nfor the source code, visit\n" \
-                           "https://github.com/julienXX/terminal-notifier"
+                           "https://github.com/julienXX/terminal-notifier.\n\nFor more information" \
+                           "on wxPython, and for the source code,\n visit " \
+                           "https://wxpython.org\n\nFor more information on Python,\nand for" \
+                           "the source code, visit https://www.python.org"
 
         #Show the about box
         wxAboutBox(aboutbox)
