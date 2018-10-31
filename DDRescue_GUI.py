@@ -619,10 +619,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                  "DMG Disk Image (*.dmg)|*.dmg|ISO (CD/DVD) Disk Image (*.iso)|" \
                                  "*.iso|All Files/Disks (*)|*"
 
-#img,dmg,iso,all
-
-            self.output_wildcard = "All Files/Disks (*)|*|ISO (CD/DVD) Disk Image (*.iso)|*.iso|" \
-                                   "DMG Disk Image (*.dmg)|*.dmg|IMG Disk Image (*.img)|*.img"
+            self.output_wildcard = "IMG Disk Image (*.img)|*.img|DMG Disk Image (*.dmg)|*.dmg|" \
+                                  "ISO (CD/DVD) Disk Image (*.iso)|*.iso|All Files/Disks (*)|*"
 
         self.user_homedir = os.environ['HOME']
 
@@ -1184,9 +1182,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             #Handle it according to cases depending on its _type.
             if _type in ["Output", "Log"]:
                 if _type == "Output":
-                    #Automatically add a file extension of .img if there isn't any file extension
-                    #(fixes bugs on OS X).
-                    if user_selection[-4] != ".":
+                    #Automatically add a file extension of .img if there isn't any (3-letter)
+                    #file extension (fixes bugs on OS X).
+                    if "/dev" not in user_selection and user_selection[-4] != ".":
                         user_selection += ".img"
 
                 else:
