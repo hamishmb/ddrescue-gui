@@ -92,7 +92,7 @@ if sys.version_info[0] == 3:
 
 #Define global variables.
 VERSION = "2.0.0"
-RELEASE_DATE = "29/6/2018"
+RELEASE_DATE = "1/11/2018"
 RELEASE_TYPE = "Stable"
 
 session_ending = False
@@ -641,7 +641,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """Create and set up a statusbar"""
         self.status_bar = self.CreateStatusBar()
         self.status_bar.SetFieldsCount(2)
-        self.status_bar.SetStatusWidths([-1, 150])
+        self.status_bar.SetStatusWidths([-1, 165])
         self.status_bar.SetStatusText("Ready.", 0)
         self.status_bar.SetStatusText("v"+VERSION+" ("+RELEASE_DATE+")", 1)
 
