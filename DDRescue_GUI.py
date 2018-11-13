@@ -16,7 +16,7 @@
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 
 # pylint: disable=too-many-lines,global-statement,import-error,no-name-in-module,wrong-import-order
-# pylint: disable=ungrouped-imports
+# pylint: disable=ungrouped-imports,logging-not-lazy
 #
 # Reason (too-many-lines): Not a module
 # Reason (global-statement): Need to use global at times.
@@ -24,6 +24,7 @@
 # Reason (no-name-in-module): As above.
 # Reason (wrong-import-order): False positives.
 # Reason (ungrouped-imports): Can't group wx imports due to module changes.
+# Reason (logging-not-lazy): This is a more readable way of logging.
 
 """
 This is the main script that you use to start DDRescue-GUI.
@@ -241,6 +242,7 @@ class GetDiskInformation(threading.Thread):
         except ValueError as error:
             #If this fails for some reason, just return an empty dictionary.
             #TODO Don't know if only this exception can occur. Fix that.
+            logger.error("GetDiskInformation().get_info(): Error: "+unicode(error))
             return {}
 
 #End Disk Information Handler thread.
