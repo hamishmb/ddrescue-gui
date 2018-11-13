@@ -239,9 +239,9 @@ class GetDiskInformation(threading.Thread):
         try:
             return ast.literal_eval(output)
 
-        except Exception as e:
+        except ValueError as e:
             #If this fails for some reason, just return an empty dictionary.
-            #TODO Try again to find specific exceptions in next release.
+            #TODO Don't know if only this exception can occur. Fix that.
             return {}
 
 #End Disk Information Handler thread.
