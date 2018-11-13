@@ -3567,17 +3567,18 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
         """Initialize and start the thread."""
         self.parent = parent
 
+        #Set the below values to sensible defaults to prevent errors if we never get
+        #any info from ddrescue.
         self.old_status = ""
         self.got_initial_status = False
         self.unit_list = ['null', 'B', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
         self.input_pos = "0 B"
         self.disk_capacity = "An unknown amount of"
-
-        #TODO do these \/ values matter or can I set them to None?
-        self.disk_capacity_unit = "data"
+        self.disk_capacity_unit = "B"
         self.recovered_data = 0
         self.recovered_data_unit = "B"
 
+        #These don't matter in the same way, so set them to None.
         self.time_since_last_read = None
         self.error_size = None
         self.time_remaining = None
