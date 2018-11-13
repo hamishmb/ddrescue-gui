@@ -55,7 +55,14 @@ import ast
 import json
 import requests
 
+import Tools.tools as BackendTools
+import Tools.DDRescueTools.setup as DDRescueTools
+
+import getdevinfo
+
 import wx
+import wx.lib.stattext
+import wx.lib.statbmp
 
 #Compatibility with wxPython 4.
 if int(wx.version()[0]) >= 4:
@@ -74,14 +81,6 @@ else:
     from wx import AboutDialogInfo as wxAboutDialogInfo
     from wx import AboutBox as wxAboutBox
 
-import wx.lib.stattext
-import wx.lib.statbmp
-
-import Tools.tools as BackendTools
-import Tools.DDRescueTools.setup as DDRescueTools
-
-import getdevinfo
-
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
     #Disable cos necessary to keep supporting python 2.
@@ -92,7 +91,7 @@ if sys.version_info[0] == 3:
 
 #Define global variables.
 VERSION = "2.0.0"
-RELEASE_DATE = "1/11/2018"
+RELEASE_DATE = "13/11/2018"
 RELEASE_TYPE = "Stable"
 
 session_ending = False
@@ -239,7 +238,7 @@ class GetDiskInformation(threading.Thread):
         try:
             return ast.literal_eval(output)
 
-        except ValueError as e:
+        except ValueError as error:
             #If this fails for some reason, just return an empty dictionary.
             #TODO Don't know if only this exception can occur. Fix that.
             return {}
@@ -1343,7 +1342,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                  default_dir=self.user_homedir, wildcard="Map Files (*.log)|*.log",
                                  style=wx.FD_SAVE)
 
-    def show_userguide(self, event=None):
+    def show_userguide(self, event=None): #pylint: disable=unused-argument
         """Open a web browser and show the user guide"""
         logger.debug("MainWindow().show_userguide(): Opening browser...")
 
@@ -3281,12 +3280,13 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                     try:
                         lsblk_output = json.loads(lsblk_output)
 
-                    except Exception as e:
+                    except Exception as error:
                         logger.error("FinishedWindows().mount_disk(): Couldn't find any partitions "
                                      "to mount! This could indicate a bug in the GUI, or a problem "
                                      "with your recovered image. It's possible that the data you "
                                      "recovered is partially corrupted, and you need to use "
-                                     "another tool to extract meaningful data from it.")
+                                     "another tool to extract meaningful data from it. Error:"
+                                     +unicode(error))
 
                         dlg = wx.MessageDialog(self.panel, "Couldn't find any partitions to mount! "
                                                "This could indicate a bug in the GUI, or a problem "
@@ -3357,7 +3357,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                                        +" MB") #TODO Later round to best size using Unitlist etc?
 
             #Check that this list isn't empty.
-            if len(choices) == 0:
+            if not choices:
                 logger.error("FinishedWindows().mount_disk(): Couldn't find any partitions "
                              "to mount! This could indicate a bug in the GUI, or a problem "
                              "with your recovered image. It's possible that the data you "
