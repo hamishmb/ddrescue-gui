@@ -1898,6 +1898,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """Abort the recovery"""
         #Ask ddrescue to exit.
         logger.info("MainWindow().on_abort(): Attempting to stop ddrescue...")
+
         BackendTools.start_process("killall -int ddrescue",
                                    privileged=True)
 
@@ -3650,7 +3651,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 
         cmd = subprocess.Popen(exec_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         line = ""
-        char = " " #Set this so the while loop exeutes at least once.
+        char = " " #Set this so the while loop executes at least once.
 
         #Give ddrescue plenty of time to start.
         time.sleep(2)
