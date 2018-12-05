@@ -1,6 +1,6 @@
 #!/bin/bash
 # -*- coding: utf-8 -*-
-# Executes generic privileged processes for Linux when requested for DDRescue-GUI Version 2.0.0.
+# Executes generic privileged processes for Linux when requested for DDRescue-GUI Version 2.0.1.
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it

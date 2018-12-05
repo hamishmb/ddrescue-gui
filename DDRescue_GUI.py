@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
-# DDRescue-GUI Main Script Version 2.0.0
+# DDRescue-GUI Main Script Version 2.0.1
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
@@ -91,8 +91,8 @@ if sys.version_info[0] == 3:
     plistlib.readPlistFromString = plistlib.loads #pylint: disable=no-member
 
 #Define global variables.
-VERSION = "2.0.0"
-RELEASE_DATE = "13/11/2018"
+VERSION = "2.0.1"
+RELEASE_DATE = "5/12/2018"
 RELEASE_TYPE = "Stable"
 
 session_ending = False
@@ -1898,7 +1898,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """Abort the recovery"""
         #Ask ddrescue to exit.
         logger.info("MainWindow().on_abort(): Attempting to stop ddrescue...")
-        BackendTools.start_process("killall -INT ddrescue",
+        BackendTools.start_process("killall -int ddrescue",
                                    privileged=True)
 
         self.aborted_recovery = True
