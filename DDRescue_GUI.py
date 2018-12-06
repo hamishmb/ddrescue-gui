@@ -92,7 +92,7 @@ if sys.version_info[0] == 3:
 
 #Define global variables.
 VERSION = "2.0.1"
-RELEASE_DATE = "5/12/2018"
+RELEASE_DATE = "6/12/2018"
 RELEASE_TYPE = "Stable"
 
 session_ending = False
@@ -1899,8 +1899,13 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Ask ddrescue to exit.
         logger.info("MainWindow().on_abort(): Attempting to stop ddrescue...")
 
-        BackendTools.start_process("killall -int ddrescue",
-                                   privileged=True)
+        if LINUX:
+            BackendTools.start_process("killall -s INT ddrescue",
+                                       privileged=True)
+
+        else:
+            BackendTools.start_process("killall -INT ddrescue",
+                                       privileged=True)
 
         self.aborted_recovery = True
 
