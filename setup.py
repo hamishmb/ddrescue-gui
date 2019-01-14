@@ -1,5 +1,5 @@
 """
-This is a setup.py script written for DDRescue-GUI v2.0.1
+This is a setup.py script written for DDRescue-GUI
 by Hamish McIntyre-Bhatty.
 
 Usage:

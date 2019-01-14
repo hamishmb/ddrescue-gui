@@ -1,8 +1,8 @@
 #!/usr/bin/env python2
 # Disabled coding declaration to maintain py2 compatibility for now.
-# Unit tests for DDRescue-GUI version 2.0.1
+# Unit tests for DDRescue-GUI
 # This file is part of DDRescue-GUI.
-# Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
+# Copyright (C) 2013-2019 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
 # at your option, any later version.
@@ -46,7 +46,7 @@ if sys.version_info[0] == 3:
     unicode = str #pylint: disable=redefined-builtin,invalid-name
 
 #Global vars.
-VERSION = "2.0.1"
+VERSION = "2.0.2"
 
 def usage():
     """Outputs usage information"""
@@ -60,7 +60,7 @@ def usage():
     print("       -a, --all:                    Run all the tests. The default.\n")
     print("       -t, --tests:                  Ignored.")
     print("DDRescue-GUI "+VERSION+" is released under the GNU GPL VERSION 3")
-    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2018")
+    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2019")
 
 if __name__ == "__main__":
     #Exit if not running as root.

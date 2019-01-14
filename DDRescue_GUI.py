@@ -1,8 +1,8 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
-# DDRescue-GUI Main Script Version 2.0.1
+# DDRescue-GUI Main Script
 # This file is part of DDRescue-GUI.
-# Copyright (C) 2013-2018 Hamish McIntyre-Bhatty
+# Copyright (C) 2013-2019 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
 # at your option, any later version.
@@ -91,8 +91,8 @@ if sys.version_info[0] == 3:
     plistlib.readPlistFromString = plistlib.loads #pylint: disable=no-member
 
 #Define global variables.
-VERSION = "2.0.1"
-RELEASE_DATE = "6/12/2018"
+VERSION = "2.0.2"
+RELEASE_DATE = "14/1/2019"
 RELEASE_TYPE = "Stable"
 
 session_ending = False
@@ -124,7 +124,7 @@ def usage():
     print("                                     are encountered, and the user needs help\n")
     print("       -t, --tests                   Run all unit tests.")
     print("DDRescue-GUI "+VERSION+" is released under the GNU GPL Version 3")
-    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2018")
+    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2019")
 
 #Determine if running on Linux or Mac.
 if "wxGTK" in wx.PlatformInfo:
@@ -133,7 +133,7 @@ if "wxGTK" in wx.PlatformInfo:
     LINUX = True
 
     #Check if we're running on Parted Magic.
-    PARTED_MAGIC = (os.uname()[1] == "PartedMagic")
+    PARTED_MAGIC = ("PartedMagic" in os.uname()[1])
 
 elif "wxMac" in wx.PlatformInfo:
     try:
@@ -1365,7 +1365,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         aboutbox.SetIcon(APPICON)
         aboutbox.Name = "DDRescue-GUI"
         aboutbox.Version = VERSION
-        aboutbox.Copyright = "(C) 2013-2018 Hamish McIntyre-Bhatty"
+        aboutbox.Copyright = "(C) 2013-2019 Hamish McIntyre-Bhatty"
         aboutbox.Description = "GUI frontend for GNU ddrescue\n\nPython version " \
                                + sys.version.split()[0] \
                                + "\nwxPython version " + wx.version() \
