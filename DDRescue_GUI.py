@@ -239,7 +239,7 @@ class GetDiskInformation(threading.Thread):
         try:
             return ast.literal_eval(output)
 
-        except ValueError as error:
+        except (SyntaxError, ValueError, TypeError) as error:
             #If this fails for some reason, just return an empty dictionary.
             #TODO Don't know if only this exception can occur. Fix that.
             logger.error("GetDiskInformation().get_info(): Error: "+unicode(error))
