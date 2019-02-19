@@ -37,7 +37,7 @@ if sys.version_info[0] == 3:
 
 @decorators.define_versions
 def get_recovered_data_num_errors(split_line):
-    """Get Recovered Data and Number of Errors. Works with ddrescue versions: 1.22,1.23"""
+    """Get Recovered Data and Number of Errors. Works with ddrescue versions: 1.22,1.23,1.24"""
     return split_line[1], split_line[2][:2], split_line[5].replace(",", "")
 
 

@@ -36,5 +36,5 @@ if sys.version_info[0] == 3:
 
 @decorators.define_versions
 def get_time_since_last_read(split_line):
-    """Get Time Since Last Read. Works with ddrescue versions: 1.20,1.21,1.22,1.23"""
+    """Get Time Since Last Read. Works with ddrescue versions: 1.20,1.21,1.22,1.23,1.24"""
     return split_line[-1]

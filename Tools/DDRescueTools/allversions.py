@@ -38,7 +38,7 @@ if sys.version_info[0] == 3:
 def get_initial_status(split_line):
     """
     Function to get ddrescue's initial status.
-    Works with ddrescue versions: 1.14,1.15,1.16,1.17,1.18,1.19,1.20,1.21,1.22,1.23
+    Works with ddrescue versions: 1.14,1.15,1.16,1.17,1.18,1.19,1.20,1.21,1.22,1.23,1.24
     """
 
     return int(split_line[3]), split_line[4]

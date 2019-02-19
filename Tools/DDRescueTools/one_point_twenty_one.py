@@ -36,12 +36,12 @@ if sys.version_info[0] == 3:
 
 @decorators.define_versions
 def get_outputpos_average_read_rate(split_line):
-    """Get Output Position and Average Read Rate. Works with ddrescue versions: 1.21,1.22,1.23"""
+    """Get Output Position and Average Read Rate. Works with ddrescue versions: 1.21,1.22,1.23,1.24"""
     return ' '.join(split_line[1:3]).replace(",", ""), split_line[8], split_line[9]
 
 @decorators.define_versions
 def get_unreadable_data(split_line):
-    """Get Unreadable Data. Works with ddrescue versions: 1.21,1.22,1.23"""
+    """Get Unreadable Data. Works with ddrescue versions: 1.21,1.22,1.23,1.24"""
     return ' '.join(split_line[4:6]).replace(",", "")
 
 @decorators.define_versions
@@ -51,5 +51,5 @@ def get_recovered_data_num_errors(split_line):
 
 @decorators.define_versions
 def get_current_rate_inputpos(split_line):
-    """Get Current Read Rate and Input Position. Works with ddrescue versions: 1.21,1.22,1.23"""
+    """Get Current Read Rate and Input Position. Works with ddrescue versions: 1.21,1.22,1.23,1.24"""
     return ' '.join(split_line[7:9]), ' '.join(split_line[0:2]).replace(",", "")
