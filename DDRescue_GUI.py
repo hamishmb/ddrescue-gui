@@ -318,7 +318,7 @@ class ShowSplash(wxSplashScreen): #pylint: disable=too-few-public-methods,no-mem
 
 #End splash screen
 #Begin Custom wx.TextCtrl Class.
-class CustomTextCtrl(wx.TextCtrl):
+class CustomTextCtrl(wx.TextCtrl): #pylint: disable=too-many-ancestors
     """
     A custom wx.TextCtrl that provides features that are broken on Linux and macOS.
 
@@ -459,7 +459,7 @@ class CustomTextCtrl(wx.TextCtrl):
 
 #End Custom wx.TextCtrl Class.
 #Begin Main Window.
-class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-many-public-methods
+class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-many-public-methods,too-many-ancestors
     """
     DDRescue-GUI's main window.
     """
@@ -1344,7 +1344,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                  default_dir=self.user_homedir, wildcard="Map Files (*.log)|*.log",
                                  style=wx.FD_SAVE)
 
-    def show_userguide(self, event=None): #pylint: disable=unused-argument
+    def show_userguide(self, event=None): #pylint: disable=unused-argument,no-self-use
         """Open a web browser and show the user guide"""
         logger.debug("MainWindow().show_userguide(): Opening browser...")
 
@@ -2263,7 +2263,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
 #End Main Window
 #Begin Disk Info Window
-class DiskInfoWindow(wx.Frame):
+class DiskInfoWindow(wx.Frame): #pylint: disable=too-many-ancestors
     """
     DDRescue-GUI's disk information window.
     """
@@ -2452,7 +2452,7 @@ class DiskInfoWindow(wx.Frame):
 
 #End Disk Info Window
 #Begin settings Window
-class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
+class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-many-ancestors
     """
     DDRescue-GUI's settings window
     """
@@ -3262,12 +3262,12 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
                 #Check if out version of lsblk has the -J option, for JSON output.
                 #This check is here because Ubuntu 14.04 doesn't have this capabiity.
-                LSBLK_JSON_SUPPORTED = \
+                lsblk_json_supported = \
                 ("-J, --json" in BackendTools.start_process(cmd="lsblk -h",
                                                             return_output=True,
                                                             privileged=True)[1])
 
-                if LSBLK_JSON_SUPPORTED:
+                if lsblk_json_supported:
 
                     #We can do things a more modern, more reliable way.
                     #Get some Disk information.
@@ -3325,7 +3325,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
             choices = []
 
             #Linux: Get the name of the loop device and construct the choices.
-            if LINUX and LSBLK_JSON_SUPPORTED:
+            if LINUX and lsblk_json_supported:
                 loop_device = "loop"+output[0].split()[0][4:-2]
 
                 #Get the info related to this partition.
@@ -3405,7 +3405,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
             selected_partition = dlg.GetStringSelection().split()[1].replace(",", "")
 
             #Fix for Ubuntu 14.04.
-            if LINUX and not LSBLK_JSON_SUPPORTED:
+            if LINUX and not lsblk_json_supported:
                 selected_partition = "loop"+output[0].split()[0][4:-2]+"p"+selected_partition
 
             #Notify user of mount attempt.
@@ -3675,7 +3675,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                     try:
                         self.process_line(tidy_line)
 
-                    except Exception:
+                    except:
                         #Handle unexpected errors. Can happen once in normal operation on
                         #ddrescue v1.22+. TODO make smarter, don't fill log with these.
                         #TODO suppress 1st error if on new versions.
@@ -3958,6 +3958,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
             logger.warning("MainBackendThread().calculate_time_remaining(): Attempted to "
                            "divide by zero! Returning 'Unknown'")
 
+            #TODO Return -1 and handle that instead.
             return "Unknown"
 
 #End Backend thread
