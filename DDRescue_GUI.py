@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # DDRescue-GUI Main Script
 # This file is part of DDRescue-GUI.

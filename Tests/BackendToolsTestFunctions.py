@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # BackendTools test functions for DDRescue-GUI
 # This file is part of DDRescue-GUI.

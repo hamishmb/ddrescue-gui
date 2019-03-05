@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # DDRescue Tools for ddrescue v1.22 (or newer) in the Tools Package for DDRescue-GUI
 # This file is part of DDRescue-GUI.
