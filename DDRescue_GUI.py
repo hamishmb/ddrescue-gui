@@ -812,7 +812,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.info_sizer.Detach(self.output_box)
         self.output_box.Hide()
 
-        #Insert some empty space. (Fixes a GUI bug in wxpython > 2.8.11.1)
+        #Insert some empty space. (Fixes a GUI bug in newer versions of wxpython (> 2.8.11.1)).
+        #TODO Is this needed in wxPython 4?
         self.info_sizer.Add((1, 1), 1, wx.EXPAND)
 
         #Make the progress sizer.
@@ -935,6 +936,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """Auto resize the list_ctrl columns"""
         #Force the width and height of the list_ctrl to be the right size,
         #as the sizer won't shrink it on wxpython > 2.8.12.1.
+        #TODO Even on wxpython 4?
         #Get the width and height of the frame.
         width = self.GetClientSize()[0]
 
@@ -1443,25 +1445,14 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         BackendTools.send_notification("Checking for updates...")
 
         try:
-            #Ubuntu 14.04 fix (Python 2.7.6 has no proper TLS support).
-            if tuple(sys.version_info)[0:3] == (2, 7, 6):
-                #Use wget to download instead, cos the server doesn't allow SSL.
-                retval, updateinfo = \
-                BackendTools.start_process(cmd="wget https://www.hamishmb.com/files/updateinfo/ddrescue-gui.plist -q -O -", return_output=True)
+            updateinfo = \
+            requests.get("https://www.hamishmb.com/files/updateinfo/ddrescue-gui.plist",
+                         timeout=5)
 
-                if retval != 0:
-                    raise requests.exceptions.RequestException()
+            #Raise an error if our status code was bad.
+            updateinfo.raise_for_status()
 
-            else:
-                #Do it the better way w/ requests.
-                updateinfo = \
-                requests.get("https://www.hamishmb.com/files/updateinfo/ddrescue-gui.plist",
-                             timeout=5)
-
-                #Raise an error if our status code was bad.
-                updateinfo.raise_for_status()
-
-                updateinfo = updateinfo.text
+            updateinfo = updateinfo.text
 
         except requests.exceptions.RequestException:
             #Flag to user.
@@ -1932,14 +1923,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                    "to stop ddrescue and no to wait.",
                                    "DDRescue is still running!", wx.YES_NO|wx.ICON_QUESTION)
 
-            #Catch errors on wxpython < 2.9.
-            try:
-                if dlg.SetYesNoLabels("Stop DDRescue", "Wait"):
-                    dlg.SetMessage("ddrescue is still running. Do you want to try to stop "
-                                   "ddrescue again, or wait for a few more seconds?")
-
-            except AttributeError:
-                pass
+            #Set nice yes/no labels if possible.
+            if dlg.SetYesNoLabels("Stop DDRescue", "Wait"):
+                dlg.SetMessage("ddrescue is still running. Do you want to try to stop "
+                               "ddrescue again, or wait for a few more seconds?")
 
             if dlg.ShowModal() == wx.ID_YES:
                 logger.warning("MainWindow().prompt_to_kill_ddrescue(): Trying to stop "
@@ -3155,7 +3142,8 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
         return True
 
-    def mount_disk(self): #TODO refactor me.
+    def mount_disk(self):
+        #TODO refactor me and break down into reusable chunks.
         """Mount the output file"""
         logger.info("FinishedWindow().mount_disk(): Mounting Disk: "+SETTINGS["OutputFile"]+"...")
         wx.CallAfter(self.parent.update_status_bar, "Preparing to mount output file. "
@@ -3260,58 +3248,42 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                 BackendTools.start_process(cmd="partprobe", return_output=False,
                                            privileged=True)
 
-                #Check if out version of lsblk has the -J option, for JSON output.
-                #This check is here because Ubuntu 14.04 doesn't have this capabiity.
-                lsblk_json_supported = \
-                ("-J, --json" in BackendTools.start_process(cmd="lsblk -h",
-                                                            return_output=True,
-                                                            privileged=True)[1])
+                #Get some Disk information.
+                lsblk_output = BackendTools.start_process(cmd="lsblk -J -o NAME,FSTYPE,SIZE",
+                                                          return_output=True,
+                                                          privileged=True)[1].split("\n")
 
-                if lsblk_json_supported:
+                #Remove any errors from lsblk in the output.
+                cleaned_lsblk_output = []
 
-                    #We can do things a more modern, more reliable way.
-                    #Get some Disk information.
-                    lsblk_output = BackendTools.start_process(cmd="lsblk -J -o NAME,FSTYPE,SIZE",
-                                                              return_output=True,
-                                                              privileged=True)[1].split("\n")
+                for line in lsblk_output:
+                    if "lsblk:" not in line:
+                        cleaned_lsblk_output.append(line)
 
-                    #Remove any errors from lsblk in the output.
-                    cleaned_lsblk_output = []
+                lsblk_output = '\n'.join(cleaned_lsblk_output)
 
-                    for line in lsblk_output:
-                        if "lsblk:" not in line:
-                            cleaned_lsblk_output.append(line)
+                #Parse into a dictionary w/ json. TODO Specific Error checking.
+                try:
+                    lsblk_output = json.loads(lsblk_output)
 
-                    lsblk_output = '\n'.join(cleaned_lsblk_output)
+                except Exception as error:
+                    logger.error("FinishedWindows().mount_disk(): Couldn't find any partitions "
+                                 "to mount! This could indicate a bug in the GUI, or a problem "
+                                 "with your recovered image. It's possible that the data you "
+                                 "recovered is partially corrupted, and you need to use "
+                                 "another tool to extract meaningful data from it. Error:"
+                                 +unicode(error))
 
-                    #Parse into a dictionary w/ json. TODO Specific Error checking.
-                    try:
-                        lsblk_output = json.loads(lsblk_output)
+                    dlg = wx.MessageDialog(self.panel, "Couldn't find any partitions to mount! "
+                                           "This could indicate a bug in the GUI, or a problem "
+                                           "with your recovered image. It's possible the data you "
+                                           "recovered is partially corrupted, and you need to use "
+                                           "another tool to extract meaningful data from it.",
+                                           "DDRescue-GUI - Error", style=wx.OK | wx.ICON_ERROR)
+                    dlg.ShowModal()
+                    dlg.Destroy()
 
-                    except Exception as error:
-                        logger.error("FinishedWindows().mount_disk(): Couldn't find any partitions "
-                                     "to mount! This could indicate a bug in the GUI, or a problem "
-                                     "with your recovered image. It's possible that the data you "
-                                     "recovered is partially corrupted, and you need to use "
-                                     "another tool to extract meaningful data from it. Error:"
-                                     +unicode(error))
-
-                        dlg = wx.MessageDialog(self.panel, "Couldn't find any partitions to mount! "
-                                               "This could indicate a bug in the GUI, or a problem "
-                                               "with your recovered image. It's possible the data you "
-                                               "recovered is partially corrupted, and you need to use "
-                                               "another tool to extract meaningful data from it.",
-                                               "DDRescue-GUI - Error", style=wx.OK | wx.ICON_ERROR)
-                        dlg.ShowModal()
-                        dlg.Destroy()
-
-                        return False
-
-                else:
-                    #Do things the older, less reliable way from previous versions of ddrescue-gui.
-                    lsblk_output = BackendTools.start_process(cmd="lsblk -r -o NAME,FSTYPE,SIZE",
-                                                              return_output=True,
-                                                              privileged=True)[1].split('\n')
+                    return False
 
             else:
                 hdiutil_imageinfo_output = output
@@ -3325,7 +3297,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
             choices = []
 
             #Linux: Get the name of the loop device and construct the choices.
-            if LINUX and lsblk_json_supported:
+            if LINUX:
                 loop_device = "loop"+output[0].split()[0][4:-2]
 
                 #Get the info related to this partition.
@@ -3340,29 +3312,17 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
                                            + ", Filesystem: "+disk["fstype"]
                                            + ", Size: "+disk["size"])
 
-            #macOS and Ubuntu 14.04.
+            #macOS only.
             else:
                 for partition in output:
                     #Skip non-partition things and any "partitions" that don't have numbers (OS X).
-                    if (LINUX and (partition[0:12] == "loop deleted" or "/dev/" not in partition)
-                            or (not LINUX and ("partition-number" not in partition))):
+                    if "partition-number" not in partition:
                         continue
 
-                    if LINUX:
-                        #Older stuff for Ubuntu 14.04 support.
-                        #Get the info related to this partition.
-                        for line in lsblk_output:
-                            if partition.split()[0] in line:
-                                #Add stuff, trying to keep it human-readable.
-                                choices.append("Partition "+partition.split()[0].split("p")[-1]
-                                               + ", Filesystem: "+line.split()[-2]
-                                               + ", Size: "+line.split()[-1])
-
-                    else:
-                        choices.append("Partition "+unicode(partition["partition-number"])
-                                       + ", with size "+unicode((partition["partition-length"] \
-                                                                 * blocksize) // 1000000)
-                                       +" MB") #TODO Later round to best size using Unitlist etc?
+                    choices.append("Partition "+unicode(partition["partition-number"])
+                                   + ", with size "+unicode((partition["partition-length"] \
+                                                             * blocksize) // 1000000)
+                                   +" MB") #TODO Later round to best size using Unitlist etc?
 
             #Check that this list isn't empty.
             if not choices:
@@ -3403,10 +3363,6 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
             #Get selected partition's name.
             selected_partition = dlg.GetStringSelection().split()[1].replace(",", "")
-
-            #Fix for Ubuntu 14.04.
-            if LINUX and not lsblk_json_supported:
-                selected_partition = "loop"+output[0].split()[0][4:-2]+"p"+selected_partition
 
             #Notify user of mount attempt.
             logger.info("FinishedWindow().mount_disk(): Mounting partition "
