@@ -1,8 +1,0 @@
-Documentation for the unit tests runner file (tests.py)
-*******************************************************
-
-.. important::
-    Pointing to pkg rather than module.
-
-.. automodule:: ddrescue_gui.tests
-    :members:
