@@ -34,19 +34,12 @@ import getopt
 import sys
 import wx
 
-#Custom tools module.
-import Tools #pylint: disable=import-error
-from Tools import tools as BackendTools #pylint: disable=import-error
-
-#Import test modules.
-from Tests import BackendToolsTests #pylint: disable=import-error
-
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
     unicode = str #pylint: disable=redefined-builtin,invalid-name
 
 #Global vars.
-VERSION = "2.0.2"
+VERSION = "2.0.3"
 
 def usage():
     """Outputs usage information"""
@@ -79,11 +72,33 @@ if __name__ == "__main__":
         usage()
         sys.exit(2)
 
+#Log only critical messages by default.
+LOGGER_LEVEL = logging.CRITICAL
+
+#Set up the logger (silence all except critical logging messages).
+logger = logging.getLogger("DDRescue-GUI")
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s: %(message)s',
+                    datefmt='%d/%m/%Y %I:%M:%S %p')
+
+logger.setLevel(LOGGER_LEVEL)
+
+#We have to handle options twice for this to work - a bit strange, but it works.
+#Handle debugging mode here.
+for o, a in OPTIONS:
+    if o in ["-d", "--debug"]:
+        LOGGER_LEVEL = logging.DEBUG
+
+logger.setLevel(LOGGER_LEVEL)
+
+#Custom tools module.
+import Tools #pylint: disable=import-error
+from Tools import tools as BackendTools #pylint: disable=import-error
+
+#Import test modules.
+from Tests import BackendToolsTests #pylint: disable=import-error
+
 #Set up which tests to run based on options given.
 TEST_SUITES = [BackendToolsTests] #*** Set up full defaults when finished ***
-
-#Log only critical message by default.
-LOGGER_LEVEL = logging.CRITICAL
 
 if __name__ == "__main__":
     for o, a in OPTIONS:
@@ -99,18 +114,12 @@ if __name__ == "__main__":
             pass
         elif o in ["-d", "--debug"]:
             LOGGER_LEVEL = logging.DEBUG
+
         elif o in ["-h", "--help"]:
             usage()
             sys.exit()
         else:
             assert False, "unhandled option"
-
-#Set up the logger (silence all except critical logging messages).
-#FIXME Set up logger level in sub-modules.
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s: %(message)s',
-                    datefmt='%d/%m/%Y %I:%M:%S %p', level=LOGGER_LEVEL)
-
-logger = logging
 
 #Set up resource path and determine OS.
 if "wxGTK" in wx.PlatformInfo:

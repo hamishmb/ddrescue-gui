@@ -30,7 +30,6 @@ from __future__ import unicode_literals
 import unittest
 import os
 import sys
-import logging
 import wx
 
 #Allow imports of modules & packages 1 level up.
@@ -38,9 +37,6 @@ sys.path.insert(0, os.path.abspath('..'))
 
 #Import tools.
 from Tools import tools as BackendTools #pylint: disable=import-error
-
-#Silence tools logger.
-BackendTools.logger.setLevel(logging.CRITICAL)
 
 #Import test data and functions.
 from . import BackendToolsTestData as Data

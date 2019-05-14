@@ -56,9 +56,6 @@ import ast
 import json
 import requests
 
-import Tools.tools as BackendTools
-import Tools.DDRescueTools.setup as DDRescueTools
-
 import getdevinfo
 
 import wx
@@ -91,8 +88,8 @@ if sys.version_info[0] == 3:
     plistlib.readPlistFromString = plistlib.loads #pylint: disable=no-member
 
 #Define global variables.
-VERSION = "2.0.2"
-RELEASE_DATE = "27/2/2019"
+VERSION = "2.0.3"
+RELEASE_DATE = "14/5/2019"
 RELEASE_TYPE = "Stable"
 
 session_ending = False
@@ -193,12 +190,16 @@ if __name__ == "__main__":
             assert False, "unhandled option"
 
     #Set up logging with default logging mode as debug.
-    logger = logging.getLogger('DDRescue-GUI '+VERSION)
+    logger = logging.getLogger("DDRescue-GUI")
     logging.basicConfig(filename='/tmp/ddrescue-gui.log',
                         format='%(asctime)s - %(name)s - %(levelname)s: %(message)s',
                         datefmt='%d/%m/%Y %I:%M:%S %p')
 
     logger.setLevel(LOGGER_LEVEL)
+
+    #Import modules here to make sure logger level is set correctly.
+    import Tools.tools as BackendTools
+    import Tools.DDRescueTools.setup as DDRescueTools
 
     #Log which OS we're running on (helpful for debugging).
     if LINUX:

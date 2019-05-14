@@ -76,7 +76,7 @@ APPICON = None
 
 #Set up logging.
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.getLogger("DDRescue-GUI").getEffectiveLevel())
 
 #Begin Mac Authentication Window.
 class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
