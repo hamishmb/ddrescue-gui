@@ -1,8 +1,0 @@
-This branch in this repository holds the active development version of DDRescue-GUI. As such, it's very unstable and subject to change at any time, and shouldn't be used on any production machine.
-
-NOTE: Source code for GNU ddrescue is available via https://www.gnu.org/software/ddrescue/
-
-NOTE: Source code for terminal-notifier is available via https://github.com/julienXX/terminal-notifier
-
-NOTE: TO generate documentation, the directory containing the files in this repo must be called "ddrescue_gui".
-
