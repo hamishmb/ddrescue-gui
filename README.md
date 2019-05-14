@@ -30,7 +30,7 @@ The process for running these is the same on both Linux and macOS. It can be don
 
 Without Coverage Reporting
 --------------------------
-Change directory to the getdevinfo subfolder, and run:
+Run:
 
 "sudo python3 ./tests.py"
 
@@ -42,20 +42,20 @@ With Coverage Reporting
 -----------------------
 Make sure you have installed Coverage.py using pip or your package manager.
 
-Change directory to the getdevinfo subfolder, and run:
+Run:
 
-"sudo python3 -m coverage run --rcfile=../.coveragerc ./tests.py"
+"sudo python3 -m coverage run --rcfile=./.coveragerc ./tests.py"
 
 or:
 
-"sudo python2 -m coverage run --rcfile=../.coveragerc ./tests.py"
+"sudo python2 -m coverage run --rcfile=./.coveragerc ./tests.py"
 
 To run the tests. Then run:
 
-"sudo python3 -m coverage report"
+"sudo python3 -m coverage html"
 
 or:
 
-"sudo python2 -m coverage report"
+"sudo python2 -m coverage html"
 
 To see the report.
