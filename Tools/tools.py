@@ -398,7 +398,7 @@ def start_process(cmd, return_output=False, privileged=False):
 
         tuple(int, string).     Otherwise, return a tuple with the return value,
                                 and then a string with new lines delimited by
-                                '\n'.
+                                newline characters.
 
     """
     #Save the command as it was passed, in case we need
@@ -484,8 +484,8 @@ def start_process(cmd, return_output=False, privileged=False):
 def read(cmd, testing=False): #pylint: disable=redefined-variable-type
     """
     Read the cmd's output character by character. Also make sure everything is
-    converted to unicode. Break lines by the '\n' (newline) and '\r'
-    (carriage return) characters. Also handle null characters '\x00' by
+    converted to unicode. Break lines by the newline and
+    (carriage return) characters. Also handle null characters by
     removing them from the output.
 
     Args:
@@ -493,12 +493,13 @@ def read(cmd, testing=False): #pylint: disable=redefined-variable-type
 
     Kwargs:
         testing[=False].        Used during unit tests, disables some of the
-                                cleanup done to the output. *Do not use in
-                                production*.
+                                cleanup done to the output. **Do not use in
+                                production.**
 
     Returns:
         list.                   A list where each line in the (cleaned up)
                                 output is a new item in the list.
+
     """
 
     #Get ready to run the command(s).
@@ -945,7 +946,7 @@ def mount_disk(partition, mount_point, options=""):
 
     Args:
         partition (string).             The partition to mount.
-        mount_point (string).           The part where the partition is to be
+        mount_point (string).           The part where the partition is to be \
                                         mounted.
 
     Kwargs:
@@ -1063,7 +1064,7 @@ def is_partition(disk, disk_info):
 
     Args:
         disk (string).              The disk to check.
-        disk_info (dict).           The disk info dictionary containing
+        disk_info (dict).           The disk info dictionary containing \
                                     information gathered with GetDevInfo.
 
     Returns:
