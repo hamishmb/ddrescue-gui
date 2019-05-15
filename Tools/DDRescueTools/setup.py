@@ -55,7 +55,17 @@ for Module in (allversions, one_point_forteen, one_point_eighteen, one_point_twe
 
 def setup_for_ddrescue_version(ddrescue_version):
     """
-    Selects the correct tools for our version of ddrescue.
+    Selects and returns a list of the correct functions for our version of
+    ddrescue. 
+
+    Args:
+        ddrescue_version (unicode):             The version of ddrescue installed
+                                                on the system. eg "1.24".
+
+    Returns:
+        list.                       A list of all the functions that are designed
+                                    to work with this ddrescue version.
+
     """
 
     #Select the best tools if we have an unsupported version of ddrescue.

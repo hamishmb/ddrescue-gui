@@ -34,13 +34,20 @@ if sys.version_info[0] == 3:
 
 def define_versions(function):
     """
-    Reads the function docstring to find the
-    ddrescue versions the function supports.
+    Reads the function docstring to find the ddrescue versions the function
+    supports. This is used on all of the tools in the modules in the
+    DDRescueTools package.
+
+    This information is saved in the function's SUPPORTEDVERSIONS attribute.
+
+    Args:
+        function.       The function object that we are creating the attribute
+                        for.
     """
 
     function.SUPPORTEDVERSIONS = []
 
-    for version in function.__doc__.split(": ")[1].split(","):
+    for version in function.__doc__.split("Works with ddrescue versions: ")[1].split(","):
         function.SUPPORTEDVERSIONS.append(version.replace(" ", "").replace("\n", ""))
 
     return function

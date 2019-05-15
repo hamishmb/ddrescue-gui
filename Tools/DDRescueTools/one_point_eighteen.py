@@ -37,7 +37,12 @@ if sys.version_info[0] == 3:
 @decorators.define_versions
 def get_outputpos_time_since_last_read(split_line): #pylint: disable=invalid-name
     """
-    Get Output Position and Time Since Last Successful Read.
+    Get Output Position and Time Since Last Successful Read values.
+
+    Args:
+        split_line (string):        The line from ddrescue's output that contains
+                                    the information, split by whitespace.
+
     Works with ddrescue versions: 1.18,1.19,1.20
     """
 

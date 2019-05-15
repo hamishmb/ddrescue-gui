@@ -37,7 +37,12 @@ if sys.version_info[0] == 3:
 @decorators.define_versions
 def get_inputpos_numerrors_averagereadrate(split_line): #pylint: disable=invalid-name
     """
-    Get Input Position, Number of Errors, and Average Read Rate.
+    Get Input Position, Number of Errors, and Average Read Rate values.
+
+    Args:
+        split_line (string):        The line from ddrescue's output that contains
+                                    the information, split by whitespace.
+
     Works with ddrescue versions: 1.14,1.15,1.16,1.17,1.18,1.19,1.20
     """
 
@@ -47,7 +52,12 @@ def get_inputpos_numerrors_averagereadrate(split_line): #pylint: disable=invalid
 @decorators.define_versions
 def get_outputpos_time_since_last_read(split_line): #pylint: disable=invalid-name
     """
-    Get Output Position and Time Since Last Successful Read.
+    Get Output Position and Time Since Last Successful Read values.
+
+    Args:
+        split_line (string):        The line from ddrescue's output that contains
+                                    the information, split by whitespace.
+
     Works with ddrescue versions: 1.14,1.15,1.16,1.17
     """
 
@@ -56,7 +66,12 @@ def get_outputpos_time_since_last_read(split_line): #pylint: disable=invalid-nam
 @decorators.define_versions
 def get_current_rate_error_size_recovered_data(split_line): #pylint: disable=invalid-name
     """
-    Get Current Read Rate, Error Size, and Recovered Data.
+    Get Current Read Rate, Error Size, and Recovered Data values.
+
+    Args:
+        split_line (string):        The line from ddrescue's output that contains
+                                    the information, split by whitespace.
+
     Works with ddrescue versions: 1.14,1.15,1.16,1.17,1.18,1.19,1.20
     """
 
