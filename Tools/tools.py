@@ -115,7 +115,10 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         self.password_field.SetFocus()
 
     def create_text(self):
-        """Create all text for AuthenticationWindow"""
+        """
+        Create all text items for AuthenticationWindow.
+        """
+
         self.title_text = wx.StaticText(self.panel, -1,
                                         "DDRescue-GUI requires authentication.")
         self.body_text = wx.StaticText(self.panel, -1, "DDRescue-GUI requires authentication "
@@ -128,11 +131,15 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         self.password_text.SetFont(bold_font)
 
     def create_buttons(self):
-        """Create all buttons for AuthenticationWindow"""
+        """
+        Create all buttons for AuthenticationWindow
+        """
         self.auth_button = wx.Button(self.panel, -1, "Authenticate")
 
     def create_other_widgets(self):
-        """Create all other widgets for AuthenticationWindow"""
+        """
+        Create all other widgets for AuthenticationWindow
+        """
         #Create the image.
         img = wx.Image(RESOURCEPATH+"/images/Logo.png", wx.BITMAP_TYPE_PNG)
         self.program_logo = wx.StaticBitmap(self.panel, -1, wx.Bitmap(img))
@@ -155,7 +162,9 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         self.throbber.SetClientSize(wx.Size(30, 30))
 
     def setup_sizers(self):
-        """Setup sizers for AuthWindow"""
+        """
+        Setup sizers for AuthWindow
+        """
         #Make the main boxsizer.
         main_sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -201,14 +210,20 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         main_sizer.SetSizeHints(self)
 
     def bind_events(self):
-        """Bind all events for AuthenticationWindow"""
+        """
+        Bind all events for AuthenticationWindow
+        """
         self.Bind(wx.EVT_TEXT_ENTER, self.on_auth_attempt, self.password_field)
         self.Bind(wx.EVT_BUTTON, self.on_auth_attempt, self.auth_button)
 
     def on_auth_attempt(self, event=None): #pylint: disable=unused-argument
         """
-        Check the password is correct,
-        then either warn the user or call self.start_ddrescuegui().
+        Check the password is correct. If not, then either warn the user to
+        try again. If so, exit as all we need to do is pre-authenticate on
+        macOS.
+
+        Kwargs:
+            event.      The event object passed by wxpython (optional).
         """
 
         #Disable the auth button (stops you from trying twice in quick succession).
@@ -277,9 +292,11 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
     def test_auth(): #pylint: disable=no-method-argument
         """
-        Check if we have cached authentication
-        If so, return True.
-        Otherwise return False.
+        Check if we have cached authentication.
+
+        Returns:
+            bool.           True = We have cached authentication.
+                            False = We don't.
         """
 
         #Check the password is right.
@@ -300,7 +317,8 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
     def run(): #pylint: disable=no-method-argument
         """
-        Preauthenticates macOS users with the auth dialog.
+        Preauthenticates macOS users with the auth dialog. If we are already
+        pre-authenticated, just return immediately.
         """
 
         global AUTH_DIALOG_OPEN
@@ -315,7 +333,9 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         AuthWindow().Show()
 
     def on_exit(self, event=None): #pylint: disable=unused-argument
-        """Close AuthWindow() and exit"""
+        """
+        Close AuthWindow() and exit
+        """
         global AUTH_DIALOG_OPEN
         AUTH_DIALOG_OPEN = False
 
@@ -324,7 +344,16 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 #End Mac Authentication Window.
 
 def get_helper(cmd):
-    """Figure out which helper script to use."""
+    """
+    Figure out which helper script to use for this command.
+
+    Args:
+        cmd (string).           The command(s) about to be run.
+
+    Returns:
+        string.                 "pkexec" + <the helper script needed>
+                                + the command(s) to run.
+    """
     helper = "/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux.sh"
 
     if "run_getdevinfo.py" in cmd:
@@ -347,7 +376,31 @@ def get_helper(cmd):
     return "pkexec "+helper
 
 def start_process(cmd, return_output=False, privileged=False):
-    """Start a given process, and return output and return value if needed"""
+    """
+    Start a given process, and return the output and return value if needed.
+
+    Args:
+        cmd (string).               The command(s) to run.
+
+    Kwargs:
+        return_output[=False]       Whether to return the output or not. If not
+                                    specified, the default is False.
+
+        privileged[=False]          Whether to execute the command(s) with
+                                    elevated privileges or not. If not specified
+                                    the default is False.
+
+    Returns:
+        May return multiple types:
+
+        int.                    If return_output is not specified or set to
+                                False, return the return value of the command(s).
+
+        tuple(int, string).     Otherwise, return a tuple with the return value,
+                                and then a string with new lines delimited by
+                                '\n'.
+
+    """
     #Save the command as it was passed, in case we need
     #to call recursively (pkexec auth failure/dismissal).
     origcmd = cmd
@@ -430,8 +483,22 @@ def start_process(cmd, return_output=False, privileged=False):
 
 def read(cmd, testing=False): #pylint: disable=redefined-variable-type
     """
-    Read the cmd's output char by char, but do as little processing as
-    possible to improve startup performance
+    Read the cmd's output character by character. Also make sure everything is
+    converted to unicode. Break lines by the '\n' (newline) and '\r'
+    (carriage return) characters. Also handle null characters '\x00' by
+    removing them from the output.
+
+    Args:
+        cmd.            The subprocess object that represents the command.
+
+    Kwargs:
+        testing[=False].        Used during unit tests, disables some of the
+                                cleanup done to the output. *Do not use in
+                                production*.
+
+    Returns:
+        list.                   A list where each line in the (cleaned up)
+                                output is a new item in the list.
     """
 
     #Get ready to run the command(s).
@@ -482,7 +549,11 @@ def determine_ddrescue_version():
     or (for macOS) bundled with the GUI.
 
     Handles -pre and -rc versions too, by stripping that information
-    from the version string and warning the user.
+    from the version string and warning the user (not doing so would
+    cause errors in other parts of DDRescue-GUI).
+
+    Returns:
+        string.         The ddrescue version present on the system.
     """
 
     #Use correct command.
@@ -549,10 +620,24 @@ def determine_ddrescue_version():
 
 def create_unique_key(dictionary, data, length):
     """
-    Create a unqiue dictionary key of length for dictionary dictionary for the item data.
-    The unique key is created by adding a number on the the end of data,
-    while keeping it at the correct length.
-    The key will also start with '...'.
+    Create a unique dictionary key.
+
+    The unique key is created by adding a number on the the end of the given data,
+    while keeping it at the correct length. The key will also start with '...'
+    if the data was longer than the specified length.
+
+    Args:
+        dictionary (dict).              The dictionary that the key will be stored
+                                        in. This is needed to check the uniqueness
+                                        of the keys - we will keep generating new
+                                        ones until we arrive at a unique one.
+
+        data (string).                  The data that we need to create a key for.
+
+        length (int).                   The maximum length of the key.
+
+    Returns:
+        string.                         The unique key.
     """
 
     #Only add numbers to the key if needed.
@@ -590,9 +675,16 @@ def create_unique_key(dictionary, data, length):
     return key
 
 def send_notification(msg):
-    """Send a notification, created to reduce clutter in the rest of the code."""
+    """
+    Send a notification, with the given message.
+
+    Args:
+        msg (string).               The message to display in the notification.
+
+    """
     if LINUX:
-        #Use notify-send. *** Sometimes doesn't work as root. Find uid of logged-in user? ***
+        #Use notify-send.
+        #FIXME Doesn't always work as root - may not show up during unit tests.
         start_process(cmd="notify-send 'DDRescue-GUI' '"+msg
                       +"' -i /usr/share/pixmaps/ddrescue-gui.png", return_output=False)
 
@@ -606,7 +698,30 @@ def send_notification(msg):
                       return_output=False)
 
 def determine_output_file_type(SETTINGS, disk_info): #pylint: disable=invalid-name
-    """Determines output File Type (partition or Device)"""
+    """
+    Determines output File Type (partition or device)..
+
+    Args:
+        SETTINGS (dict).                The dictionary used by DDRescue-GUI to
+                                        store recovery settings.
+
+        disk_info (dict).               The dictionary that holds the disk
+                                        information collected by GetDevInfo.
+
+    Returns:
+        tuple(string, int, string).
+
+            1st element:                The type of the output file. "partition",
+                                        or "Device".
+
+            2nd element:                The return value of a command that is used
+                                        in this process.
+
+            3rd element:                As above, but the output of that command.
+    """
+    #TODO Why is the d in Device capitalised here?
+    #TODO Why run the command here as well?
+
     if SETTINGS["InputFile"] in disk_info:
 		#Read from disk_info if possible (OutputFile type = InputFile type)
         output_file_type = disk_info[SETTINGS["InputFile"]]["Type"]
@@ -649,7 +764,24 @@ def determine_output_file_type(SETTINGS, disk_info): #pylint: disable=invalid-na
 def mac_get_device_name_mount_point(output):
     """
     Get the device name and mount point of an output file,
-    given output from hdiutil mount -plist
+    given output from hdiutil mount -plist.
+
+    Args:
+        output (string).                Output from "hdiutil mount -plist",
+                                        the command used to mount the output file.
+
+    Returns:
+        tuple(<inconsistent types>).
+
+            1st element:        The device name of the output file eg
+                                "/dev/disk5", or None if unable to determine it.
+
+            2nd element:        The mount point of the output file, or None if
+                                unable to determine it.
+
+            3rd element:        True (boolean) if successful in determining
+                                device name and mount point. Otherwise, a
+                                string describing the error eg "UnicodeError". 
     """
 
     #Parse the plist (Property List).
@@ -671,7 +803,18 @@ def mac_get_device_name_mount_point(output):
 def mac_run_hdiutil(options):
     """
     Runs hdiutil on behalf of the rest of the program when called.
-    Tries to handle and fix hdiutil errors if they occur.
+    Tries to handle and fix hdiutil errors (e.g. 'Resource Temporarily
+    Unavailable') if they occur.
+
+    Args:
+        options (string).               All of the options to pass to hdiutil.
+
+    Returns:
+        tuple(int, string).
+
+            1st element:                The return value from hdiutil.
+
+            2nd element:                The output from hdiutil.
     """
 
     retval, output = start_process(cmd="hdiutil "+options, return_output=True, privileged=True)
@@ -681,8 +824,7 @@ def mac_run_hdiutil(options):
         logger.warning("mac_run_hdiutil(): Attempting to fix hdiutil resource error...")
         #Fix by detaching all disks - certain disks eg system disk will fail, but it should fix
         #our problem. On OS X >= 10.11 can check for "(disk image)", but cos we support 10.9 &
-        #10.10, we have to just detach all possible disks and ignore failures. No need for another
-        #try-except cos start_process doesn't throw errors.
+        #10.10, we have to just detach all possible disks and ignore failures.
         for line in start_process(cmd="diskutil list", return_output=True)[1].split("\n"):
             try:
                 if line.split()[0].split("/")[1] == "dev":
@@ -703,10 +845,22 @@ def mac_run_hdiutil(options):
 def is_mounted(partition, mount_point=None):
     """
     Checks if the given partition is mounted.
-    partition is the given partition to check.
-    If mount_point is specified, check if the partition is mounted there,
-    rather than just if it's mounted.
-    Return boolean True/False.
+
+    Args:
+        partition (string).                 The partition to check.
+
+    Kwargs:
+        mount_point[=None] (string).        If specified, check that partition
+                                            is mounted at this mount point.
+                                            Otherwise, just check that it is
+                                            mounted somewhere.
+
+    Returns:
+        bool.
+
+            True = The partition is mounted.
+            False = The partition is not mounted.
+
     """
 
     if mount_point is None:
@@ -727,7 +881,7 @@ def is_mounted(partition, mount_point=None):
                     break
 
     else:
-        #Check where it's mounted to.
+        #Check where it's mounted at.
         logger.debug("is_mounted(): Checking if "+partition+" is mounted at "+mount_point+"...")
 
         disk_is_mounted = False
@@ -748,8 +902,22 @@ def is_mounted(partition, mount_point=None):
         return False
 
 def get_mount_point(partition):
-    """Returns the mountpoint of the given partition, if any.
-    Otherwise, return None"""
+    """
+    Returns the mountpoint of the given partition, if any.
+
+    Args:
+        partition (string).             The partition to find the mount point of.
+
+    Returns:
+        Multiple types.
+
+            String:                     The mount point of the partition, if
+                                        it was mounted.
+
+            None:                       Returned when mount point was not
+                                        found.       
+    """
+
     logger.info("get_mount_point(): Trying to get mount point of partition "+partition+"...")
 
     mount_info = start_process("mount", return_output=True)[1]
@@ -772,12 +940,32 @@ def get_mount_point(partition):
     return mount_point
 
 def mount_disk(partition, mount_point, options=""):
-    """Mounts the given partition.
-    partition is the partition to mount.
-    mount_point is where you want to mount the partition.
-    options is non-mandatory and contains whatever options you want to pass to the mount command.
-    The default value for options is an empty string.
     """
+    Mounts the given partition at the given mount point.
+
+    Args:
+        partition (string).             The partition to mount.
+        mount_point (string).           The part where the partition is to be
+                                        mounted.
+
+    Kwargs:
+        options[=""] (string).          Any options to pass to the mount command.
+                                        If not specified, no options are passed.
+
+    Returns:
+        Multiple types.
+
+        boolean False:                  If another filesystem was in the way at
+                                        the specified mount point and it could
+                                        not be unmounted.
+
+        int.
+            0 -                         Success, or partition already mounted at
+                                        that mount point.
+
+            Anything else -             Error, return value from mount command. 
+    """
+
     if options != "":
         logger.info("mount_disk(): Preparing to mount "+partition+" at "+mount_point
                     +" with extra options "+options+"...")
@@ -825,7 +1013,19 @@ def mount_disk(partition, mount_point, options=""):
     return retval
 
 def unmount_disk(disk):
-    """Unmount the given disk"""
+    """
+    Unmount the given disk.
+
+    Args:
+        disk (string).              The disk to unmount.
+
+    Returns:
+        int.
+            0 -                     Success, or disk not mounted.
+            Anything else -         Error, return value from unmount command.
+    """
+
+    #TODO Check if works with mount points too, and document if so.
     logger.debug("unmount_disk(): Checking if "+disk+" is mounted...")
 
     #Check if it is mounted.
@@ -858,7 +1058,20 @@ def unmount_disk(disk):
     return retval
 
 def is_partition(disk, disk_info):
-    """Check if the given disk is a partition"""
+    """
+    Check if the given disk is a partition.
+
+    Args:
+        disk (string).              The disk to check.
+        disk_info (dict).           The disk info dictionary containing
+                                    information gathered with GetDevInfo.
+
+    Returns:
+        boolean.
+            True -                  The disk is a partition.
+            False -                 The disk is not a partition.
+    """
+
     logger.debug("is_partition(): Checking if disk: "+disk+" is a partition...")
 
     if LINUX:
@@ -873,7 +1086,19 @@ def is_partition(disk, disk_info):
     return result
 
 def emergency_exit(msg):
-    """Handle emergency exits. Warn the user, log, and exit to terminal with the given message"""
+    """
+    Handle emergency exits. Warn the user, log the error, save the log file,
+    and exit to terminal with the given message.
+
+    Args:
+        msg (string).           A description of the unrecoverable error that
+                                was encountered.
+
+    .. warning::
+        Calling this function will exit DDRescue-GUI immediately after warning the
+        user to save a log file.
+
+    """
     logger.critical("CoreEmergencyExit(): Emergency exit has been triggered! "
                     +"Giving user message dialog and saving the logfile...")
     logger.critical("CoreEmergencyExit(): The error is: "+msg)
