@@ -89,7 +89,7 @@ if sys.version_info[0] == 3:
 
 #Define global variables.
 VERSION = "2.0.3"
-RELEASE_DATE = "14/5/2019"
+RELEASE_DATE = "15/5/2019"
 RELEASE_TYPE = "Stable"
 
 session_ending = False
@@ -219,18 +219,36 @@ class GetDiskInformation(threading.Thread):
     """
 
     def __init__(self, parent):
-        """Initialize and start the thread."""
+        """
+        Initialize and start the thread.
+
+        Args:
+            parent (object).                The parent window that started the
+                                            thread.
+        """
+
         self.parent = parent
         threading.Thread.__init__(self)
         self.start()
 
     def run(self):
-        """Get Disk Information and return it as a list with embedded lists"""
+        """
+        Use GetDevInfo module to get disk information.
+        """
+
         #Use a module I've written to collect data about connected Disks, and return it.
         wx.CallAfter(self.parent.receive_diskinfo, self.get_info())
 
     def get_info(self): #pylint: disable=no-self-use
-        """Get disk information as a privileged user"""
+        """
+        Get disk information as a privileged user.
+
+        Returns:
+            dict.
+                If successful:         The disk information.
+                If unsuccessful:       An empty dictionary.
+        """
+
         output = BackendTools.start_process(cmd=sys.executable+" "+RESOURCEPATH
                                             +"/Tools/run_getdevinfo.py",
                                             return_output=True,
@@ -256,7 +274,8 @@ class MyApp(wx.App):
 
     def OnInit(self): #pylint: disable=invalid-name, no-self-use
         """
-        Used to show the splash screen, which then starts the rest of the application.
+        Used to show the splash screen, which then starts the rest of the
+        application.
         """
 
         splash = ShowSplash()
@@ -265,8 +284,9 @@ class MyApp(wx.App):
 
     def MacReopenApp(self): #pylint: disable=invalid-name
         """
-        Called when the doc icon is clicked, shows the top-level window again even if it's
-        minimised. Makes the GUI work in a more intuitive way on macOS.
+        Called when the doc icon is clicked, shows the top-level window again
+        even if it's minimised. Makes the GUI work in a more intuitive way on
+        macOS.
         """
 
         self.GetTopWindow().Raise()
@@ -280,7 +300,13 @@ class ShowSplash(wxSplashScreen): #pylint: disable=too-few-public-methods,no-mem
     """
 
     def __init__(self, parent=None):
-        """Prepare and display a splash screen"""
+        """
+        Prepare and display a splash screen.
+
+        Args:
+            parent (object).                The parent window that started the
+                                            thread.
+        """
 
         #Convert the image to a bitmap.
         splash = wx.Image(name=RESOURCEPATH+"/images/splash.png").ConvertToBitmap()
@@ -304,7 +330,14 @@ class ShowSplash(wxSplashScreen): #pylint: disable=too-few-public-methods,no-mem
         wx.GetApp().Yield()
 
     def on_exit(self, event=None):
-        """Close the splash screen and start MainWindow"""
+        """
+        Close the splash screen and start MainWindow.
+
+        Kwargs:
+            event[=None] (object).              The event object passed by
+                                                wxPython when the splash times
+                                                out.
+        """
         self.Hide()
 
         if self.already_exited is False:
@@ -325,14 +358,27 @@ class CustomTextCtrl(wx.TextCtrl): #pylint: disable=too-many-ancestors
 
     Features:
         A version of PositionToXY() that works on macOS.
-        A version of XYToPosition() that works on macOS and fixed a bug on Linux.
+        A version of XYToPosition() that works on macOS and fixes a bug on Linux.
         carriage_return(): Handles carriage returns correctly.
         up_one_line(): Moves insertion point up one line.
 
     """
 
     def __init__(self, parent, wx_id, value, style):
-        """Initialise the custom wx.TextCtrl"""
+        """
+        Initialise the custom wx.TextCtrl.
+
+        Args:
+            parent (object).                The parent window that started the
+                                            thread.
+
+            wx_id (int).                    The wxPython ID that this widget
+                                            will use.
+
+            value (string).                 Initial contents of the text box.
+            style (int).                    The style of the text control.
+
+        """
         wx.TextCtrl.__init__(self, parent, wx_id, value=value, style=style)
 
     def PositionToXY(self, insertion_point): #pylint: disable=invalid-name,arguments-differ
@@ -340,7 +386,19 @@ class CustomTextCtrl(wx.TextCtrl): #pylint: disable=too-many-ancestors
         A custom version of wx.TextCtrl.PositionToXY() that works on OS X
         (the built-in one isn't implemented on OS X).
 
-        Note: Still not implemented on OS X on wxPython 4 (random numbers).
+        Args:
+            insertion_point (int).          The insertion point we want to get
+                                            the row and column numbers for.
+
+        Returns:
+            tuple(int, int).
+
+                1st element:        The column.
+                2nd element:        The row.
+
+        .. note::
+            The stock version of this method is still not implemented on OS X
+            on wxPython 4 (it returns random numbers).
         """
 
         #Count the number and position of newline characters.
@@ -385,9 +443,24 @@ class CustomTextCtrl(wx.TextCtrl): #pylint: disable=too-many-ancestors
         A custom version of wx.TextCtrl.XYToPosition() that works on OS X
         (the built-in one isn't implemented on OS X).
 
-        This is also helpful for LINUX because the built-in one has a quirk
-        when you're at the end of the text and it always returns -1
+        Args:
+            column (int).               The column we want to get the integer
+                                        position for.
+
+            row (int).                  The row we want to get the integer
+                                        position for.
+
+        Returns:
+            int.                        The position.
+
+        .. note::
+            This is also helpful for LINUX because the built-in one has a quirk:
+            when you're at the end of the text, it always returns -1.
+
+        .. note::
+            As of wxPython 4, this is still not implemented on macOS.
         """
+
         #Count the number and position of newline characters.
         text = self.GetValue()
 
@@ -408,9 +481,11 @@ class CustomTextCtrl(wx.TextCtrl): #pylint: disable=too-many-ancestors
         return position
 
     def carriage_return(self):
-        """Handles carriage returns in output"""
-        #Go back until the last newline character, and overwrite anything in the way on the
-        #next write.
+        """
+        Handles carriage returns in output. This is done by going back to the last
+        newline in the box - any new text will now overwrite what is there.
+        """
+
         #Get the text up to the current insertion point.
         text = self.GetRange(0, self.GetInsertionPoint())
 
@@ -438,7 +513,12 @@ class CustomTextCtrl(wx.TextCtrl): #pylint: disable=too-many-ancestors
         self.SetInsertionPoint(new_insertion_point)
 
     def up_one_line(self):
-        """Handles '\x1b[A' (up one line) in output"""
+        """
+        Handles '\x1b[A' (control sequence to go up one line) in the output. This
+        is done by moving the insertion point so we are up one line, but in the
+        same column (if possible).
+        """
+
         #Go up one line.
         #Get our column and line numbers.
         column, line = self.PositionToXY(self.GetInsertionPoint())
@@ -466,7 +546,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
     """
 
     def __init__(self):
-        """Initialize MainWindow"""
+        """
+        Initialize MainWindow
+        """
         wx.Frame.__init__(self, None, title="DDRescue-GUI", size=(956, 360),
                           style=wx.DEFAULT_FRAME_STYLE)
 
@@ -581,7 +663,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         logger.info("MainWindow().__init__(): Ready. Waiting for events...")
 
     def set_vars(self):
-        """Set some essential variables"""
+        """
+        Set some essential variables
+        """
         global SETTINGS
         SETTINGS = {}
 
@@ -627,7 +711,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.user_homedir = os.environ['HOME']
 
     def define_vars(self):
-        """Defines some variables used elsewhere in this class/instance"""
+        """
+        Defines some variables used elsewhere in this class/instance
+        """
         #Define these here to prevent adding checks to see if they're defined later.
         self.custom_input_paths = {}
         self.custom_output_paths = {}
@@ -640,7 +726,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.runtime_secs = None
 
     def make_status_bar(self):
-        """Create and set up a statusbar"""
+        """
+        Create and set up a statusbar
+        """
         self.status_bar = self.CreateStatusBar()
         self.status_bar.SetFieldsCount(2)
         self.status_bar.SetStatusWidths([-1, 165])
@@ -648,7 +736,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.status_bar.SetStatusText("v"+VERSION+" ("+RELEASE_DATE+")", 1)
 
     def create_text(self):
-        """Create all text for MainWindow"""
+        """
+        Create all text for MainWindow
+        """
         self.title_text = wx.StaticText(self.panel, -1, "Welcome to DDRescue-GUI!")
         self.input_text = wx.StaticText(self.panel, -1, "Image Source:")
         self.map_text = wx.StaticText(self.panel, -1, "Recovery Map File (previously called logfile):")
@@ -663,14 +753,18 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.time_remaining_text = wx.StaticText(self.panel, -1, "Estimated Time Remaining:")
 
     def create_buttons(self):
-        """Create all buttons for MainWindow"""
+        """
+        Create all buttons for MainWindow
+        """
         self.settings_button = wx.Button(self.panel, -1, "Settings")
         self.update_disk_info_button = wx.Button(self.panel, -1, "Update Disk Info")
         self.show_disk_info_button = wx.Button(self.panel, -1, "Disk Information")
         self.control_button = wx.Button(self.panel, -1, "Start")
 
     def create_choice_boxes(self):
-        """Create all choiceboxes for MainWindow"""
+        """
+        Create all choiceboxes for MainWindow
+        """
         self.input_choice_box = wx.Choice(self.panel, -1, choices=['-- Please Select --',
                                                                    'Specify Path/File'])
 
@@ -687,7 +781,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.output_choice_box.SetStringSelection("-- Please Select --")
 
     def create_other_widgets(self):
-        """Create all other widgets for MainWindow"""
+        """
+        Create all other widgets for MainWindow
+        """
         #Create the animation for the throbber.
         throb = wxAnimation(RESOURCEPATH+"/images/Throbber.gif")
         self.throbber = wxAnimationCtrl(self.panel, -1, throb)
@@ -735,7 +831,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.progress_bar = wx.Gauge(self.panel, -1, 5000)
 
     def setup_sizers(self): #pylint: disable=too-many-statements
-        """Setup sizers for MainWindow"""
+        """
+        Setup sizers for MainWindow
+        """
         #Make the main boxsizer.
         self.main_sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -842,7 +940,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.main_sizer.SetSizeHints(self)
 
     def create_menus(self):
-        """Create the menus"""
+        """
+        Create the menus
+        """
         file_menu = wx.Menu()
         edit_menu = wx.Menu()
         view_menu = wx.Menu()
@@ -880,7 +980,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.SetMenuBar(self.menu_bar)
 
     def bind_events(self):
-        """Bind all events for MainWindow"""
+        """
+        Bind all events for MainWindow
+        """
         #Menus.
         self.Bind(wx.EVT_MENU, self.check_for_updates, self.menu_updates)
         self.Bind(wx.EVT_MENU, self.show_settings, self.menu_settings)
@@ -934,7 +1036,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         wx.CallLater(30, self.output_box.SetInsertionPoint, insertion_point)
 
     def on_size(self, event=None):
-        """Auto resize the list_ctrl columns"""
+        """
+        Auto resize the list_ctrl columns when the window is resized.
+        """
+
         #Force the width and height of the list_ctrl to be the right size,
         #as the sizer won't shrink it on wxpython > 2.8.12.1.
         #TODO Even on wxpython 4?
@@ -956,7 +1061,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             event.Skip()
 
     def on_detailed_info(self, event=None): #pylint: disable=unused-argument
-        """Show/Hide the detailed info, and rotate the arrow"""
+        """
+        Show/Hide the detailed info, and rotate the arrow next to the text label.
+        """
         #Get the width and height of the frame.
         width = self.GetClientSize()[0]
 
@@ -994,7 +1101,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.main_sizer.SetSizeHints(self)
 
     def on_terminal_output(self, event=None): #pylint: disable=unused-argument
-        """Show/Hide the terminal output, and rotate the arrow"""
+        """
+        Show/Hide the terminal output, and rotate the arrow next to the text
+        label.
+        """
         #Get the width and height of the frame.
         width = self.GetClientSize()[0]
 
@@ -1033,7 +1143,11 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.main_sizer.SetSizeHints(self)
 
     def get_diskinfo(self, event=None): #pylint: disable=unused-argument
-        """Call the thread to get Disk info, disable the update button, and start the throbber"""
+        """
+        Call the thread to get Disk info, disable the update button,
+        and start the throbber
+        """
+
         logger.info("MainWindow().get_diskinfo(): Getting new Disk information...")
         self.update_status_bar("Getting new Disk information... Please wait...")
 
@@ -1051,7 +1165,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.throbber.Play()
 
     def receive_diskinfo(self, info):
-        """Get new Disk info and to call the function that updates the choiceboxes"""
+        """
+        Get new Disk info, stop the throbber and call the function that updates
+        the choiceboxes for input and output file selection.
+        """
         logger.info("MainWindow().receive_diskinfo(): Getting new Disk information...")
         global DISKINFO
         DISKINFO = info
@@ -1075,7 +1192,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.panel.Layout()
 
     def update_file_choices(self):
-        """Update the Disk entries in the choiceboxes"""
+        """
+        Update the disk entries in the choiceboxes
+        """
+
         logger.info("MainWindow().update_file_choices(): Updating the GUI with the "
                     "new Disk information...")
 
@@ -1113,8 +1233,30 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.update_status_bar("Ready.")
 
     def file_choice_handler(self, _type, user_selection, default_dir, wildcard, style):
-        """Handle file dialogs for set_input_file, set_output_file, and set_map_file"""
+        """
+        Handle file dialogs for set_input_file, set_output_file, and set_map_file.
+
+        Args:
+            _type (string).         The type of file we're handling. "Input",
+                                    "Output", or "Map".
+
+            user_selection (string):        The option the user selected in the
+                                            choice box.
+
+            default_dir (string):           The default directory any file dialogs
+                                            are to use.
+
+            wildcard (string):              The wildcard that any file dialogs
+                                            are to use.
+
+            style (int):                    The style that any file dialogs are
+                                            to use.
+
+        """
+
         #pylint: disable=too-many-arguments
+        #TODO Why return True instead of nothing?
+        #TODO Refactor, too long.
         #Setup.
         key = _type+"File"
 
@@ -1320,9 +1462,11 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.panel.Layout()
 
     def set_input_file(self, event=None): #pylint: disable=unused-argument
-        """Get the input file/Disk and set a variable to the selected value"""
+        """
+        Get the input file/Disk by calling self.file_choice_handler.
+        """
         logger.debug("MainWindow().SelectInputFile(): Calling File Choice Handler...")
-
+        #TODO Can we get rid of this function?
         #TODO Later workaround for macOS?
         default_dir = "/dev"
 
@@ -1332,15 +1476,23 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                  style=wx.FD_OPEN)
 
     def set_output_file(self, event=None): #pylint: disable=unused-argument
-        """Get the output file/Disk and set a variable to the selected value"""
+        """
+        Get the output file/Disk by calling self.file_choice_handler.
+        """
         logger.debug("MainWindow().SelectInputFile(): Calling File Choice Handler...")
+
+        #TODO Can we get rid of this function?
+
         self.file_choice_handler(_type="Output",
                                  user_selection=self.output_choice_box.GetStringSelection(),
                                  default_dir=self.user_homedir, wildcard=self.output_wildcard,
                                  style=wx.FD_SAVE)
 
     def set_map_file(self, event=None): #pylint: disable=unused-argument
-        """Get the map file position/name and set a variable to the selected value"""
+        """
+        Get the map file position/name by calling self.file_choice_handler.
+        """
+
         logger.debug("MainWindow().SelectMapFile(): Calling File Choice Handler...")
         self.file_choice_handler(_type="Map",
                                  user_selection=self.map_choice_box.GetStringSelection(),
@@ -1348,7 +1500,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                  style=wx.FD_SAVE)
 
     def show_userguide(self, event=None): #pylint: disable=unused-argument,no-self-use
-        """Open a web browser and show the user guide"""
+        """
+        Open a web browser and show the user guide.
+        """
         logger.debug("MainWindow().show_userguide(): Opening browser...")
 
         if LINUX:
@@ -1362,7 +1516,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                          shell=True)
 
     def on_about(self, event=None): #pylint: disable=unused-argument, no-self-use
-        """Show the about box"""
+        """
+        Show the about box.
+        """
+
         logger.debug("MainWindow().on_about(): Showing about box...")
         aboutbox = wxAboutDialogInfo()
         aboutbox.SetIcon(APPICON)
@@ -1427,11 +1584,15 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             dlg.Destroy()
 
     def show_dev_info(self, event=None): #pylint: disable=unused-argument
-        """Show the Disk Information Window"""
+        """
+        Show the Disk Information Window.
+        """
         DiskInfoWindow(self).Show()
 
     def show_privacy_policy(self, event=None): #pylint: disable=unused-argument
-        """Show PrivPolWindow"""
+        """
+        Show the Privacy Policy Window
+        """
         PrivPolWindow(self).Show()
 
     def check_for_updates(self, event=None, starting_up=False): #pylint: disable=unused-argument
@@ -1440,6 +1601,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         on my website. If some startup, only display info to the
         user if there was an update. Otherwise (aka requested by user),
         always display the information.
+
+        Kwargs:
+            starting_up[=True] (boolean).   If the GUI is starting up, specify
+                                            True, otherwise leave unspecified.
         """
         logger.info("MainWindow().check_for_updates(): Checking for updates...")
 
@@ -1570,11 +1735,11 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                              wx.OK | wx.ICON_INFORMATION | wx.STAY_ON_TOP,
                              pos=wx.DefaultPosition).ShowModal()
 
-
     def on_control_button(self, event=None): #pylint: disable=unused-argument
         """
         Handle events from the control button, as its purpose changes during and after recovery.
-        Call self.on_abort() or self.on_start() as required.
+        Call self.on_abort() when clicked during a recovery.
+        Call self.on_start() otherwise.
         """
 
         if SETTINGS["RecoveringData"]:
@@ -1584,7 +1749,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             self.on_start()
 
     def on_start(self): #pylint: disable=too-many-statements
-        """Check the settings, prepare to start ddrescue and start the backend thread."""
+        """
+        Check the settings, prepare to start ddrescue, unmount the input file
+        if needed, and start the backend thread.
+        """
         logger.info("MainWindow().on_start(): Checking settings...")
         self.update_status_bar("Preparing to start ddrescue...")
 
@@ -1747,23 +1915,46 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             self.update_status_bar("Ready.")
 
     #The next functions are to update the display with info from the backend.
-    def set_progress_bar_range(self, message):
-        """Set the progressbar's range"""
-        logger.debug("MainWindow().set_progress_bar_range(): Setting range "+unicode(message)
+    def set_progress_bar_range(self, _range):
+        """
+        Set the progress bar's range.
+
+        Args:
+            _range (int).               The range to set the progress bar to use.
+        """
+
+        logger.debug("MainWindow().set_progress_bar_range(): Setting range "+unicode(_range)
                      + " for self.progress_bar...")
 
-        self.progress_bar.SetRange(message)
+        self.progress_bar.SetRange(_range)
 
-    def update_time_elapsed(self, line):
-        """Update the time elapsed text"""
-        self.time_elapsed_text.SetLabel(line)
+    def update_time_elapsed(self, time_elapsed):
+        """
+        Update the time elapsed text.
+
+        Args:
+            time_elapsed (string).      The label to use for the time elapsed
+                                        text.
+        """
+        self.time_elapsed_text.SetLabel(time_elapsed)
 
     def update_time_remaining(self, time_left):
-        """Update the time remaining text"""
+        """
+        Update the time remaining text.
+
+        Args:
+            time_remaining (string).    The label to use for the time remaining
+                                        text.
+        """
         self.time_remaining_text.SetLabel("Time Remaining: "+time_left)
 
     def update_recovered_data(self, recovered_data):
-        """Update the recovered data info"""
+        """
+        Update the recovered data info.
+
+        Args:
+            recovered_data (string).    The amount of data recovered so far.
+        """
         #Compatibility with wxpython < 4.
         if CLASSIC_WXPYTHON:
             self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
@@ -1771,7 +1962,12 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.list_ctrl.SetItem(0, 1, label=recovered_data)
 
     def update_error_size(self, error_size):
-        """Update the error size info"""
+        """
+        Update the error size info.
+
+        Args:
+            error_size (string).    The amount of unreadable data so far.
+        """
         #Compatibility with wxpython < 4.
         if CLASSIC_WXPYTHON:
             self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
@@ -1779,7 +1975,12 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.list_ctrl.SetItem(1, 1, label=error_size)
 
     def update_current_read_rate(self, current_read_rate):
-        """Update the current read rate info"""
+        """
+        Update the current read rate info.
+
+        Args:
+            current_rate_rate (string).     The current read rate.
+        """
         #Compatibility with wxpython < 4.
         if CLASSIC_WXPYTHON:
             self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
@@ -1787,7 +1988,12 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.list_ctrl.SetItem(2, 1, label=current_read_rate)
 
     def update_average_read_rate(self, average_read_rate):
-        """Update the average read rate info"""
+        """
+        Update the average read rate info.
+
+        Args:
+            average_read_rate (string).     The average read rate.
+        """
         #Compatibility with wxpython < 4.
         if CLASSIC_WXPYTHON:
             self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
@@ -1795,7 +2001,12 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.list_ctrl.SetItem(3, 1, label=average_read_rate)
 
     def update_num_errors(self, num_errors):
-        """Update the num errors info"""
+        """
+        Update the num errors info.
+
+        Args:
+            num_errors (string).        The number of read errors so far.
+        """
         #Compatibility with wxpython < 4.
         if CLASSIC_WXPYTHON:
             self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
@@ -1803,7 +2014,13 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.list_ctrl.SetItem(4, 1, label=num_errors)
 
     def update_input_pos(self, input_pos):
-        """Update the input position info"""
+        """
+        Update the input position info.
+
+        Args:
+            input_pos (string).         The current position in the input file
+                                        or device.
+        """
         #Compatibility with wxpython < 4.
         if CLASSIC_WXPYTHON:
             self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
@@ -1811,7 +2028,13 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.list_ctrl.SetItem(5, 1, label=input_pos)
 
     def update_output_pos(self, output_pos):
-        """Update the output position info"""
+        """
+        Update the output position info.
+
+        Args:
+            output_pos (string).        The current position in the output file
+                                        or device.
+        """
         #Compatibility with wxpython < 4.
         if CLASSIC_WXPYTHON:
             self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
@@ -1819,7 +2042,14 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.list_ctrl.SetItem(6, 1, label=output_pos)
 
     def update_time_since_last_read(self, last_read):
-        """Update the time since last successful read info"""
+        """
+        Update the time since last successful read info.
+
+        Args:
+            last_read (string).     The amount of time that has passed since
+                                    ddrescue successfully read any data from
+                                    the input file.
+        """
         #Compatibility with wxpython < 4.
         if CLASSIC_WXPYTHON:
             self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
@@ -1827,7 +2057,15 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.list_ctrl.SetItem(7, 1, label=last_read)
 
     def update_output_box(self, line):
-        """Update the output box"""
+        """
+        Append the given line to the contents of the output box. Counts carriage
+        returns and up-one-lines so that an auxiliary method
+        (add_line_to_output_box) can handle them.
+
+        Args:
+            line (string).          The line to add.
+        """
+
         #TODO This should probably be implemented as part of the custom TextCtrl.
 
         crs = []
@@ -1859,16 +2097,32 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                 self.add_line_to_output_box(temp_line, crs, uols, char_number)
                 temp_line = ""
 
-    def add_line_to_output_box(self, line, crs, uols, char_number):
+    def add_line_to_output_box(self, data, crs, uols, char_number):
         """
-        Adds a new line to the custom output box.
-        Also handles calling carriage_return() and
-        up_one_line() when required.
+        Adds a new line to the custom output box. Also handles calling
+        carriage_return() and up_one_line() when required. Receives the data
+        chunks and other information from update_output_box.
+
+        Args:
+            data (string).                      The chunk of text to add to the
+                                                output box.
+
+            crs (list).                         A list of character numbers where
+                                                the character is a carriage
+                                                return.
+
+            uols (list).                        As above, for up-one-line
+                                                sequences.
+
+            char_number (int).                  The character number we are at in
+                                                the line (the character after
+                                                the last character in our chunk
+                                                of text).
         """
 
         #TODO This should probably be implemented as part of the custom TextCtrl.
         insertion_point = self.output_box.GetInsertionPoint()
-        self.output_box.Replace(insertion_point, insertion_point+len(line), line)
+        self.output_box.Replace(insertion_point, insertion_point+len(data), data)
 
         if char_number in crs:
             self.output_box.carriage_return()
@@ -1877,17 +2131,34 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             self.output_box.up_one_line()
 
     def update_status_bar(self, messeage):
-        """Update the statusbar with a new message"""
+        """
+        Update the status bar with a new message.
+
+        Args:
+            message (string).           The message to set the status bar to.
+        """
         logger.debug("MainWindow().update_status_bar(): New status bar message: "+messeage)
         self.status_bar.SetStatusText(messeage, 0)
 
     def update_progress(self, recovered_data, disk_capacity):
-        """Update the progressbar and the title"""
+        """
+        Update the progress bar and the title.
+
+        Args:
+            recovered_data (int).           The amount of data currently recovered
+                                            (units vary based on disk size).
+
+            disk_capacity (int).            The capacity (or size) of the input
+                                            file or disk.
+        """
         self.progress_bar.SetValue(recovered_data)
         self.SetTitle(unicode(int(recovered_data * 100 // disk_capacity))+"%" + " - DDRescue-GUI")
 
     def on_abort(self):
-        """Abort the recovery"""
+        """
+        Abort the recovery.
+        """
+
         #Ask ddrescue to exit.
         logger.info("MainWindow().on_abort(): Attempting to stop ddrescue...")
 
@@ -1912,7 +2183,11 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             wx.CallLater(10000, self.prompt_to_kill_ddrescue)
 
     def prompt_to_kill_ddrescue(self):
-        """Prompts the user to try killing ddrescue again if it's not exiting"""
+        """
+        Prompts the user to try killing ddrescue again if it's not exiting.
+        This sometimes happens if the system is overloaded, or if a disk is
+        taking a very long time to timeout/fail a read operation.
+        """
         #If we're still recovering data, prompt the user to try killing ddrescue again.
         if SETTINGS["RecoveringData"]:
             logger.warning("MainWindow().prompt_to_kill_ddrescue(): ddrescue is still running 5 "
@@ -1945,8 +2220,27 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             dlg.Destroy()
 
     def on_recovery_ended(self, result, disk_capacity, recovered_data, return_code=None):
-        """Called to show MainWindow when a recovery is completed or aborted by the user"""
+        """
+        Called by the backend thread to show FinishedWindow and update the
+        main window when a recovery is completed or aborted by the user, or
+        when a recovery errors out for some reason.
+
+        Args:
+            result (string).        The reason why the recovery ended. Used to
+                                    let the user know what is happening. Values
+                                    are "NoInitialStatus", "BadReturnCode", and
+                                    "Success".
+
+            disk_capacity (int).    The capacity of the input file or disk.
+            recovered_data (int).   The amount of data we recovered.
+
+        Kwargs:
+            return_code[=None] (int).       GNU ddrescue's return code. Useful if
+                                            the recovery failed for some reason.
+        """
+
         #Return immediately if session is ending.
+        #TODO Why return True instead of None?
         if session_ending:
             return True
 
@@ -2052,7 +2346,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
     def restart(self):
         """
-        Restart and reset MainWindow, so MainWindow is as it was when DDRescue-GUI was started
+        Restart and reset MainWindow, so MainWindow is as it was when
+        DDRescue-GUI was started.
         """
 
         logger.info("MainWindow().restart(): Reloading and resetting MainWindow...")
@@ -2102,8 +2397,11 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         logger.info("MainWindow().restart(): Done. Waiting for events...")
         self.update_status_bar("Ready.")
 
-    def on_session_end(self, event): #FIXME
-        """Attempt to veto e.g. a shutdown/logout event if recovering data."""
+    def on_session_end(self, event):
+        """
+        Attempt to veto e.g. a shutdown/logout event if recovering data.
+        """
+        #FIXME This does not seem to work on Linux. What about macOS?
         #Check if we can veto the shutdown.
         logging.warning("MainWindow().on_session_end(): Attempting to veto system shutdown / "
                         "logoff...")
@@ -2128,12 +2426,26 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             self.on_exit()
 
     def on_exit(self, event=None, just_finished_recovery=False): #pylint: disable=too-many-branches,unused-argument,line-too-long
-        """Exit DDRescue-GUI, if certain conditions are met"""
+        """
+        Exit DDRescue-GUI, if certain conditions are met (for example we
+        aren't in the middle of a recovery). Also offer to save the log
+        file for debugging / error-reporting purposes.
+
+        Kwargs:
+            just_finished_recovery (bool).
+                True -                  Display FinishedWindow if user cancels
+                                        the exit attempt.
+
+                False -                 The default, do nothing if user cancels
+                                        the exit attempt.
+        """
+
         logger.info("MainWindow().on_exit(): Preparing to exit...")
 
         #Check if the session is ending.
         if session_ending:
             #Stop the backend thread, delete the log file and exit ASAP.
+            #FIXME check this works.
             self.on_abort()
             logging.shutdown()
             os.remove("/tmp/ddrescue-gui.log")
