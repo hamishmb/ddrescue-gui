@@ -6,9 +6,6 @@
 Welcome to DDRescue-GUI's Developer documentation!
 ==================================================
 
-.. note::
-    Most of the docstrings in this project don't follow any particular format at this time, and don't always provide helpful information. This will be remedied in due course.
-
 Contents:
 
 .. toctree::

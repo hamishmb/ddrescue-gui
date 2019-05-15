@@ -454,7 +454,7 @@ class CustomTextCtrl(wx.TextCtrl): #pylint: disable=too-many-ancestors
             int.                        The position.
 
         .. note::
-            This is also helpful for LINUX because the built-in one has a quirk:
+            This is also helpful for Linux because the built-in one has a quirk:
             when you're at the end of the text, it always returns -1.
 
         .. note::
@@ -514,7 +514,7 @@ class CustomTextCtrl(wx.TextCtrl): #pylint: disable=too-many-ancestors
 
     def up_one_line(self):
         """
-        Handles '\x1b[A' (control sequence to go up one line) in the output. This
+        Handles (control sequence to go up one line) in the output. This
         is done by moving the insertion point so we are up one line, but in the
         same column (if possible).
         """
@@ -2231,8 +2231,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                     are "NoInitialStatus", "BadReturnCode", and
                                     "Success".
 
-            disk_capacity (int).    The capacity of the input file or disk.
-            recovered_data (int).   The amount of data we recovered.
+            disk_capacity (string).    The capacity of the input file or disk.
+            recovered_data (string).   The amount of data we recovered.
 
         Kwargs:
             return_code[=None] (int).       GNU ddrescue's return code. Useful if
@@ -2569,7 +2569,13 @@ class DiskInfoWindow(wx.Frame): #pylint: disable=too-many-ancestors
     """
 
     def __init__(self, parent):
-        """Initialize DiskInfoWindow"""
+        """
+        Initialize DiskInfoWindow.
+
+        Args:
+            parent (object).                The parent window that started this
+                                            window.
+        """
         wx.Frame.__init__(self, wx.GetApp().TopWindow, title="DDRescue-GUI - Disk Information",
                           size=(780, 310), style=wx.DEFAULT_FRAME_STYLE)
 
@@ -2600,7 +2606,9 @@ class DiskInfoWindow(wx.Frame): #pylint: disable=too-many-ancestors
         logger.info("DiskInfoWindow().__init__(): Ready. Waiting for events...")
 
     def create_widgets(self):
-        """Create all widgets for DiskInfoWindow"""
+        """
+        Create all widgets for DiskInfoWindow
+        """
         self.title_text = wx.StaticText(self.panel, -1, "Here are all the detected disks on "
                                         "your computer")
 
@@ -2621,7 +2629,9 @@ class DiskInfoWindow(wx.Frame): #pylint: disable=too-many-ancestors
         self.throbber.SetClientSize(wx.Size(30, 30))
 
     def setup_sizers(self):
-        """Set up the sizers for DiskInfoWindow"""
+        """
+        Set up the sizers for DiskInfoWindow
+        """
         #Make a button boxsizer.
         bottom_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -2646,14 +2656,18 @@ class DiskInfoWindow(wx.Frame): #pylint: disable=too-many-ancestors
         main_sizer.SetSizeHints(self)
 
     def bind_events(self):
-        """Bind all events for DiskInfoWindow"""
+        """
+        Bind all events for DiskInfoWindow
+        """
         self.Bind(wx.EVT_BUTTON, self.get_diskinfo, self.refresh_button)
         self.Bind(wx.EVT_BUTTON, self.on_exit, self.okay_button)
         self.Bind(wx.EVT_SIZE, self.on_size)
         self.Bind(wx.EVT_CLOSE, self.on_exit)
 
     def on_size(self, event=None):
-        """Auto resize the list_ctrl columns"""
+        """
+        Auto resize the list_ctrl columns
+        """
         width = self.list_ctrl.GetClientSize()[0]
 
         self.list_ctrl.SetColumnWidth(0, int(width * 0.15))
@@ -2667,7 +2681,10 @@ class DiskInfoWindow(wx.Frame): #pylint: disable=too-many-ancestors
             event.Skip()
 
     def get_diskinfo(self, event=None): #pylint: disable=unused-argument
-        """Call the thread to get Disk info, disable the refresh button, and start the throbber"""
+        """
+        Call the thread to get Disk info, disable the refresh button, and start
+        the throbber
+        """
         logger.info("DiskInfoWindow().UpdateDevInfo(): Generating new Disk info...")
         self.refresh_button.Disable()
         self.throbber.Play()
@@ -2676,7 +2693,10 @@ class DiskInfoWindow(wx.Frame): #pylint: disable=too-many-ancestors
     def receive_diskinfo(self, info):
         """
         Get Disk data, call self.update_list_ctrl(), and then call
-        MainWindow().update_file_choices() to refresh the file choices with the new info
+        MainWindow().update_file_choices() to refresh the file choices with the new info.
+
+        Args:
+            info (dict).            The new disk information.
         """
 
         global DISKINFO
@@ -2697,7 +2717,9 @@ class DiskInfoWindow(wx.Frame): #pylint: disable=too-many-ancestors
         self.refresh_button.Enable()
 
     def update_list_ctrl(self, event=None): #pylint: disable=unused-argument
-        """Update the list control"""
+        """
+        Update the list control
+        """
         logger.debug("DiskInfoWindow().update_list_ctrl(): Clearing all objects in list ctrl...")
         self.list_ctrl.ClearAll()
 
@@ -2746,7 +2768,9 @@ class DiskInfoWindow(wx.Frame): #pylint: disable=too-many-ancestors
         self.on_size()
 
     def on_exit(self, event=None): #pylint: disable=unused-argument
-        """Exit DiskInfoWindow"""
+        """
+        Exit DiskInfoWindow
+        """
         logger.info("DiskInfoWindow().on_exit(): Closing DiskInfoWindow...")
         self.Destroy()
 
@@ -2758,7 +2782,9 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
     """
 
     def __init__(self, parent):
-        """Initialize SettingsWindow"""
+        """
+        Initialize SettingsWindow
+        """
         wx.Frame.__init__(self, wx.GetApp().TopWindow, title="DDRescue-GUI - Settings",
                           size=(569, 479), style=wx.DEFAULT_FRAME_STYLE)
 
@@ -2802,14 +2828,18 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         logger.info("SettingsWindow().__init__(): Ready. Waiting for events...")
 
     def create_buttons(self):
-        """Create all buttons for SettingsWindow"""
+        """
+        Create all buttons for SettingsWindow
+        """
         self.fast_button = wx.Button(self.panel, -1, "Set to fastest recovery")
         self.best_button = wx.Button(self.panel, -1, "Set to best recovery")
         self.default_button = wx.Button(self.panel, -1, "Balanced (default)")
         self.exit_button = wx.Button(self.panel, -1, "Save settings and close")
 
     def create_text(self):
-        """Create all text for SettingsWindow"""
+        """
+        Create all text for SettingsWindow
+        """
         self.title_text = wx.StaticText(self.panel, -1, "Welcome to settings.")
         self.bad_sector_retries_text = wx.StaticText(self.panel, -1, "No. of times to retry "
                                                      "bad sectors:")
@@ -2862,7 +2892,9 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         self.set_default_recovery_settings()
 
     def setup_sizers(self):
-        """Set up all sizers for SettingsWindow"""
+        """
+        Set up all sizers for SettingsWindow.
+        """
         #Make a sizer for each choicebox with text, and add the objects for each sizer.
         #Retry bad sectors sizer.
         bad_sector_retries_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -2917,7 +2949,9 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         main_sizer.SetSizeHints(self)
 
     def bind_events(self):
-        """Bind all events for SettingsWindow"""
+        """
+        Bind all events for SettingsWindow.
+        """
         self.Bind(wx.EVT_CHECKBOX, self.set_soft_run, self.no_split_check_box)
         self.Bind(wx.EVT_BUTTON, self.set_default_recovery_settings, self.default_button)
         self.Bind(wx.EVT_BUTTON, self.set_fast_recovery_settings, self.fast_button)
@@ -2926,7 +2960,9 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         self.Bind(wx.EVT_CLOSE, self.save_options)
 
     def setup_options(self):
-        """Set all options in the window so we remember them if the user checks back"""
+        """
+        Set all options in the window so we remember them if the user checks back
+        """
         #Checkboxes:
         #Direct disk access setting.
         if SETTINGS["DirectAccess"] == "-d":
@@ -3012,7 +3048,9 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
             self.set_default_recovery_settings()
 
     def set_default_recovery_settings(self, event=None): #pylint: disable=unused-argument
-        """Set selections for the Choiceboxes to default settings"""
+        """
+        Set selections for the Choiceboxes to default settings.
+        """
         logger.debug("SettingsWindow().set_default_recovery_settings(): Setting up SettingsWindow "
                      "for default recovery settings...")
 
@@ -3025,7 +3063,9 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         self.default_button.SetFocus()
 
     def set_fast_recovery_settings(self, event=None): #pylint: disable=unused-argument
-        """Set selections for the Choiceboxes to fast recovery settings"""
+        """
+        Set selections for the Choiceboxes to fast recovery settings.
+        """
         logger.debug("SettingsWindow().set_fast_recovery_settings(): Setting up SettingsWindow "
                      "for fast recovery settings...")
 
@@ -3038,7 +3078,9 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         self.fast_button.SetFocus()
 
     def set_best_recovery_settings(self, event=None): #pylint: disable=unused-argument
-        """Set selections for the Choiceboxes to best recovery settings"""
+        """
+        Set selections for the Choiceboxes to best recovery settings.
+        """
         logger.debug("SettingsWindow().set_best_recovery_settings(): Setting up SettingsWindow "
                      "for best recovery settings...")
 
@@ -3051,7 +3093,9 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         self.best_button.SetFocus()
 
     def save_options(self, event=None): #pylint: disable=unused-argument
-        """Save all options, and exit SettingsWindow"""
+        """
+        Save all options, and exit SettingsWindow.
+        """
         logger.info("SettingsWindow().save_options(): Saving Options...")
 
         #Checkboxes:
@@ -3198,7 +3242,13 @@ class PrivPolWindow(wx.Frame):
     """
 
     def __init__(self, parent):
-        """Initialize PrivPolWindow"""
+        """
+        Initialize PrivPolWindow
+
+        Args:
+            parent (object).                The parent window that started the
+                                            thread.
+        """
         wx.Frame.__init__(self, parent=wx.GetApp().TopWindow,
                           title="DDRescue-GUI - Privacy Policy", size=(400, 310),
                           style=wx.DEFAULT_FRAME_STYLE)
@@ -3223,7 +3273,9 @@ class PrivPolWindow(wx.Frame):
         logger.debug("PrivPolWindow().__init__(): Ready. Waiting for events...")
 
     def create_widgets(self):
-        """Create all widgets for PrivPolWindow"""
+        """
+        Create all widgets for PrivPolWindow
+        """
         #Make a text box to contain the policy's text.
         self.text_box = wx.TextCtrl(self.panel, -1, "",
                                     style=wx.TE_MULTILINE|wx.TE_READONLY|wx.TE_WORDWRAP)
@@ -3238,7 +3290,9 @@ class PrivPolWindow(wx.Frame):
         self.close_button = wx.Button(self.panel, -1, "Okay")
 
     def setup_sizers(self):
-        """Set up sizers for PrivPolWindow"""
+        """
+        Set up sizers for PrivPolWindow
+        """
         #Make a boxsizer.
         main_sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -3252,12 +3306,16 @@ class PrivPolWindow(wx.Frame):
         main_sizer.SetSizeHints(self)
 
     def bind_events(self):
-        """Bind events so we can close this window."""
+        """
+        Bind events so we can close this window.
+        """
         self.Bind(wx.EVT_BUTTON, self.on_close, self.close_button)
         self.Bind(wx.EVT_CLOSE, self.on_close)
 
     def on_close(self, event=None): #pylint: disable=unused-argument
-        """Close PrivPolWindow"""
+        """
+        Close PrivPolWindow.
+        """
         self.Destroy()
 
 #End Privacy Policy Window.
@@ -3270,7 +3328,18 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
     """
 
     def __init__(self, parent, disk_capacity, recovered_data):
-        """Initialize FinishedWindow"""
+        """
+        Initialize FinishedWindow.
+        Args:
+            parent (object).                The parent window that started the
+                                            thread.
+
+            disk_capacity (string).         The capacity (or size) of the output
+                                            file/device.
+
+            recovered_data (string).        The amount of data successfully
+                                            recovered from the output file/device.
+        """
         wx.Frame.__init__(self, wx.GetApp().TopWindow, title="DDRescue-GUI - Finished!",
                           size=(350, 120), style=wx.DEFAULT_FRAME_STYLE)
 
@@ -3305,13 +3374,17 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         logger.info("FinishedWindow().__init__(): Ready. Waiting for events...")
 
     def create_buttons(self):
-        """Create all buttons for FinishedWindow"""
+        """
+        Create all buttons for FinishedWindow.
+        """
         self.restart_button = wx.Button(self.panel, -1, "Reset")
         self.mount_button = wx.Button(self.panel, -1, "Mount Image/Disk")
         self.quit_button = wx.Button(self.panel, -1, "Quit")
 
     def create_text(self):
-        """Create all text for FinishedWindow"""
+        """
+        Create all text for FinishedWindow.
+        """
         self.stats_text = wx.StaticText(self.panel, -1, "Successfully recovered "
                                         + self.recovered_data+" out of "+self.disk_capacity+".")
 
@@ -3320,7 +3393,9 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         self.bottom_text = wx.StaticText(self.panel, -1, "What do you want to do now?")
 
     def setup_sizers(self):
-        """Set up all sizers for FinishedWindow"""
+        """
+        Set up all sizers for FinishedWindow.
+        """
         #Make a button boxsizer.
         button_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -3348,7 +3423,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
     def restart(self, event=None): #pylint: disable=unused-argument
         """
-        Close FinishedWindow and call MainWindow().restart() to re-display and reset MainWindow
+        Close FinishedWindow and call MainWindow().restart() to re-display and reset MainWindow.
         """
 
         logger.debug("FinishedWindow().restart(): Triggering restart and "
@@ -3358,7 +3433,10 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         self.Destroy()
 
     def on_mount(self, event=None): #pylint: disable=unused-argument
-        """Triggered when mount button is pressed"""
+        """
+        Triggered when mount button is pressed, used to initiate mounting the
+        output file/device.
+        """
         if self.mount_button.GetLabel() == "Mount Image/Disk":
             #Change some stuff if it worked.
             if self.mount_disk():
@@ -3391,7 +3469,9 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         wx.CallAfter(self.parent.update_status_bar, "Finished")
 
     def unmount_output_file(self, event=None): #pylint: disable=unused-argument
-        """Unmount the output file"""
+        """
+        Unmount the output file
+        """
         logger.info("FinishedWindow().unmount_output_file(): Attempting to unmount output file...")
         wx.CallAfter(self.parent.update_status_bar, "Unmounting output file. This may take a "
                      "few moments...")
@@ -3456,8 +3536,10 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         return True
 
     def mount_disk(self):
+        """
+        Mount the output file
+        """
         #TODO refactor me and break down into reusable chunks.
-        """Mount the output file"""
         logger.info("FinishedWindow().mount_disk(): Mounting Disk: "+SETTINGS["OutputFile"]+"...")
         wx.CallAfter(self.parent.update_status_bar, "Preparing to mount output file. "
                      "Please Wait...")
@@ -3768,7 +3850,9 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
             return True
 
     def on_exit(self, event=None): #pylint: disable=unused-argument
-        """Close FinishedWindow and trigger closure of MainWindow"""
+        """
+        Close FinishedWindow and trigger closure of MainWindow.
+        """
         logger.info("FinishedWindow().on_exit(): Closing FinishedWindow() and calling "
                     "self.parent.on_exit()...")
 
@@ -3776,7 +3860,9 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         wx.CallAfter(self.parent.on_exit, just_finished_recovery=True)
 
     def bind_events(self):
-        """Bind all events for FinishedWindow"""
+        """
+        Bind all events for FinishedWindow.
+        """
         self.Bind(wx.EVT_BUTTON, self.restart, self.restart_button)
         self.Bind(wx.EVT_BUTTON, self.on_mount, self.mount_button)
         self.Bind(wx.EVT_BUTTON, self.on_exit, self.quit_button)
@@ -3793,7 +3879,12 @@ class ElapsedTimeThread(threading.Thread):
     """
 
     def __init__(self, parent):
-        """Initialize and start the thread"""
+        """
+        Initialize and start the thread.
+
+        Args:
+            parent (object).                The parent window that started this
+                                            window."""
         self.parent = parent
 
         #This starts a little after ddrescue, so start at 2 seconds.
@@ -3803,7 +3894,9 @@ class ElapsedTimeThread(threading.Thread):
         self.start()
 
     def run(self):
-        """Main body of the thread, started with self.start()"""
+        """
+        Main body of the thread, started with self.start().
+        """
         while SETTINGS["RecoveringData"]:
             #Elapsed time.
             self.runtime_secs += 1
@@ -3841,7 +3934,12 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
     """
 
     def __init__(self, parent): #TODO refactor me.
-        """Initialize and start the thread."""
+        """
+        Initialize and start the thread.
+
+        Args:
+            parent (object).                The parent window that started the
+                                            thread."""
         self.parent = parent
 
         #Set the below values to sensible defaults to prevent errors if we never get
@@ -3869,7 +3967,9 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
         self.start()
 
     def run(self):
-        """Main body of the thread, started with self.start()"""
+        """
+        Main body of the thread, started with self.start().
+        """
         logger.debug("MainBackendThread(): Setting up ddrescue tools...")
 
         #Find suitable functions.
@@ -4186,7 +4286,22 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                 self.old_status = status
 
     def change_units(self, number_to_change, current_unit, required_unit):
-        """Convert data so it uses the correct unit of measurement"""
+        """
+        Convert data so it uses the correct unit of measurement.
+
+        Args:
+            number_to_change (int).         The number we wish to change the units
+                                            for.
+
+            current_unit (string).          The current unit of this number.
+            required_unit (string).         The required unit for this number.
+
+        Returns:
+            tuple(int, string).
+
+                1st element:                The number's value in its new unit.
+                2nd element:                The new unit.
+        """
         #Prepare for the change.
         old_unit_number = self.unit_list.index(current_unit[0])
         required_unit_number = self.unit_list.index(required_unit[0])
@@ -4199,7 +4314,12 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
     def calculate_time_remaining(self):
         """
         Calculate remaining time based on the average read rate and the current amount
-        of data recovered
+        of data recovered.
+
+        Returns:
+            string.             The remaining time in human-readable form eg
+                                "10.2 minutes", "4.3 days" etc, or "Unknown"
+                                if unable to calculate.
         """
 
         #Make sure everything's in the correct units.
