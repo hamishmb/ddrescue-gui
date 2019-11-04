@@ -773,17 +773,17 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                                                  'None (not recommended)'])
 
         if not LINUX:
-            self.map_choice_box.SetToolTip(wx.ToolTip("Please ignore the overwrite prompt given "
-                                                      + "here when restarting a recovery - the "
-                                                      + "file will not be overwritten"))
+            self.map_choice_box.SetToolTip(wx.ToolTip("Please ignore the macOS overwrite prompt "
+                                                      + "given here when restarting a recovery - "
+                                                      + "the file will not be overwritten"))
 
         self.output_choice_box = wx.Choice(self.panel, -1, choices=['-- Please Select --',
                                                                     'Specify Path/File'])
 
         if not LINUX:
-            self.output_choice_box.SetToolTip(wx.ToolTip("Please ignore the overwrite prompt given "
-                                                         + "here when restarting a recovery - the "
-                                                         + "file will not be overwritten"))
+            self.output_choice_box.SetToolTip(wx.ToolTip("Please ignore the macOS overwrite prompt "
+                                                         + "given here when restarting a recovery - "
+                                                         + "the file will not be overwritten"))
 
         #Set the default value.
         self.input_choice_box.SetStringSelection("-- Please Select --")
@@ -1783,7 +1783,17 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
             for disk in [SETTINGS["InputFile"], SETTINGS["OutputFile"]]:
                 if disk not in DISKINFO:
-                    #FIXME do a better check - in case output file is mounted.
+                    #Assume this is a partition, or that it can be unmounted like one.
+                    if BackendTools.is_mounted(disk):
+                        #Unmount the disk.
+                        logger.debug("MainWindow().on_start(): Unmounting "+disk+"...")
+
+                        self.update_status_bar("Unmounting "+disk+". This may take a "
+                                               "few moments...")
+
+                        wx.GetApp().Yield()
+                        retval = BackendTools.unmount_disk(disk)
+
                     logger.info("MainWindow().on_start(): "+disk+" is a file (or not in collected "
                                 "disk info), ignoring it...")
                     continue
