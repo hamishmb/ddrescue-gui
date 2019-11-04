@@ -1194,7 +1194,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         #Stop the throbber and enable stuff again.
         self.throbber.Stop()
-
+ 
         self.settings_button.Enable()
         self.update_disk_info_button.Enable()
         self.show_disk_info_button.Enable()
@@ -2893,7 +2893,7 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         """
 
         self.direct_disk_access_check_box = wx.CheckBox(self.panel, -1, "Use Direct Disk Access "
-                                                        "(Recommended)")
+                                                        "(Recommended, but untick if recovering from a file)")
 
         self.overwrite_output_file_check_box = wx.CheckBox(self.panel, -1, "Overwrite output "
                                                            "file/disk (Enable if recovering to "
