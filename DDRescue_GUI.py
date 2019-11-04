@@ -260,7 +260,6 @@ class GetDiskInformation(threading.Thread):
 
         except (SyntaxError, ValueError, TypeError) as error:
             #If this fails for some reason, just return an empty dictionary.
-            #TODO Don't know if only this exception can occur. Fix that.
             logger.error("GetDiskInformation().get_info(): Error: "+unicode(error))
             return {}
 
@@ -921,9 +920,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.info_sizer.Detach(self.output_box)
         self.output_box.Hide()
 
-        #Insert some empty space. (Fixes a GUI bug in newer versions of wxpython (> 2.8.11.1)).
-        #TODO Is this needed in wxPython 4?
-        self.info_sizer.Add((1, 1), 1, wx.EXPAND)
+        #Insert some empty space. (Fixes a GUI bug in classic wxPython).
+        if CLASSIC_WXPYTHON:
+            self.info_sizer.Add((1, 1), 1, wx.EXPAND)
 
         #Make the progress sizer.
         self.progress_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1052,7 +1051,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         #Force the width and height of the list_ctrl to be the right size,
         #as the sizer won't shrink it on wxpython > 2.8.12.1.
-        #TODO Even on wxpython 4?
+        #NB: Not needed on wxPython 4:
+        if not CLASSIC_WXPYTHON:
+            if event is not None:
+                event.Skip()
         #Get the width and height of the frame.
         width = self.GetClientSize()[0]
 
@@ -1067,7 +1069,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.list_ctrl.SetColumnWidth(1, list_ctrl_width - 150)
         self.list_ctrl.SetClientSize(wx.Size(list_ctrl_width, 240))
 
-        if event != None:
+        if event is not None:
             event.Skip()
 
     def on_detailed_info(self, event=None): #pylint: disable=unused-argument
@@ -1415,7 +1417,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             SETTINGS[key] = paths[user_selection]
 
         #Handle special cases if the file is the output file.
-        if _type == "Output" and SETTINGS[key] != None:
+        if _type == "Output" and SETTINGS[key] is not None:
             #Check with the user if the output file already exists.
             if os.path.exists(SETTINGS[key]):
                 logger.info("MainWindow().file_choice_handler(): Selected file already exists! "
@@ -2259,9 +2261,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """
 
         #Return immediately if session is ending.
-        #TODO Why return True instead of None?
         if session_ending:
-            return True
+            return
 
         self.disk_capacity = disk_capacity
         self.recovered_data = recovered_data
@@ -2696,7 +2697,7 @@ class DiskInfoWindow(wx.Frame): #pylint: disable=too-many-ancestors
         self.list_ctrl.SetColumnWidth(4, int(width * 0.15))
         self.list_ctrl.SetColumnWidth(5, int(width * 0.2))
 
-        if event != None:
+        if event is not None:
             event.Skip()
 
     def get_diskinfo(self, event=None): #pylint: disable=unused-argument
@@ -3235,7 +3236,7 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
 
         SETTINGS["InputFileBlockSize"] = function(SETTINGS["InputFile"])
 
-        if SETTINGS["InputFileBlockSize"] != None:
+        if SETTINGS["InputFileBlockSize"] is not None:
             logger.info("SettingsWindow().save_options(): BlockSize of input file: "
                         + SETTINGS["InputFileBlockSize"]+" (bytes).")
 
@@ -3498,7 +3499,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         wx.GetApp().Yield()
 
         #Try to umount the output file, if it has been mounted.
-        if self.output_file_mount_point != None:
+        if self.output_file_mount_point is not None:
             if BackendTools.unmount_disk(self.output_file_mount_point) == 0:
                 logger.info("FinishedWindow().unmount_output_file(): Successfully unmounted "
                             "output file...")
@@ -3523,7 +3524,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
             logger.debug("FinishedWindow().unmount_output_file(): Pulling down loop device...")
             cmd = "kpartx -d "+SETTINGS["OutputFile"]
 
-        elif LINUX is False and self.output_file_mount_point != None:
+        elif LINUX is False and self.output_file_mount_point is not None:
             #This will error on macOS if the file hasn't been attached, so skip it in that case.
             logger.debug("FinishedWindow().unmount_output_file(): Detaching the device that "
                          "represents the image...")
