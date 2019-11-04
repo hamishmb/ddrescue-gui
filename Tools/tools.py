@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 
-# pylint: disable=no-member
+# pylint: disable=no-member,logging-not-lazy
 #
 #Reason (no-member): False positives, API changes.
+#Reason (logging-not-lazy): This is a more readable way of logging.
 
 """
 This is the tools package for DDRescue-GUI.
@@ -38,6 +39,7 @@ import threading
 import shlex
 import logging
 import plistlib
+import json
 import time
 import wx
 
@@ -73,6 +75,13 @@ elif "wxMac" in wx.PlatformInfo:
 
 AUTH_DIALOG_OPEN = False
 APPICON = None
+DISKINFO = {}
+SETTINGS = {}
+
+#Define variables used by output file mounting code.
+output_file_mount_point = None
+output_file_type = None
+output_file_device_name = None
 
 #Set up logging.
 logger = logging.getLogger(__name__)
@@ -939,6 +948,389 @@ def get_mount_point(partition):
         logger.info("get_mount_point(): Didn't find it...")
 
     return mount_point
+
+def mount_output_file(force_mount_as_partition=False):
+    """
+    Mount the output file
+    """
+    global output_file_type
+
+    logger.info("mount_output_file(): Mounting Disk: "+SETTINGS["OutputFile"]+"...")
+
+    #Determine what type of OutputFile we have (Partition or Device).
+    (output_file_type, retval, output) = \
+    determine_output_file_type(SETTINGS, disk_info=DISKINFO)
+
+    #If retval != 0 report to user.
+    if retval != 0:
+        logger.error("mount_output_file(): Error! Warning the user...")
+        dlg = wx.MessageDialog(None, "Couldn't mount your output file. The hard disk "
+                               "image utility failed to run. This could mean your disk image "
+                               "is damaged, and you need to use a different tool to read it.",
+                               "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR)
+        dlg.ShowModal()
+        dlg.Destroy()
+        return False
+
+    if output_file_type == "Partition" or force_mount_as_partition:
+		#We have a partition.
+        logger.debug("mount_output_file(): Output file is a partition...")
+
+        #Attempt to mount the disk.
+        return mount_output_partition(output)
+
+    else:
+        #We have a device.
+        return mount_output_device(output)
+
+def mount_output_partition(output):
+    global output_file_mount_point
+    global output_file_device_name
+
+    if LINUX:
+        output_file_mount_point = "/mnt"+SETTINGS["InputFile"]
+        retval = mount_disk(partition=SETTINGS["OutputFile"],
+                                         mount_point=output_file_mount_point,
+                                         options="-r")
+
+    else:
+        retval, output = mac_run_hdiutil("attach "+SETTINGS["OutputFile"]
+                                                      +" -readonly -plist")
+
+    if retval != 0:
+        logger.error("mount_output_partition(): Error! Warning the user...")
+        dlg = wx.MessageDialog(None, "Couldn't mount your output file. Most "
+                               "probably, the filesystem is damaged and you'll need to "
+                               "use another tool to read it from here. It could also be "
+                               "that your OS doesn't support this filesystem, or that "
+                               "the recovery is incomplete, as that can sometimes cause "
+                               "this problem.", "DDRescue-GUI - Error!",
+                               style=wx.OK | wx.ICON_ERROR)
+
+        dlg.ShowModal()
+        dlg.Destroy()
+        return False
+
+    if LINUX:
+        #Finished on LINUX.
+        logger.info("mount_output_partition(): Success! Waiting for user to finish "
+                    "with it and prompt to unmount it...")
+
+        return True
+
+    else:
+        #More steps required on macOS.
+        output_file_device_name, output_file_mount_point, result \
+        = mac_get_device_name_mount_point(output)
+
+        #Still an issue on py3 builds?
+        if result == "UnicodeError":
+            logger.error("mount_output_partition(): FIXME: Couldn't parse output of "
+                         "hdiutil mount due to UnicodeDecodeError. Cleaning up and "
+                         "warning user...")
+
+            unmount_output_file()
+            dlg = wx.MessageDialog(None, "FIXME: Couldn't parse output of hdiutil "
+                                   "mount due to UnicodeDecodeError.",
+                                   "DDRescue-GUI - Error", style=wx.OK | wx.ICON_ERROR)
+
+            dlg.ShowModal()
+            dlg.Destroy()
+            return False
+
+        logger.info("mount_output_partition(): Success! Waiting for user to finish "
+                    "with it and prompt to unmount it...")
+
+        return True
+
+def mount_output_device(output):
+    global output_file_mount_point
+    global output_file_device_name
+
+    logger.debug("mount_output_file(): Output file isn't a partition! Getting "
+                     "list of contained partitions...")
+
+    if LINUX:
+        #Create loop devices for all contained partitions.
+        logger.info("mount_output_file(): Creating loop device...")
+        start_process(cmd="kpartx -a "
+                                   + SETTINGS["OutputFile"],
+                                   return_output=False, privileged=True)
+
+        #Do a part probe to make sure the loop device has been searched.
+        start_process(cmd="partprobe", return_output=False,
+                                   privileged=True)
+
+        #Get some Disk information.
+        lsblk_output = start_process(cmd="lsblk -J -o NAME,FSTYPE,SIZE",
+                                                  return_output=True,
+                                                  privileged=True)[1].split("\n")
+
+        #Remove any errors from lsblk in the output.
+        cleaned_lsblk_output = []
+
+        for line in lsblk_output:
+            if "lsblk:" not in line:
+                cleaned_lsblk_output.append(line)
+
+        lsblk_output = '\n'.join(cleaned_lsblk_output)
+
+        #Parse into a dictionary w/ json.
+        try:
+            lsblk_output = json.loads(lsblk_output)
+
+        except ValueError as error:
+            logger.error("mount_output_file(): Couldn't find any partitions "
+                         "to mount! This could indicate a bug in the GUI, or a problem "
+                         "with your recovered image. It's possible that the data you "
+                         "recovered is partially corrupted, and you need to use "
+                         "another tool to extract meaningful data from it. Error:"
+                         +unicode(error))
+
+            dlg = wx.MessageDialog(None, "Couldn't find any partitions to mount! "
+                                   "This could indicate a bug in the GUI, or a problem "
+                                   "with your recovered image. It's possible the data you "
+                                   "recovered is partially corrupted, and you need to use "
+                                   "another tool to extract meaningful data from it.",
+                                   "DDRescue-GUI - Error", style=wx.OK | wx.ICON_ERROR)
+            dlg.ShowModal()
+            dlg.Destroy()
+
+            return False
+
+    else:
+        hdiutil_imageinfo_output = output
+
+        #Get the block size of the image.
+        blocksize = hdiutil_imageinfo_output["partitions"]["block-size"]
+
+        output = hdiutil_imageinfo_output["partitions"]["partitions"]
+
+    #Create a nice list of Partitions for the user.
+    choices = []
+
+    #Linux: Get the name of the loop device and construct the choices.
+    if LINUX:
+        loop_device = "loop"+output[0].split()[0][4:-2]
+
+        #Get the info related to this partition.
+        for device in lsblk_output["blockdevices"]:
+            if device["name"] == loop_device:
+                for disk in device["children"]:
+                    #Add stuff, trying to keep it human-readable.
+                    if disk["fstype"] is None:
+                        disk["fstype"] = "None"
+
+                    choices.append("Partition "+disk["name"]
+                                   + ", Filesystem: "+disk["fstype"]
+                                   + ", Size: "+disk["size"])
+
+    #macOS only.
+    else:
+        for partition in output:
+            #Skip non-partition things and any "partitions" that don't have numbers (OS X).
+            if "partition-number" not in partition:
+                continue
+
+            choices.append("Partition "+unicode(partition["partition-number"])
+                           + ", with size "+unicode((partition["partition-length"] \
+                                                     * blocksize) // 1000000)
+                           +" MB") #TODO Later round to best size using Unitlist etc?
+
+    #Check that this list isn't empty.
+    if not choices:
+        #Last ditch-try: mount as partition.
+        if mount_output_file(force_mount_as_partition=True):
+            return True
+
+        logger.error("mount_output_file(): Couldn't find any partitions "
+                     "to mount! This could indicate a bug in the GUI, or a problem "
+                     "with your recovered image. It's possible that the data you "
+                     "recovered is partially corrupted, and you need to use "
+                     "another tool to extract meaningful data from it.")
+
+        dlg = wx.MessageDialog(None, "Couldn't find any partitions to mount! "
+                               "This could indicate a bug in the GUI, or a problem "
+                               "with your recovered image. It's possible the data you "
+                               "recovered is partially corrupted, and you need to use "
+                               "another tool to extract meaningful data from it.",
+                               "DDRescue-GUI - Error", style=wx.OK | wx.ICON_ERROR)
+        dlg.ShowModal()
+        dlg.Destroy()
+
+        return False
+
+    #Sort the list alphabetically (it can sometimes be out of order).
+    choices.sort()
+
+    #Ask the user which partition to mount.
+    logger.debug("mount_output_file(): Asking user which partition to mount...")
+    dlg = wx.SingleChoiceDialog(None, "Please select which partition you wish "
+                                "to mount.", "DDRescue-GUI - Select a Partition", choices)
+
+    #Respond to the user's action.
+    if dlg.ShowModal() != wx.ID_OK:
+        output_file_mount_point = None
+        logger.debug("mount_output_file(): User cancelled operation. "
+                     "Cleaning up...")
+
+        unmount_output_file()
+        return False
+
+    #Get selected partition's name.
+    selected_partition = dlg.GetStringSelection().split()[1].replace(",", "")
+
+    #Notify user of mount attempt.
+    logger.info("mount_output_file(): Mounting partition "
+                + selected_partition+" of "+SETTINGS["OutputFile"]+"...")
+
+    if LINUX:
+        partition_to_mount = "/dev/mapper/"+selected_partition
+        output_file_mount_point = "/mnt"+partition_to_mount
+
+        #Attempt to mount the disk.
+        retval = mount_disk(partition_to_mount, output_file_mount_point,
+                                         options="-r")
+
+    else:
+        #Attempt to mount the disk (this mounts all partitions inside),
+        #and parse the resulting plist.
+        (retval, mount_output) = \
+        mac_run_hdiutil("attach "+SETTINGS["OutputFile"]+" -readonly -plist")
+
+        mount_output = plistlib.readPlistFromString(mount_output.encode())
+
+    #Handle it if the mount attempt failed.
+    if retval != 0:
+        logger.error("mount_output_file(): Error! Warning the user...")
+        dlg = wx.MessageDialog(None, "Couldn't mount your output file. Most "
+                               "probably, the filesystem is damaged or unsupported "
+                               "and you'll need to use another tool to read it from "
+                               "here. It could also be that your recovery is incomplete, "
+                               "as that can sometimes cause this problem.",
+                               "DDRescue-GUI - Error!", style=wx.OK | wx.ICON_ERROR)
+
+        dlg.ShowModal()
+        dlg.Destroy()
+        return False
+
+    elif LINUX and retval == 0:
+        #End of the mount process for LINUX.
+        logger.info("mount_output_file(): Success! Waiting for user to finish "
+                    "with it and prompt to unmount it...")
+
+        return True
+
+    #On macOS, we aren't finished yet.
+    #We need to ge the device name for the partition we wanted to mount, and check it
+    #was actually mounted by the command earlier.
+    #Get the list of disks mounted.
+    disks = mount_output["system-entities"]
+
+    #Get the device name given to the output file.
+    #Set this so if we don't find our partition, we can still unmount the image
+    #when we report failure.
+    output_file_device_name = disks[0]["dev-entry"]
+
+    success = False
+
+    #Check that the filesystem the user wanted is among those that have been mounted.
+    for partition in disks:
+        disk = partition["dev-entry"]
+
+        if disk.split("s")[-1] == selected_partition:
+            #Check if the partition we want was mounted (hdiutil mounts all mountable
+            #partitions in the image automatically).
+            if "mount-point" in partition:
+                output_file_mount_point = partition["mount-point"]
+                success = True
+                break
+
+    if not success:
+        logger.info("mount_output_file(): Unsupported or damaged filesystem. "
+                    "Warning user and cleaning up...")
+
+        unmount_output_file()
+        dlg = wx.MessageDialog(None, "That filesystem is either not supported by "
+                               "macOS, or it is damaged (perhaps because the recovery is "
+                               "incomplete). Please try again and select a different "
+                               "partition.", "DDRescue-GUI - Error", wx.OK | wx.ICON_ERROR)
+
+        dlg.ShowModal()
+        dlg.Destroy()
+        return False
+
+    logger.info("mount_output_file(): Success! Waiting for user to finish with "
+                "it and prompt to unmount it...")
+
+    return True
+
+def unmount_output_file():
+    """
+    Unmount the output file
+    """
+    global output_file_mount_point
+    global output_file_type
+    global output_file_device_name
+
+    logger.info("unmount_output_file(): Attempting to unmount output file...")
+
+    #Try to umount the output file, if it has been mounted.
+    if output_file_mount_point is not None:
+        if unmount_disk(output_file_mount_point) == 0:
+            logger.info("unmount_output_file(): Successfully unmounted "
+                        "output file...")
+
+        else:
+            logger.error("unmount_output_file(): Error unmounting output "
+                         "file! Warning user...")
+
+            dlg = wx.MessageDialog(None, "It seems your output file is in use. "
+                                   "Please close all applications that could be using it "
+                                   "and try again.", "DDRescue-GUI - Warning",
+                                   style=wx.OK | wx.ICON_INFORMATION)
+
+            dlg.ShowModal()
+            dlg.Destroy()
+            return False
+
+    #Linux: Pull down loops if the OutputFile is a Device.
+    #OS X: Always detach the image's device file.
+    if output_file_type == "Device" and LINUX:
+        #This won't error on LINUX even if the loop device wasn't set up.
+        logger.debug("unmount_output_file(): Pulling down loop device...")
+        cmd = "kpartx -d "+SETTINGS["OutputFile"]
+
+    elif LINUX is False and output_file_mount_point is not None:
+        #This will error on macOS if the file hasn't been attached, so skip it in that case.
+        logger.debug("unmount_output_file(): Detaching the device that "
+                     "represents the image...")
+
+        cmd = "hdiutil detach "+output_file_device_name
+
+    else:
+        #LINUX and partition, or no command needed. Return True.
+        logger.debug("unmount_output_file(): No further action required.")
+        return True
+
+    if start_process(cmd=cmd, return_output=False, privileged=True) == 0:
+        logger.info("unmount_output_file(): Successfully pulled down "
+                    "loop device...")
+
+    else:
+        logger.info("unmount_output_file(): Failed to pull down the "
+                    "loop device! Warning user...")
+
+        dlg = wx.MessageDialog(None, "Couldn't finish unmounting your output file! "
+                               "Please close all applications that could be using it and "
+                               "try again.", "DDRescue-GUI - Warning",
+                               style=wx.OK | wx.ICON_INFORMATION)
+
+        dlg.ShowModal()
+        dlg.Destroy()
+        return False
+
+    return True
 
 def mount_disk(partition, mount_point, options=""):
     """
