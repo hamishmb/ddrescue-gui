@@ -772,8 +772,18 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                                                  'Specify Path/File',
                                                                  'None (not recommended)'])
 
+        if not LINUX:
+            self.map_choice_box.SetToolTip(wx.ToolTip("Please ignore the overwrite prompt given "
+                                                      + "here when restarting a recovery - the "
+                                                      + "file will not be overwritten"))
+
         self.output_choice_box = wx.Choice(self.panel, -1, choices=['-- Please Select --',
                                                                     'Specify Path/File'])
+
+        if not LINUX:
+            self.output_choice_box.SetToolTip(wx.ToolTip("Please ignore the overwrite prompt given "
+                                                         + "here when restarting a recovery - the "
+                                                         + "file will not be overwritten"))
 
         #Set the default value.
         self.input_choice_box.SetStringSelection("-- Please Select --")
@@ -1255,7 +1265,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """
 
         #pylint: disable=too-many-arguments
-        #TODO Why return True instead of nothing?
         #TODO Refactor, too long.
         #Setup.
         key = _type+"File"
@@ -1282,7 +1291,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             SETTINGS[key] = None
 
             #Return to prevent TypeErrors later.
-            return True
+            return
 
         #Handle having no map file.
         elif user_selection == "None (not recommended)":
@@ -1320,7 +1329,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
                 choice_box.SetStringSelection("-- Please Select --")
                 SETTINGS[key] = None
-                return True
+                return
 
             #Get the file.
             user_selection = file_dialog.GetPath()
@@ -1357,7 +1366,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                     dlg.Destroy()
                     choice_box.SetStringSelection("-- Please Select --")
                     SETTINGS[key] = None
-                    return True
+                    return
 
             logger.info("MainWindow().file_choice_handler(): User selected custom file: "
                         +user_selection+"...")
@@ -1440,7 +1449,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                     #Call Layout() on self.panel() to ensure it displays properly.
                     self.panel.Layout()
 
-                    return True
+                    return
 
                 dialog.Destroy()
 
