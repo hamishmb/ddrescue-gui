@@ -1185,6 +1185,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """
         logger.info("MainWindow().receive_diskinfo(): Getting new Disk information...")
         global DISKINFO
+        DISKINFO.clear()
         DISKINFO.update(info)
 
         #Update the file choices.
@@ -2732,6 +2733,7 @@ class DiskInfoWindow(wx.Frame): #pylint: disable=too-many-ancestors
         """
 
         global DISKINFO
+        DISKINFO.clear()
         DISKINFO.update(info)
 
         #Update the list control.
