@@ -2538,17 +2538,27 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                             dlg.Destroy()
 
                         else:
-                            #Copy it to the specified path. FIXME handle errors after refactoring.
-                            BackendTools.start_process(cmd="cp /tmp/ddrescue-gui.log "+_file,
-                                                       return_output=False)
+                            #Copy it to the specified path.
+                            if BackendTools.start_process("cp /tmp/ddrescue-gui.log "+_file) == 0:
+                                dlg = wx.MessageDialog(self.panel, "Done! DDRescue-GUI will now exit.",
+                                                       "DDRescue-GUI - Information",
+                                                       wx.OK | wx.ICON_INFORMATION)
 
-                            dlg = wx.MessageDialog(self.panel, "Done! DDRescue-GUI will now exit.",
-                                                   "DDRescue-GUI - Information",
-                                                   wx.OK | wx.ICON_INFORMATION)
+                                dlg.ShowModal()
+                                dlg.Destroy()
+                                break
 
-                            dlg.ShowModal()
-                            dlg.Destroy()
-                            break
+                            else:
+                                dlg = wx.MessageDialog(self.panel, "DDRescue-GUI does not have "
+                                                       + "permission to write to that file or "
+                                                       + "directory! Please select a new file "
+                                                       + "and try again.",
+                                                       "DDRescue-GUI - Information",
+                                                       wx.OK | wx.ICON_INFORMATION)
+
+                                dlg.ShowModal()
+                                dlg.Destroy()
+
 
                     else:
                         dlg = wx.MessageDialog(self.panel, "Okay, DDRescue-GUI will now exit "
