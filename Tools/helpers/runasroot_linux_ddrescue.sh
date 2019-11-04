@@ -15,5 +15,5 @@
 # You should have received a copy of the GNU General Public License
 # along with DDRescue-GUI.  If not, see <http://www.gnu.org/licenses/>.
 #Keep processes' stderr by redirecting it to stdout.
-$@ 2>&1
+"$@" 2>&1
 exit $?
