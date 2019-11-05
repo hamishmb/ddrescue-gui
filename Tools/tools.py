@@ -384,7 +384,7 @@ def get_helper(cmd):
 
     return "pkexec "+helper
 
-def start_process(cmd, return_output=False, privileged=False):
+def start_process(cmd, return_output=False, privileged=False, ignore_stderr=False):
     """
     Start a given process, and return the output and return value if needed.
 
@@ -398,6 +398,8 @@ def start_process(cmd, return_output=False, privileged=False):
         privileged[=False]          Whether to execute the command(s) with
                                     elevated privileges or not. If not specified
                                     the default is False.
+
+        ignore_stderr[=False]       If True, don't capture stderr from the subprocess.
 
     Returns:
         May return multiple types:
@@ -462,9 +464,16 @@ def start_process(cmd, return_output=False, privileged=False):
     cmd = shlex.split(cmd)
 
     logger.debug("start_process(): Starting process: "+' '.join(cmd))
-    runcmd = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                              stderr=subprocess.STDOUT, env=environ,
-                              shell=False)
+
+    if not ignore_stderr:
+        runcmd = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                  stderr=subprocess.STDOUT, env=environ,
+                                  shell=False)
+
+    else:
+        runcmd = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                  env=environ,
+                                  shell=False)
 
     #Save the output, and runcmd.returncode,
     #as they tend to reset fairly quickly. Handle unicode properly.
@@ -741,8 +750,17 @@ def determine_output_file_type(SETTINGS, disk_info): #pylint: disable=invalid-na
         if output_file_type == "Device":
             if LINUX:
                 retval, output = start_process(cmd="kpartx -l "+SETTINGS["OutputFile"],
-                                               return_output=True, privileged=True)
-                output = output.split("\n")
+                                               return_output=True, privileged=True,
+                                               ignore_stderr=True)
+
+                temp_output = output.split("\n")
+
+                #Clean it up.
+                output = []
+
+                for line in temp_output:
+                    if "loop" in line:
+                        output.append(line)
 
             else:
                 retval, output = mac_run_hdiutil(options="imageinfo "+SETTINGS["OutputFile"]
@@ -752,8 +770,17 @@ def determine_output_file_type(SETTINGS, disk_info): #pylint: disable=invalid-na
         if LINUX:
             #If list of partitions is empty (or 1 partition), we have a partition.
             retval, output = start_process(cmd="kpartx -l "+SETTINGS["OutputFile"],
-                                           return_output=True, privileged=True)
+                                           return_output=True, privileged=True,
+                                           ignore_stderr=True)
+
             output = output.split("\n")
+
+            #Clean it up.
+            output = []
+
+            for line in temp_output:
+                if "loop" in line:
+                    output.append(line)
 
         else:
             retval, output = mac_run_hdiutil(options="imageinfo "+SETTINGS["OutputFile"]
@@ -949,7 +976,7 @@ def get_mount_point(partition):
 
     return mount_point
 
-def mount_output_file(force_mount_as_partition=False):
+def mount_output_file():
     """
     Mount the output file
     """
@@ -972,7 +999,7 @@ def mount_output_file(force_mount_as_partition=False):
         dlg.Destroy()
         return False
 
-    if output_file_type == "Partition" or force_mount_as_partition:
+    if output_file_type == "Partition":
 		#We have a partition.
         logger.debug("mount_output_file(): Output file is a partition...")
 
@@ -990,12 +1017,12 @@ def mount_output_partition(output):
     if LINUX:
         output_file_mount_point = "/mnt"+SETTINGS["InputFile"]
         retval = mount_disk(partition=SETTINGS["OutputFile"],
-                                         mount_point=output_file_mount_point,
-                                         options="-r")
+                            mount_point=output_file_mount_point,
+                            options="-r")
 
     else:
         retval, output = mac_run_hdiutil("attach "+SETTINGS["OutputFile"]
-                                                      +" -readonly -plist")
+                                         +" -readonly -plist")
 
     if retval != 0:
         logger.error("mount_output_partition(): Error! Warning the user...")
@@ -1054,17 +1081,17 @@ def mount_output_device(output):
         #Create loop devices for all contained partitions.
         logger.info("mount_output_file(): Creating loop device...")
         start_process(cmd="kpartx -a "
-                                   + SETTINGS["OutputFile"],
-                                   return_output=False, privileged=True)
+                      + SETTINGS["OutputFile"],
+                      return_output=False, privileged=True)
 
         #Do a part probe to make sure the loop device has been searched.
         start_process(cmd="partprobe", return_output=False,
-                                   privileged=True)
+                      privileged=True)
 
         #Get some Disk information.
         lsblk_output = start_process(cmd="lsblk -J -o NAME,FSTYPE,SIZE",
-                                                  return_output=True,
-                                                  privileged=True)[1].split("\n")
+                                     return_output=True,
+                                     privileged=True)[1].split("\n")
 
         #Remove any errors from lsblk in the output.
         cleaned_lsblk_output = []
@@ -1139,10 +1166,6 @@ def mount_output_device(output):
 
     #Check that this list isn't empty.
     if not choices:
-        #Last ditch-try: mount as partition.
-        if mount_output_file(force_mount_as_partition=True):
-            return True
-
         logger.error("mount_output_file(): Couldn't find any partitions "
                      "to mount! This could indicate a bug in the GUI, or a problem "
                      "with your recovered image. It's possible that the data you "
@@ -1190,7 +1213,7 @@ def mount_output_device(output):
 
         #Attempt to mount the disk.
         retval = mount_disk(partition_to_mount, output_file_mount_point,
-                                         options="-r")
+                            options="-r")
 
     else:
         #Attempt to mount the disk (this mounts all partitions inside),
