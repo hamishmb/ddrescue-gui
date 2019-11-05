@@ -87,8 +87,8 @@ if sys.version_info[0] == 3:
     plistlib.readPlistFromString = plistlib.loads #pylint: disable=no-member
 
 #Define global variables.
-VERSION = "2.0.3"
-RELEASE_DATE = "5/11/2019"
+VERSION = "2.1.0"
+RELEASE_DATE = "26/11/2019"
 RELEASE_TYPE = "Development"
 
 session_ending = False
@@ -198,11 +198,13 @@ if __name__ == "__main__":
 
     #Import modules here to make sure logger level is set correctly.
     import Tools.tools as BackendTools
+    import Tools.mount_tools as MountingTools
     import Tools.DDRescueTools.setup as DDRescueTools
 
-    #Set up backend tools.
-    BackendTools.SETTINGS = SETTINGS
-    BackendTools.DISKINFO = DISKINFO
+    #Set up MountingTools.
+    #TODO Remove when possible.
+    MountingTools.SETTINGS = SETTINGS
+    MountingTools.DISKINFO = DISKINFO
 
     #Log which OS we're running on (helpful for debugging).
     if LINUX:
@@ -963,6 +965,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.menu_exit = file_menu.Append(wx.ID_EXIT, "&Quit", "Close DDRescue-GUI")
 
         self.menu_settings = edit_menu.Append(wx.ID_ANY, "&Settings", "Recovery Settings")
+        self.menu_mount = edit_menu.Append(wx.ID_ANY, "&Mount Disk", "Mount a file/device")
         self.menu_disk_info = view_menu.Append(wx.ID_ANY, "&Disk Information",
                                                "Information about all detected Disks")
 
@@ -997,6 +1000,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Menus.
         self.Bind(wx.EVT_MENU, self.check_for_updates, self.menu_updates)
         self.Bind(wx.EVT_MENU, self.show_settings, self.menu_settings)
+        self.Bind(wx.EVT_MENU, self.on_mount, self.menu_mount)
         self.Bind(wx.EVT_MENU, self.show_userguide, self.menu_docs)
         self.Bind(wx.EVT_MENU, self.on_about, self.menu_about)
         self.Bind(wx.EVT_MENU, self.show_dev_info, self.menu_disk_info)
@@ -1173,6 +1177,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.output_choice_box.Disable()
         self.menu_disk_info.Enable(False)
         self.menu_settings.Enable(False)
+        self.menu_mount.Enable(False)
 
         #Call the thread and get the throbber going.
         GetDiskInformation(self)
@@ -1202,6 +1207,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.output_choice_box.Enable()
         self.menu_disk_info.Enable()
         self.menu_settings.Enable()
+        self.menu_mount.Enable()
 
         #Fix a display on on Fedora/GNOME3 w/ py3.
         self.panel.Layout()
@@ -1762,6 +1768,32 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         else:
             self.on_start()
 
+    def on_mount(self, event=None):
+        """
+        When the user asks to mount a file, handle this and show FinishedWindow in order to carry
+        out the request.
+        """
+        #Ask the user for the file to mount.
+        logger.info("MainWindow().on_mount(): Asking user for file/device to mount...")
+
+        file_dialog = wx.FileDialog(self.panel, "Select Device/File...",
+                                    defaultDir="/home", wildcard=self.input_wildcard,
+                                    style=wx.FD_OPEN)
+
+        #Gracefully handle it if the user closed the dialog without selecting a file.
+        if file_dialog.ShowModal() != wx.ID_OK:
+            logger.info("MainWindow().on_mount(): User cancelled the operation.")
+
+            return
+
+        #Get the file.
+        SETTINGS["InputFile"] = SETTINGS["OutputFile"] = file_dialog.GetPath()
+
+        logger.info("MainWindow().on_mount(): Got file "+SETTINGS["InputFile"]
+                    + ". Opening FinishedWindow...")
+
+        FinishedWindow(self, "0 Bytes", "0 Bytes").Show()
+
     def on_start(self): #pylint: disable=too-many-statements
         """
         Check the settings, prepare to start ddrescue, unmount the input file
@@ -1911,6 +1943,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             self.map_choice_box.Disable()
             self.menu_exit.Enable(False)
             self.menu_settings.Enable(False)
+            self.menu_mount.Enable(False)
             self.control_button.SetLabel("Abort")
 
             #Handle any unexpected errors.
@@ -2388,6 +2421,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.menu_exit.Enable(True)
         self.menu_disk_info.Enable(True)
         self.menu_settings.Enable(True)
+        self.menu_mount.Enable()
 
         #Reset recovery information.
         self.output_box.Clear()
@@ -3473,9 +3507,9 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
         """
         if self.mount_button.GetLabel() == "Mount Image/Disk":
             #Change some stuff if it worked.
-            if BackendTools.mount_output_file():
+            if MountingTools.Core.mount_output_file():
                 self.top_text.SetLabel("Your recovered data is now mounted at:")
-                self.path_text.SetLabel(BackendTools.output_file_mount_point)
+                self.path_text.SetLabel(MountingTools.Core.output_file_mountpoint)
                 self.mount_button.SetLabel("Unmount Image/Disk")
                 self.restart_button.Disable()
                 self.quit_button.Disable()
@@ -3490,7 +3524,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
 
         else:
             #Change some stuff if it worked.
-            if BackendTools.unmount_output_file():
+            if MountingTools.Core.unmount_output_file():
                 self.top_text.SetLabel("Your recovered data is at:")
                 self.path_text.SetLabel(SETTINGS["OutputFile"])
                 self.mount_button.SetLabel("Mount Image/Disk")
