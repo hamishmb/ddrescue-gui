@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# BackendTools tests for DDRescue-GUI
+# CoreTools tests for DDRescue-GUI
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2019 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
@@ -36,11 +36,11 @@ import wx
 sys.path.insert(0, os.path.abspath('..'))
 
 #Import tools.
-from Tools import tools as BackendTools #pylint: disable=import-error
+from Tools import core as CoreTools #pylint: disable=import-error
 
 #Import test data and functions.
-from . import BackendToolsTestData as Data
-from . import BackendToolsTestFunctions as Functions
+from . import CoreToolsTestData as Data
+from . import CoreToolsTestFunctions as Functions
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
@@ -73,7 +73,7 @@ class TestStartProcess(unittest.TestCase):
     def test_start_process(self):
         """Simple test for start_process()"""
         for command in self.commands.keys():
-            retval, output = BackendTools.start_process(cmd=command, return_output=True)
+            retval, output = CoreTools.start_process(cmd=command, return_output=True)
             self.assertEqual(retval, self.commands[command]["Retval"])
             self.assertEqual(output, self.commands[command]["Output"])
 
@@ -91,7 +91,7 @@ class TestCreateUniqueKey(unittest.TestCase):
     def test_create_unique_key(self):
         """Simple test for create_unique_key()"""
         for _file in self.filenames:
-            key = BackendTools.create_unique_key(self.keys_dictionary, _file, 15)
+            key = CoreTools.create_unique_key(self.keys_dictionary, _file, 15)
             self.assertTrue(key in self.filenames[_file]["Result"])
             self.keys_dictionary[key] = ""
 
@@ -110,7 +110,7 @@ class TestSendNotification(unittest.TestCase):
         #FIXME: Won't always show on Linux if run as root.
 
         #Tell the user we are about to send a notification.
-        dlg = wx.MessageDialog(None, "DDRescue-GUI's BackendTools tests are about to send you a "
+        dlg = wx.MessageDialog(None, "DDRescue-GUI's CoreTools tests are about to send you a "
                                +"notification to test that notifications are working. You will "
                                +"then be prompted to confirm if they are working or not.",
                                "DDRescue-GUI - Tests", wx.OK | wx.ICON_INFORMATION)
@@ -118,7 +118,7 @@ class TestSendNotification(unittest.TestCase):
         dlg.Destroy()
 
         #Send it.
-        BackendTools.send_notification("Test Message from unit tests.")
+        CoreTools.send_notification("Test Message from unit tests.")
 
         #Ask the user if they got it.
         dlg = wx.MessageDialog(None, "Did you see the notification? Note that on some "
@@ -169,7 +169,7 @@ class TestMacRunHdiutil(unittest.TestCase):
             dlg.Destroy()
             POTENTIAL_DEVICE_PATH = self.path
 
-        self.assertEqual(BackendTools.mac_run_hdiutil("info")[0], 0)
+        self.assertEqual(CoreTools.mac_run_hdiutil("info")[0], 0)
 
 class TestIsMounted(unittest.TestCase):
     """Tests for is_mounted()"""
@@ -218,16 +218,16 @@ class TestIsMounted(unittest.TestCase):
         """Test #1: Check if it's detected when a disk is mounted."""
         #If not mounted, mount it
         if not Functions.is_mounted(self.path):
-            self.assertEqual(BackendTools.mount_disk(self.path, "/tmp/ddrescueguimtpt"), 0)
+            self.assertEqual(CoreTools.mount_disk(self.path, "/tmp/ddrescueguimtpt"), 0)
 
-        self.assertTrue(BackendTools.is_mounted(self.path))
+        self.assertTrue(CoreTools.is_mounted(self.path))
 
     def test_is_mounted2(self):
         """Test #2: Check if it's detected when a disk isn't mounted."""
         #Unmount it.
         Functions.unmount_disk(self.path)
 
-        self.assertFalse(BackendTools.is_mounted(self.path))
+        self.assertFalse(CoreTools.is_mounted(self.path))
 
 class TestGetMountPoint(unittest.TestCase):
     """Tests for get_mount_point()"""
@@ -270,7 +270,7 @@ class TestGetMountPoint(unittest.TestCase):
             Functions.mount_disk(self.path, "/tmp/ddrescueguimtpt")
 
         #Get mount point and verify.
-        self.assertEqual(BackendTools.get_mount_point(self.path),
+        self.assertEqual(CoreTools.get_mount_point(self.path),
                          Functions.get_mount_point(self.path))
 
     def test_get_mount_point2(self):
@@ -279,7 +279,7 @@ class TestGetMountPoint(unittest.TestCase):
         Functions.unmount_disk(self.path)
 
         #Get mount point.
-        self.assertIsNone(BackendTools.get_mount_point(self.path))
+        self.assertIsNone(CoreTools.get_mount_point(self.path))
 
 class TestMountDisk(unittest.TestCase):
     """Tests for mount_disk()"""
@@ -316,7 +316,7 @@ class TestMountDisk(unittest.TestCase):
         self.app.Destroy()
 
         #Unmount.
-        BackendTools.unmount_disk(self.path)
+        CoreTools.unmount_disk(self.path)
 
         del self.app
         del self.path
@@ -332,7 +332,7 @@ class TestMountDisk(unittest.TestCase):
         Functions.mount_disk(self.path, self.mount_point)
 
         #partition should be mounted, so we should pass this without doing anything.
-        self.assertEqual(BackendTools.mount_disk(self.path, self.mount_point), 0)
+        self.assertEqual(CoreTools.mount_disk(self.path, self.mount_point), 0)
 
         Functions.unmount_disk(self.path)
 
@@ -341,7 +341,7 @@ class TestMountDisk(unittest.TestCase):
         #Unmount disk.
         Functions.unmount_disk(self.path)
 
-        self.assertEqual(BackendTools.mount_disk(self.path, self.mount_point), 0)
+        self.assertEqual(CoreTools.mount_disk(self.path, self.mount_point), 0)
 
         Functions.unmount_disk(self.path)
 
@@ -363,10 +363,10 @@ class TestMountDisk(unittest.TestCase):
             Functions.unmount_disk(partition)
 
         #Mount the 2nd one on the desired path for the 1st one.
-        BackendTools.mount_disk(self.path2, self.mount_point)
+        CoreTools.mount_disk(self.path2, self.mount_point)
 
         #Now try to mount the first one there.
-        BackendTools.mount_disk(self.path, self.mount_point)
+        CoreTools.mount_disk(self.path, self.mount_point)
 
         #Now the 2nd should have been unmounted to get it out of the way,
         #and the 1st should be there.
@@ -384,13 +384,13 @@ class TestMountDisk(unittest.TestCase):
         Functions.unmount_disk(self.path)
 
         #Try to mount in subdir of usual mount point.
-        BackendTools.mount_disk(self.path, self.mount_point+"/subdir")
+        CoreTools.mount_disk(self.path, self.mount_point+"/subdir")
 
         #Check is mounted.
         self.assertTrue(Functions.is_mounted(self.path, self.mount_point+"/subdir"))
 
         #Unmount.
-        BackendTools.unmount_disk(self.path)
+        CoreTools.unmount_disk(self.path)
 
         #Clean up.
         if os.path.isdir(self.mount_point+"/subdir"):

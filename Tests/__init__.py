@@ -20,5 +20,6 @@ This is the Tests package.
 """
 
 from __future__ import absolute_import
-from . import BackendToolsTests
-from . import BackendToolsTestData
+from . import CoreToolsTests
+from . import CoreToolsTestData
+from . import CoreToolsTestFunctions

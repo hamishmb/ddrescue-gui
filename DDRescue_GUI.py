@@ -197,7 +197,7 @@ if __name__ == "__main__":
     logger.setLevel(LOGGER_LEVEL)
 
     #Import modules here to make sure logger level is set correctly.
-    import Tools.tools as BackendTools
+    import Tools.core as CoreTools
     import Tools.mount_tools as MountingTools
     import Tools.DDRescueTools.setup as DDRescueTools
 
@@ -254,7 +254,7 @@ class GetDiskInformation(threading.Thread):
                 If unsuccessful:       An empty dictionary.
         """
 
-        output = BackendTools.start_process(cmd=sys.executable+" "+RESOURCEPATH
+        output = CoreTools.start_process(cmd=sys.executable+" "+RESOURCEPATH
                                             +"/Tools/run_getdevinfo.py",
                                             return_output=True,
                                             privileged=True)[1]
@@ -593,7 +593,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         logger.info("Determining ddrescue version...")
         global DDRESCUE_VERSION
-        DDRESCUE_VERSION = BackendTools.determine_ddrescue_version()
+        DDRESCUE_VERSION = CoreTools.determine_ddrescue_version()
 
         #Set the frame's icon.
         global APPICON
@@ -1388,7 +1388,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             #If it's in the dictionary or in DISKINFO, don't add it.
             if user_selection in paths:
                 #Set the selection using the unique key.
-                choice_box.SetStringSelection(BackendTools.create_unique_key(paths, user_selection,
+                choice_box.SetStringSelection(CoreTools.create_unique_key(paths, user_selection,
                                                                              30))
 
             elif user_selection in list(DISKINFO):
@@ -1397,7 +1397,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
             else:
                 #Get a unique key for the dictionary using the tools function.
-                unique_key = BackendTools.create_unique_key(paths, user_selection, 30)
+                unique_key = CoreTools.create_unique_key(paths, user_selection, 30)
 
                 #Use it to organise the data.
                 paths[unique_key] = user_selection
@@ -1628,7 +1628,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """
         logger.info("MainWindow().check_for_updates(): Checking for updates...")
 
-        BackendTools.send_notification("Checking for updates...")
+        CoreTools.send_notification("Checking for updates...")
 
         try:
             updateinfo = \
@@ -1642,7 +1642,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         except requests.exceptions.RequestException:
             #Flag to user.
-            BackendTools.send_notification("Failed to check for updates!")
+            CoreTools.send_notification("Failed to check for updates!")
 
             #Also send a message dialog.
             if not starting_up:
@@ -1725,7 +1725,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             logger.warning("MainWindow().check_for_updates(): Update is recommended. "
                            "Sending notification...")
 
-            BackendTools.send_notification("Updates are available")
+            CoreTools.send_notification("Updates are available")
 
             #Add info about where to download updates.
             infotext += "\nThe latest version of DDRescue-GUI can be downloaded from:\n"
@@ -1744,7 +1744,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             logger.warning("MainWindow().check_for_updates(): No update required."
                            "Sending notification...")
 
-            BackendTools.send_notification("Up to date")
+            CoreTools.send_notification("Up to date")
 
         #If asked by the user, or if there's an update and we aren't on pmagic,
         #show the update status.
@@ -1821,7 +1821,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             for disk in [SETTINGS["InputFile"], SETTINGS["OutputFile"]]:
                 if disk not in DISKINFO:
                     #Assume this is a partition, or that it can be unmounted like one.
-                    if BackendTools.is_mounted(disk):
+                    if CoreTools.is_mounted(disk):
                         #Unmount the disk.
                         logger.debug("MainWindow().on_start(): Unmounting "+disk+"...")
 
@@ -1829,15 +1829,15 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                                "few moments...")
 
                         wx.GetApp().Yield()
-                        retval = BackendTools.unmount_disk(disk)
+                        retval = CoreTools.unmount_disk(disk)
 
                     logger.info("MainWindow().on_start(): "+disk+" is a file (or not in collected "
                                 "disk info), ignoring it...")
                     continue
 
-                if BackendTools.is_mounted(disk) or not BackendTools.is_partition(disk, DISKINFO):
+                if CoreTools.is_mounted(disk) or not CoreTools.is_partition(disk, DISKINFO):
                     #The Disk is mounted, or may have partitions that are mounted.
-                    if BackendTools.is_partition(disk, DISKINFO):
+                    if CoreTools.is_partition(disk, DISKINFO):
                         #Unmount the disk.
                         logger.debug("MainWindow().on_start(): "+disk+" is a partition. "
                                      "Unmounting "+disk+"...")
@@ -1846,7 +1846,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                                "few moments...")
 
                         wx.GetApp().Yield()
-                        retval = BackendTools.unmount_disk(disk)
+                        retval = CoreTools.unmount_disk(disk)
 
                     else:
                         #Unmount any partitions belonging to the device.
@@ -1863,7 +1863,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
                         for partition in DISKINFO[disk]["Partitions"]:
                             logger.info("MainWindow().on_start(): Unmounting "+partition+"...")
-                            retvals.append(BackendTools.unmount_disk(partition))
+                            retvals.append(CoreTools.unmount_disk(partition))
 
                         #Check the return values, and raise an error if any of them aren't 0.
                         for integer in retvals:
@@ -1933,7 +1933,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             wx.GetApp().Yield()
 
             #Notify the user.
-            BackendTools.send_notification("Beginning Recovery...")
+            CoreTools.send_notification("Beginning Recovery...")
 
             #Disable and enable all necessary items.
             self.settings_button.Disable()
@@ -1955,7 +1955,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                 logger.critical("Unexpected error \n\n"+unicode(traceback.format_exc())
                                 + "\n\n while recovering data. Warning user and exiting.")
 
-                BackendTools.emergency_exit("There was an unexpected error:\n\n"
+                CoreTools.emergency_exit("There was an unexpected error:\n\n"
                                             + unicode(traceback.format_exc())
                                             + "\n\nWhile recovering data!")
 
@@ -2220,11 +2220,11 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         logger.info("MainWindow().on_abort(): Attempting to stop ddrescue...")
 
         if LINUX:
-            BackendTools.start_process("killall -s INT ddrescue",
+            CoreTools.start_process("killall -s INT ddrescue",
                                        privileged=True)
 
         else:
-            BackendTools.start_process("killall -INT ddrescue",
+            CoreTools.start_process("killall -INT ddrescue",
                                        privileged=True)
 
         self.aborted_recovery = True
@@ -2314,7 +2314,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             logger.info("MainWindow().on_recovery_ended(): ddrescue was aborted by the user...")
 
             #Notify the user.
-            BackendTools.send_notification("Recovery was aborted by user.")
+            CoreTools.send_notification("Recovery was aborted by user.")
 
             dlg = wx.MessageDialog(self.panel, "Your recovery has been aborted as you requested."
                                    "\n\nNote: Your recovered data may be incomplete at this "
@@ -2334,7 +2334,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                          "settings are incorrect?")
 
             #Notify the user.
-            BackendTools.send_notification("Recovery Error! ddrescue aborted immediately. See "
+            CoreTools.send_notification("Recovery Error! ddrescue aborted immediately. See "
                                            "GUI for more info.")
 
             dlg = wx.MessageDialog(self.panel, "We didn't get ddrescue's initial status! This "
@@ -2352,7 +2352,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                          "status "+unicode(return_code)+"! Perhaps the output file/disk is full?")
 
             #Notify the user.
-            BackendTools.send_notification("Recovery Error! ddrescue exited with exit status "
+            CoreTools.send_notification("Recovery Error! ddrescue exited with exit status "
                                            + unicode(return_code)+"!")
 
             dlg = wx.MessageDialog(self.panel, "ddrescue exited with nonzero exit status "
@@ -2375,7 +2375,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                           "mount your destination drive/file so you can access your data."
 
                 #Notify the user.
-                BackendTools.send_notification("Recovery finished with all data!")
+                CoreTools.send_notification("Recovery finished with all data!")
 
             else:
                 message = "Your recovery is finished, but not all of your data appears to have " \
@@ -2386,7 +2386,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                           "state."
 
                 #Notify the user.
-                BackendTools.send_notification("Recovery finished, but not all data was "
+                CoreTools.send_notification("Recovery finished, but not all data was "
                                                "recovered.")
 
             dlg = wx.MessageDialog(self.panel, message, "DDRescue-GUI - Information",
@@ -2574,7 +2574,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
                         else:
                             #Copy it to the specified path.
-                            if BackendTools.start_process("cp /tmp/ddrescue-gui.log "+_file) == 0:
+                            if CoreTools.start_process("cp /tmp/ddrescue-gui.log "+_file) == 0:
                                 dlg = wx.MessageDialog(self.panel, "Done! DDRescue-GUI will now exit.",
                                                        "DDRescue-GUI - Information",
                                                        wx.OK | wx.ICON_INFORMATION)
@@ -3708,7 +3708,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 
         if not LINUX:
             #Pre-auth with the auth dialog if needed.
-            BackendTools.start_process(cmd="echo 'Preauthenticating'", privileged=True)
+            CoreTools.start_process(cmd="echo 'Preauthenticating'", privileged=True)
 
         cmd = subprocess.Popen(exec_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         line = ""

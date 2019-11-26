@@ -39,7 +39,7 @@ if sys.version_info[0] == 3:
     unicode = str #pylint: disable=redefined-builtin,invalid-name
 
 #Global vars.
-VERSION = "2.0.3"
+VERSION = "2.1.0"
 
 def usage():
     """Outputs usage information"""
@@ -48,7 +48,7 @@ def usage():
     print("       -h, --help:                   Display this help text.")
     print("       -d, --debug:                  Set logging level to debug; show all messages.")
     print("                                     Default: show only critical logging messages.\n")
-    print("       -b, --backendtools:           Run tests for BackendTools module.")
+    print("       -c, --coretools:              Run tests for CoreTools module.")
     print("       -m, --main:                   Run tests for main file (DDRescue-GUI.py).")
     print("       -a, --all:                    Run all the tests. The default.\n")
     print("       -t, --tests:                  Ignored.")
@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
     #Check all cmdline options are valid.
     try:
-        OPTIONS, ARGUMENTS = getopt.getopt(sys.argv[1:], "hdbmat", ["help", "debug", "backendtools",
+        OPTIONS, ARGUMENTS = getopt.getopt(sys.argv[1:], "hdbmat", ["help", "debug", "coretools",
                                                                     "main", "all", "tests"])
 
     except getopt.GetoptError as err:
@@ -92,22 +92,22 @@ if __name__ == "__main__":
 
     #Custom tools module.
     import Tools #pylint: disable=import-error
-    from Tools import tools as BackendTools #pylint: disable=import-error
+    from Tools import core as CoreTools #pylint: disable=import-error
 
     #Import test modules.
-    from Tests import BackendToolsTests #pylint: disable=import-error
+    from Tests import CoreToolsTests #pylint: disable=import-error
 
     #Set up which tests to run based on options given.
-    TEST_SUITES = [BackendToolsTests] #*** Set up full defaults when finished ***
+    TEST_SUITES = [CoreToolsTests] #*** Set up full defaults when finished ***
 
     for o, a in OPTIONS:
-        if o in ["-b", "--backendtools"]:
-            TEST_SUITES = [BackendToolsTests]
+        if o in ["-c", "--coretools"]:
+            TEST_SUITES = [CoreToolsTests]
         elif o in ["-m", "--main"]:
             #TEST_SUITES = [MainTests]
             assert False, "Not implemented yet"
         elif o in ["-a", "--all"]:
-            TEST_SUITES = [BackendToolsTests]
+            TEST_SUITES = [CoreToolsTests]
             #TEST_SUITES.append(MainTests)
         elif o in ["-t", "--tests"]:
             pass
@@ -143,8 +143,8 @@ if __name__ == "__main__":
         PARTED_MAGIC = False
 
     #Setup test modules.
-    BackendToolsTests.BackendTools = BackendTools
-    BackendToolsTests.Tools = Tools
+    CoreToolsTests.CoreTools = CoreTools
+    CoreToolsTests.Tools = Tools
 
     for module in TEST_SUITES:
         print("\n\n---------------------------- Tests for "

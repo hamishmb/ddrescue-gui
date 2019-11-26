@@ -39,7 +39,7 @@ import json
 import logging
 import wx
 
-from . import tools as BackendTools
+from . import core as CoreTools
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
@@ -174,7 +174,7 @@ class Core:
 
             #Try to umount the output file, if it has been mounted.
             if Core.output_file_mountpoint is not None:
-                if BackendTools.unmount_disk(Core.output_file_mountpoint) == 0:
+                if CoreTools.unmount_disk(Core.output_file_mountpoint) == 0:
                     logger.info("unmount_output_file(): Successfully unmounted "
                                 "output file...")
 
@@ -237,7 +237,7 @@ class Linux:
 
         #--------------- USING PARTED TO DETECT PARTITION TABLES AND FILESYSTEMS ---------------
         #If list of partitions is empty (or 1 partition), we have a partition.
-        retval, output = BackendTools.start_process(cmd="parted -m "+output_file+" print",
+        retval, output = CoreTools.start_process(cmd="parted -m "+output_file+" print",
                                                     return_output=True, privileged=True,
                                                     ignore_stderr=True)
 
@@ -279,13 +279,13 @@ class Linux:
         #Check if this is a LUKS or LVM container if parted didn't help.
         if output_file_type == "unknown":
             #Check for LUKS.
-            if BackendTools.start_process(cmd="cryptsetup isLuks "+output_file,
+            if CoreTools.start_process(cmd="cryptsetup isLuks "+output_file,
                                           privileged=True) == 0:
 
                 output_file_type = "LUKS"
 
             #Check for LVM.
-            output = BackendTools.start_process(cmd="file -s "+output_file,
+            output = CoreTools.start_process(cmd="file -s "+output_file,
                                                 return_output=True, privileged=True)[1]
 
             if "LVM" in output:
@@ -337,17 +337,17 @@ class Linux:
 
             logger.info("mount_output_file(): Creating loop device...")
 
-            kpartx_output = BackendTools.start_process(cmd="kpartx -av "
+            kpartx_output = CoreTools.start_process(cmd="kpartx -av "
                                                        + output_file,
                                                        return_output=True, privileged=True)[1]
 
             kpartx_output = kpartx_output.split("\n")
 
             #Do a part probe to make sure the loop device has been searched.
-            BackendTools.start_process(cmd="partprobe", privileged=True)
+            CoreTools.start_process(cmd="partprobe", privileged=True)
 
         #Get some Disk information.
-        lsblk_output = BackendTools.start_process(cmd="lsblk -J -o NAME,FSTYPE,SIZE",
+        lsblk_output = CoreTools.start_process(cmd="lsblk -J -o NAME,FSTYPE,SIZE",
                                                   return_output=True,
                                                   privileged=True)[1].split("\n")
 
@@ -426,10 +426,10 @@ class Linux:
         #TODO find a loop device that isn't currently in use.
         if "/dev/" not in output_file:
             pv_device = "/dev/loop10"
-            BackendTools.start_process(cmd="losetup /dev/loop10 "+output_file,
+            CoreTools.start_process(cmd="losetup /dev/loop10 "+output_file,
                                        return_output=True, privileged=True)
 
-        output = BackendTools.start_process(cmd="pvs", return_output=True,
+        output = CoreTools.start_process(cmd="pvs", return_output=True,
                                             privileged=True)[1]
 
         #Read pvdisplay's output to find the volume group name for this device.
@@ -438,11 +438,11 @@ class Linux:
                 Linux.volume_group_name = line.split()[1]
 
         #Activate the volume group.
-        BackendTools.start_process(cmd="vgchange -a y "+Linux.volume_group_name, return_output=True,
+        CoreTools.start_process(cmd="vgchange -a y "+Linux.volume_group_name, return_output=True,
                                    privileged=True)
 
         #Find logical volumes.
-        retval, lvdisplay_output = BackendTools.start_process(cmd="lvdisplay -C --units M",
+        retval, lvdisplay_output = CoreTools.start_process(cmd="lvdisplay -C --units M",
                                                               return_output=True,
                                                               privileged=True)
 
@@ -466,7 +466,7 @@ class Linux:
         #We will mount the file/device in /tmp/ddrescue-gui/destination
         Core.output_file_mountpoint = "/tmp/ddrescue-gui/destination"
 
-        retval = BackendTools.mount_disk(partition=partition,
+        retval = CoreTools.mount_disk(partition=partition,
                                          mount_point=Core.output_file_mountpoint,
                                          options="-r")
 
@@ -597,7 +597,7 @@ class Linux:
             #Partition, no extra command needed. Return True.
             return True
 
-        if BackendTools.start_process(cmd=cmd, return_output=False, privileged=True) == 0:
+        if CoreTools.start_process(cmd=cmd, return_output=False, privileged=True) == 0:
             logger.info("unmount_output_file(): Successfully pulled down "
                         "loop device...")
 
@@ -833,7 +833,7 @@ class Mac:
 
             cmd = "hdiutil detach "+devicename
 
-        if BackendTools.start_process(cmd=cmd, return_output=False, privileged=True) == 0:
+        if CoreTools.start_process(cmd=cmd, return_output=False, privileged=True) == 0:
             logger.info("unmount_output_file(): Successfully pulled down "
                         "loop device...")
 
@@ -915,7 +915,7 @@ class Mac:
                 2nd element:                The output from hdiutil.
         """
 
-        retval, output = BackendTools.start_process(cmd="hdiutil "+options, return_output=True,
+        retval, output = CoreTools.start_process(cmd="hdiutil "+options, return_output=True,
                                                     privileged=True)
 
         #Handle this common error - image in use.
@@ -926,7 +926,7 @@ class Mac:
             #10.10, we have to just detach all possible disks and ignore failures.
 
             #TODO Consider dropping support for macOS 10.9 and 10.10 to improve reliability.
-            for line in BackendTools.start_process(cmd="diskutil list",
+            for line in CoreTools.start_process(cmd="diskutil list",
                                                    return_output=True)[1].split("\n"):
                 try:
                     if line.split()[0].split("/")[1] == "dev":
@@ -934,14 +934,14 @@ class Mac:
                         logger.warning("Mac.run_hdiutil(): Attempting to detach "
                                        + line.split()[0]+"...")
 
-                        BackendTools.start_process(cmd="hdiutil detach "+line.split()[0],
+                        CoreTools.start_process(cmd="hdiutil detach "+line.split()[0],
                                                    privileged=True)
 
                 except IndexError:
                     pass
 
             #Try again.
-            retval, output = BackendTools.start_process(cmd="hdiutil "+options, return_output=True,
+            retval, output = CoreTools.start_process(cmd="hdiutil "+options, return_output=True,
                                                         privileged=True)
 
         return retval, output

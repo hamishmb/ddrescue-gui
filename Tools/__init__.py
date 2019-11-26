@@ -20,4 +20,4 @@ This is the Tools package.
 """
 
 from __future__ import absolute_import
-from . import tools
+from . import core
