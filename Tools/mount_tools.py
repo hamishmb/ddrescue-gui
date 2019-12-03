@@ -715,13 +715,13 @@ class Mac:
         #TODO Round to best size using Unitlist?
         #TODO Get some more info to make this easier for the user if possible.
         for partition in output:
-            if Core.output_file_type == "Device":
+            if Core.output_file_types[-1] == "Device":
                 #Skip non-partition things and any "partitions" that don't have numbers.
                 #CD images work differently, and we must ignore this rule.
                 if "partition-number" not in partition:
                     continue
 
-            elif Core.output_file_type == "CD":
+            elif Core.output_file_types[-1] == "CD":
                 #Set the partition number for CD images.
                 partition["partition-number"] = 1
 
@@ -804,7 +804,7 @@ class Mac:
 
         success = False
 
-        if Core.output_file_type == "Device":
+        if Core.output_file_types[-1] == "Device":
             #Check that the filesystem the user wanted is among those that have been marked mountable.
             for partition in disks:
                 disk = partition["dev-entry"]
@@ -821,7 +821,7 @@ class Mac:
                         success = retval == 0
                         break
 
-        elif Core.output_file_type == "CD":
+        elif Core.output_file_types[-1] == "CD":
             disk = partition["dev-entry"]
 
             if "potentially-mountable" in partition:
