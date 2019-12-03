@@ -676,6 +676,7 @@ def create_unique_key(dictionary, data, length):
             if "..."+key not in dictionary.keys():
                 #Yay! Unique!
                 key = "..."+key
+                break
 
     else:
         key = data[-length:]

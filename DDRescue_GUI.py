@@ -1387,10 +1387,17 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
             #Handle custom paths properly.
             #If it's in the dictionary or in DISKINFO, don't add it.
-            if user_selection in paths:
-                #Set the selection using the unique key.
-                choice_box.SetStringSelection(CoreTools.create_unique_key(paths, user_selection,
-                                                                             30))
+            if user_selection in paths.values():
+                #Set the selection using the unique key in the paths dictionary.
+                unique_key = None
+
+                for key in paths:
+                    print(paths[key], user_selection)
+                    if paths[key] == user_selection:
+                        unique_key = key
+                        break
+
+                choice_box.SetStringSelection(unique_key)
 
             elif user_selection in list(DISKINFO):
                 #No need to add it to the choice box.
