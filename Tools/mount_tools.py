@@ -765,7 +765,7 @@ class Mac:
         #Attempt to mount the disk (this mounts all partitions inside),
         #and parse the resulting plist.
         (retval, mount_output) = \
-        Mac.run_hdiutil("attach "+output_file+" -readonly -plist")
+        Mac.run_hdiutil("attach "+output_file+" -readonly -nomount -plist")
 
         mount_output = plistlib.readPlistFromString(mount_output.encode())
 
@@ -783,8 +783,7 @@ class Mac:
             dlg.Destroy()
             return False
 
-        #We need to get the device name for the partition we wanted to mount, and check it
-        #was actually mounted by the command earlier.
+        #We need to get the device name, so we can mount the partition we want.
         #Get the list of disks mounted.
         disks = mount_output["system-entities"]
 
@@ -795,16 +794,20 @@ class Mac:
 
         success = False
 
-        #Check that the filesystem the user wanted is among those that have been mounted.
+        #Check that the filesystem the user wanted is among those that have been marked mountable.
         for partition in disks:
             disk = partition["dev-entry"]
 
             if disk.split("s")[-1] == selected_partition:
-                #Check if the partition we want was mounted (hdiutil mounts all mountable
-                #partitions in the image automatically).
-                if "mount-point" in partition:
-                    Core.output_file_mountpoint = partition["mount-point"]
-                    success = True
+                #Check if the partition we want is mountable
+                if "potentially-mountable" in partition:
+                    #We will mount the file/device in /tmp/ddrescue-gui/destination
+                    Core.output_file_mountpoint = "/tmp/ddrescue-gui/destination"
+
+                    retval = CoreTools.mount_disk(partition=partition,
+                                                  mount_point=Core.output_file_mountpoint,
+                                                  options="-r")
+                    success = retval == 0
                     break
 
         if not success:
@@ -829,12 +832,11 @@ class Mac:
     @classmethod
     def unmount_output_file(cls, devicename):
         #Always detach the image's device file.
-        if Core.output_file_mountpoint is not None:
-            #TODO: This will error on macOS if the file hasn't been attached, so skip it in that case.
-            logger.debug("unmount_output_file(): Detaching the device that "
-                         "represents the image...")
+        #FIXME will error out if it was never attached.
+        logger.debug("unmount_output_file(): Detaching the device that "
+                     "represents the image...")
 
-            cmd = "hdiutil detach "+devicename
+        cmd = "hdiutil detach "+devicename
 
         if CoreTools.start_process(cmd=cmd, return_output=False, privileged=True) == 0:
             logger.info("unmount_output_file(): Successfully pulled down "
