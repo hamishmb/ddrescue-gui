@@ -713,20 +713,21 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         self.user_homedir = os.environ['HOME']
 
-    def define_vars(self):
-        """
-        Defines some variables used elsewhere in this class/instance
-        """
-        #Define these here to prevent adding checks to see if they're defined later.
-        self.custom_input_paths = {}
-        self.custom_output_paths = {}
-        self.custom_map_paths = {}
-
         #Define these to make pylint happy and prevent possible errors later.
         self.recovered_data = None
         self.disk_capacity = None
         self.aborted_recovery = None
         self.runtime_secs = None
+
+    def define_vars(self):
+        """
+        Defines some variables used elsewhere in this class/instance
+        """
+        #Define these here to prevent adding checks to see if they're defined later.
+        #This way, we don't lose these after a reset either.
+        self.custom_input_paths = {}
+        self.custom_output_paths = {}
+        self.custom_map_paths = {}
 
     def make_status_bar(self):
         """
