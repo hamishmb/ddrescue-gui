@@ -647,6 +647,10 @@ class Mac:
         if "whole disk" in output:
             output_file_type = "Partition"
 
+        #If there's an ISO9660 filesystem, treat this as a CD image.
+        elif "ISO9660" in output:
+            output_file_type = "CD"
+
         else:
             output_file_type = "Device"
 
@@ -711,9 +715,15 @@ class Mac:
         #TODO Round to best size using Unitlist?
         #TODO Get some more info to make this easier for the user if possible.
         for partition in output:
-            #Skip non-partition things and any "partitions" that don't have numbers.
-            if "partition-number" not in partition:
-                continue
+            if Core.output_file_type == "Device":
+                #Skip non-partition things and any "partitions" that don't have numbers.
+                #CD images work differently, and we must ignore this rule.
+                if "partition-number" not in partition:
+                    continue
+
+            elif Core.output_file_type == "CD":
+                #Set the partition number for CD images.
+                partition["partition-number"] = 1
 
             choices.append("Partition "+unicode(partition["partition-number"])
                            + ", with size "+unicode((partition["partition-length"] \
@@ -794,21 +804,34 @@ class Mac:
 
         success = False
 
-        #Check that the filesystem the user wanted is among those that have been marked mountable.
-        for partition in disks:
+        if Core.output_file_type == "Device":
+            #Check that the filesystem the user wanted is among those that have been marked mountable.
+            for partition in disks:
+                disk = partition["dev-entry"]
+
+                if disk.split("s")[-1] == selected_partition:
+                    #Check if the partition we want is mountable
+                    if "potentially-mountable" in partition:
+                        #We will mount the file/device in /tmp/ddrescue-gui/destination
+                        Core.output_file_mountpoint = "/tmp/ddrescue-gui/destination"
+
+                        retval = CoreTools.mount_disk(partition=disk,
+                                                      mount_point=Core.output_file_mountpoint,
+                                                      options="readOnly")
+                        success = retval == 0
+                        break
+
+        elif Core.output_file_type == "CD":
             disk = partition["dev-entry"]
 
-            if disk.split("s")[-1] == selected_partition:
-                #Check if the partition we want is mountable
-                if "potentially-mountable" in partition:
-                    #We will mount the file/device in /tmp/ddrescue-gui/destination
-                    Core.output_file_mountpoint = "/tmp/ddrescue-gui/destination"
+            if "potentially-mountable" in partition:
+                #We will mount the file/device in /tmp/ddrescue-gui/destination
+                Core.output_file_mountpoint = "/tmp/ddrescue-gui/destination"
 
-                    retval = CoreTools.mount_disk(partition=partition,
-                                                  mount_point=Core.output_file_mountpoint,
-                                                  options="-r")
-                    success = retval == 0
-                    break
+                retval = CoreTools.mount_disk(partition=disk,
+                                              mount_point=Core.output_file_mountpoint,
+                                              options="readOnly")
+                success = retval == 0
 
         if not success:
             logger.info("mount_output_file(): Unsupported or damaged filesystem. "
