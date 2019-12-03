@@ -706,6 +706,7 @@ class Mac:
         hdiutil_imageinfo_output = plistlib.readPlistFromString(hdiutil_imageinfo_output.encode())
 
         #Get the block size of the image.
+        #FIXME Meaningless with CD images - random values on Catalina (check prev versions).
         blocksize = hdiutil_imageinfo_output["partitions"]["block-size"]
 
         output = hdiutil_imageinfo_output["partitions"]["partitions"]
@@ -822,9 +823,9 @@ class Mac:
                         break
 
         elif Core.output_file_types[-1] == "CD":
-            disk = partition["dev-entry"]
+            disk = disks[0]["dev-entry"]
 
-            if "potentially-mountable" in partition:
+            if disks[0]["potentially-mountable"]:
                 #We will mount the file/device in /tmp/ddrescue-gui/destination
                 Core.output_file_mountpoint = "/tmp/ddrescue-gui/destination"
 
