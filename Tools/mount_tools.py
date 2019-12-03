@@ -196,8 +196,9 @@ class Core:
                     return_value = False
 
             else:
-                if not Mac.unmount_output_file(disk):
-                    return_value = False
+                if "/dev" in disk:
+                    if not Mac.unmount_output_file(disk):
+                        return_value = False
 
         #Reset everything if it worked.
         if return_value == True:
@@ -649,7 +650,7 @@ class Mac:
         else:
             output_file_type = "Device"
 
-        return output_file_type, retval
+        return output_file_type, retval == 0
 
     @classmethod
     def mount_partition(cls, output_file):
@@ -691,12 +692,14 @@ class Mac:
         return True
 
     @classmethod
-    def mount_device(cls, output_file):
+    def mount_device(cls, output_file): #TODO error handling
         logger.debug("mount_output_file(): Output file isn't a partition! Getting "
                      "list of contained partitions...")
 
         hdiutil_imageinfo_output = Mac.run_hdiutil(options="imageinfo "+output_file
                                                    +" -plist")[1]
+
+        hdiutil_imageinfo_output = plistlib.readPlistFromString(hdiutil_imageinfo_output.encode())
 
         #Get the block size of the image.
         blocksize = hdiutil_imageinfo_output["partitions"]["block-size"]
