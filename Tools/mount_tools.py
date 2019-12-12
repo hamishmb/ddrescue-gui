@@ -238,7 +238,7 @@ class Linux:
 
         #--------------- USING PARTED TO DETECT PARTITION TABLES AND FILESYSTEMS ---------------
         #If list of partitions is empty (or 1 partition), we have a partition.
-        retval, output = CoreTools.start_process(cmd="parted -m "+output_file+" print",
+        retval, output = CoreTools.start_process(cmd="parted -sm "+output_file+" print",
                                                     return_output=True, privileged=True,
                                                     ignore_stderr=True)
 
