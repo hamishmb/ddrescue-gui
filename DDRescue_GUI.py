@@ -379,6 +379,78 @@ class CustomTextCtrl(wx.TextCtrl): #pylint: disable=too-many-ancestors
         """
         wx.TextCtrl.__init__(self, parent, wx_id, value=value, style=style)
 
+    def update(self, line):
+        """
+        Append the given line to the contents of the output box. Counts carriage
+        returns and up-one-lines so that an auxiliary method
+        (add_line) can handle them.
+
+        Args:
+            line (string).          The line to add.
+        """
+
+
+        crs = []
+        uols = []
+        char_number = 0
+
+        for char in line:
+            char_number += 1
+
+            if char == "\r":
+                crs.append(char_number)
+
+            elif char == "¬":
+                uols.append(char_number)
+
+        char_number = 0
+        temp_line = ""
+
+        for char in line:
+            char_number += 1
+
+            if char_number not in crs and char_number not in uols:
+                temp_line += char
+                if char == "\n":
+                    self.add_line(temp_line, crs, uols, char_number)
+                    temp_line = ""
+
+            else:
+                self.add_line(temp_line, crs, uols, char_number)
+                temp_line = ""
+
+    def add_line(self, data, crs, uols, char_number):
+        """
+        Adds a new line to the custom output box. Also handles calling
+        carriage_return() and up_one_line() when required. Receives the data
+        chunks and other information from the update method.
+
+        Args:
+            data (string).                      The chunk of text to add to the
+                                                output box.
+
+            crs (list).                         A list of character numbers where
+                                                the character is a carriage
+                                                return.
+
+            uols (list).                        As above, for up-one-line
+                                                sequences.
+
+            char_number (int).                  The character number we are at in
+                                                the line (the character after
+                                                the last character in our chunk
+                                                of text).
+        """
+
+        insertion_point = self.GetInsertionPoint()
+        self.Replace(insertion_point, insertion_point+len(data), data)
+
+        if char_number in crs:
+            self.carriage_return()
+
+        elif char_number in uols:
+            self.up_one_line()
+
     def PositionToXY(self, insertion_point): #pylint: disable=invalid-name,arguments-differ
         """
         A custom version of wx.TextCtrl.PositionToXY() that works on OS X
@@ -526,7 +598,7 @@ class CustomTextCtrl(wx.TextCtrl): #pylint: disable=too-many-ancestors
         new_insertion_point = self.XYToPosition(column, line-1)
 
         if new_insertion_point == -1:
-            #Invalid column/line! Maybe we reached the start of the text in self.output_box?
+            #Invalid column/line! Maybe we reached the start of the text?
             #Do nothing but log the error.
             logger.warning("CustomTextCtrl().up_one_line(): Invalid new insertion point when "
                            "trying to move up one line! This might mean we've reached the "
@@ -2090,80 +2162,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         self.list_ctrl.SetItem(7, 1, label=last_read)
 
-    def update_output_box(self, line):
-        """
-        Append the given line to the contents of the output box. Counts carriage
-        returns and up-one-lines so that an auxiliary method
-        (add_line_to_output_box) can handle them.
-
-        Args:
-            line (string).          The line to add.
-        """
-
-        #TODO This should probably be implemented as part of the custom TextCtrl.
-
-        crs = []
-        uols = []
-        char_number = 0
-
-        for char in line:
-            char_number += 1
-
-            if char == "\r":
-                crs.append(char_number)
-
-            elif char == "¬":
-                uols.append(char_number)
-
-        char_number = 0
-        temp_line = ""
-
-        for char in line:
-            char_number += 1
-
-            if char_number not in crs and char_number not in uols:
-                temp_line += char
-                if char == "\n":
-                    self.add_line_to_output_box(temp_line, crs, uols, char_number)
-                    temp_line = ""
-
-            else:
-                self.add_line_to_output_box(temp_line, crs, uols, char_number)
-                temp_line = ""
-
-    def add_line_to_output_box(self, data, crs, uols, char_number):
-        """
-        Adds a new line to the custom output box. Also handles calling
-        carriage_return() and up_one_line() when required. Receives the data
-        chunks and other information from update_output_box.
-
-        Args:
-            data (string).                      The chunk of text to add to the
-                                                output box.
-
-            crs (list).                         A list of character numbers where
-                                                the character is a carriage
-                                                return.
-
-            uols (list).                        As above, for up-one-line
-                                                sequences.
-
-            char_number (int).                  The character number we are at in
-                                                the line (the character after
-                                                the last character in our chunk
-                                                of text).
-        """
-
-        #TODO This should probably be implemented as part of the custom TextCtrl.
-        insertion_point = self.output_box.GetInsertionPoint()
-        self.output_box.Replace(insertion_point, insertion_point+len(data), data)
-
-        if char_number in crs:
-            self.output_box.carriage_return()
-
-        elif char_number in uols:
-            self.output_box.up_one_line()
-
     def update_status_bar(self, messeage):
         """
         Update the status bar with a new message.
@@ -3705,7 +3703,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                 #The ¬ is being used to denote where the output box should go up
                 #one line before continuing to write. A bit like a carriage return
                 #but the other way around.
-                wx.CallAfter(self.parent.update_output_box, line.replace("\x1b[A", "¬"))
+                wx.CallAfter(self.parent.output_box.update, line.replace("\x1b[A", "¬"))
 
                 #Reset line.
                 line = ""
