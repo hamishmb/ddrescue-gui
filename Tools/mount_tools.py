@@ -567,7 +567,7 @@ class Linux:
 
             Linux.mount_device(device_to_mount)
 
-        elif Core.output_file_types[-1] == "Device" and "LUKS" in dlg.GetStingSelection():
+        elif Core.output_file_types[-1] == "Device" and "LUKS" in dlg.GetStringSelection():
             #TODO LUKS.
             pass
 
