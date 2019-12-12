@@ -154,8 +154,7 @@ else:
 if __name__ == "__main__":
     #Check all cmdline options are valid.
     try:
-        OPTS = getopt.getopt(sys.argv[1:], "hqvdt", ["help", "quiet", "verbose", "debug",
-                                                     "tests"])[0]
+        OPTS = getopt.getopt(sys.argv[1:], "hqvd", ["help", "quiet", "verbose", "debug"])[0]
 
     except getopt.GetoptError as err:
         #Invalid option. Show the help message and then exit.
@@ -170,17 +169,12 @@ if __name__ == "__main__":
     for o, a in OPTS:
         if o in ["-q", "--quiet"]:
             LOGGER_LEVEL = logging.WARNING
+
         elif o in ["-v", "--verbose"]:
             LOGGER_LEVEL = logging.INFO
+
         elif o in ["-d", "--debug"]:
             LOGGER_LEVEL = logging.DEBUG
-        elif o in ["-t", "--tests"]:
-            #Run unit tests. FIXME later must we use exec()?
-            with open(RESOURCEPATH+"/tests.py", encoding="utf-8") as File:
-                code = compile(File.read(), RESOURCEPATH+"/tests.py", "exec")
-                exec(code)
-
-            sys.exit()
 
         elif o in ["-h", "--help"]:
             usage()
@@ -255,9 +249,9 @@ class GetDiskInformation(threading.Thread):
         """
 
         output = CoreTools.start_process(cmd=sys.executable+" "+RESOURCEPATH
-                                            +"/Tools/run_getdevinfo.py",
-                                            return_output=True,
-                                            privileged=True)[1]
+                                         +"/Tools/run_getdevinfo.py",
+                                         return_output=True,
+                                         privileged=True)[1]
 
         #Success! Now use ast to convert the returned string to a dictionary.
         try:
@@ -566,31 +560,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         logger.info("Running on wxPython version: "+wx.version()+"...")
         logger.info("Checking for ddrescue...")
 
-        #Define places we need to look for ddrescue.
-        if LINUX:
-            paths = os.getenv("PATH").split(":")
-
-        else:
-            paths = [RESOURCEPATH]
-
-        found_ddrescue = False
-
-        for path in paths:
-            if os.path.isfile(path+"/ddrescue"):
-                #Yay!
-                found_ddrescue = True
-
-        if not found_ddrescue:
-            dlg = wx.MessageDialog(self.panel, "Couldn't find ddrescue! Are you sure it is "
-                                   "installed on your system? If you're on a "
-                                   "mac, this indicates an issue with the "
-                                   "packaging, and if so please email me at "
-                                   "hamishmb@live.co.uk.", 'DDRescue-GUI - Error!',
-                                   wx.OK | wx.ICON_ERROR)
-            dlg.ShowModal()
-            dlg.Destroy()
-            sys.exit("\nCouldn't find ddrescue!")
-
         logger.info("Determining ddrescue version...")
         global DDRESCUE_VERSION
         DDRESCUE_VERSION = CoreTools.determine_ddrescue_version()
@@ -745,7 +714,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """
         self.title_text = wx.StaticText(self.panel, -1, "Welcome to DDRescue-GUI!")
         self.input_text = wx.StaticText(self.panel, -1, "Image Source:")
-        self.map_text = wx.StaticText(self.panel, -1, "Recovery Map File (previously called logfile):")
+        self.map_text = wx.StaticText(self.panel, -1, "Recovery Map File "
+                                      "(previously called logfile):")
+
         self.output_text = wx.StaticText(self.panel, -1, "Image Destination:")
 
         #Also create special text for showing and hiding recovery info and terminal output.
@@ -785,9 +756,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                                                     'Specify Path/File'])
 
         if not LINUX:
-            self.output_choice_box.SetToolTip(wx.ToolTip("Please ignore the macOS overwrite prompt "
-                                                         + "given here when restarting a recovery - "
-                                                         + "the file will not be overwritten"))
+            self.output_choice_box.SetToolTip(wx.ToolTip("Please ignore the macOS overwrite "
+                                                         "prompt given here when restarting a "
+                                                         "recovery - the file will not be "
+                                                         "overwritten"))
 
         #Set the default value.
         self.input_choice_box.SetStringSelection("-- Please Select --")
@@ -1200,7 +1172,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         #Stop the throbber and enable stuff again.
         self.throbber.Stop()
- 
+
         self.settings_button.Enable()
         self.update_disk_info_button.Enable()
         self.show_disk_info_button.Enable()
@@ -1494,7 +1466,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         Get the input file/Disk by calling self.file_choice_handler.
         """
         logger.debug("MainWindow().SelectInputFile(): Calling File Choice Handler...")
-        #TODO Can we get rid of this function?
         #TODO Later workaround for macOS?
         default_dir = "/dev"
 
@@ -1508,8 +1479,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         Get the output file/Disk by calling self.file_choice_handler.
         """
         logger.debug("MainWindow().SelectInputFile(): Calling File Choice Handler...")
-
-        #TODO Can we get rid of this function?
 
         self.file_choice_handler(_type="Output",
                                  user_selection=self.output_choice_box.GetStringSelection(),
@@ -1588,8 +1557,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                            "information on GNU ddrescue, and\nfor the source code, visit\n" \
                            "http://www.gnu.org/software/ddrescue/ddrescue.html\n\nFor more " \
                            "information on terminal-notifier, and\nfor the source code, visit\n" \
-                           "https://github.com/julienXX/terminal-notifier.\n\nFor more information" \
-                           "on wxPython, and for the source code,\n visit " \
+                           "https://github.com/julienXX/terminal-notifier.\n\nFor more " \
+                           "information on wxPython, and for the source code,\n visit " \
                            "https://wxpython.org\n\nFor more information on Python,\nand for" \
                            "the source code, visit https://www.python.org"
 
@@ -1776,7 +1745,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         else:
             self.on_start()
 
-    def on_mount(self, event=None):
+    def on_mount(self, event=None): #pylint: disable=unused-argument
         """
         When the user asks to mount a file, handle this and show FinishedWindow in order to carry
         out the request.
@@ -1893,7 +1862,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                         dlg.ShowModal()
                         dlg.Destroy()
                         self.update_status_bar("Ready.")
-                        return 0
+                        return
 
                     else:
                         logger.info("MainWindow().on_start(): Success...")
@@ -1959,13 +1928,13 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                 #Start the backend thread.
                 BackendThread(self)
 
-            except:
+            except Exception:
                 logger.critical("Unexpected error \n\n"+unicode(traceback.format_exc())
                                 + "\n\n while recovering data. Warning user and exiting.")
 
                 CoreTools.emergency_exit("There was an unexpected error:\n\n"
-                                            + unicode(traceback.format_exc())
-                                            + "\n\nWhile recovering data!")
+                                         + unicode(traceback.format_exc())
+                                         + "\n\nWhile recovering data!")
 
         else:
             logger.error("MainWindow().on_start(): One or more of InputFile, OutputFile or "
@@ -2229,13 +2198,13 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         if LINUX:
             CoreTools.start_process("killall -s INT ddrescue",
-                                       privileged=True)
+                                    privileged=True)
 
         else:
             CoreTools.start_process("killall -INT ddrescue",
-                                       privileged=True)
+                                    privileged=True)
 
-        self.aborted_recovery = True
+        self.aborted_recovery = True #pylint: disable=attribute-defined-outside-init
 
         #Disable control button.
         self.control_button.Disable()
@@ -2308,8 +2277,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         if session_ending:
             return
 
-        self.disk_capacity = disk_capacity
-        self.recovered_data = recovered_data
+        self.disk_capacity = disk_capacity #pylint: disable=attribute-defined-outside-init
+        self.recovered_data = recovered_data #pylint: disable=attribute-defined-outside-init
 
         #Stop the throbber.
         self.throbber.Stop()
@@ -2343,7 +2312,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
             #Notify the user.
             CoreTools.send_notification("Recovery Error! ddrescue aborted immediately. See "
-                                           "GUI for more info.")
+                                        "GUI for more info.")
 
             dlg = wx.MessageDialog(self.panel, "We didn't get ddrescue's initial status! This "
                                    "probably means ddrescue aborted immediately. Please check "
@@ -2361,7 +2330,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
             #Notify the user.
             CoreTools.send_notification("Recovery Error! ddrescue exited with exit status "
-                                           + unicode(return_code)+"!")
+                                        + unicode(return_code)+"!")
 
             dlg = wx.MessageDialog(self.panel, "ddrescue exited with nonzero exit status "
                                    + unicode(return_code)+"! Perhaps the output file/disk is "
@@ -2395,7 +2364,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
                 #Notify the user.
                 CoreTools.send_notification("Recovery finished, but not all data was "
-                                               "recovered.")
+                                            "recovered.")
 
             dlg = wx.MessageDialog(self.panel, message, "DDRescue-GUI - Information",
                                    wx.OK | wx.ICON_INFORMATION)
@@ -2526,7 +2495,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
             dlg.ShowModal()
             dlg.Destroy()
-            return True
+            return
 
         logger.info("MainWindow().on_exit(): Double-checking the exit attempt with the user...")
         dlg = wx.MessageDialog(self.panel, 'Are you sure you want to exit?',
@@ -2583,8 +2552,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                         else:
                             #Copy it to the specified path.
                             if CoreTools.start_process("cp /tmp/ddrescue-gui.log "+_file) == 0:
-                                dlg = wx.MessageDialog(self.panel, "Done! DDRescue-GUI will now exit.",
-                                                       "DDRescue-GUI - Information",
+                                dlg = wx.MessageDialog(self.panel, "Done! DDRescue-GUI will now "
+                                                       "exit", "DDRescue-GUI - Information",
                                                        wx.OK | wx.ICON_INFORMATION)
 
                                 dlg.ShowModal()
@@ -2935,7 +2904,8 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         """
 
         self.direct_disk_access_check_box = wx.CheckBox(self.panel, -1, "Use Direct Disk Access "
-                                                        "(Recommended, but untick if recovering from a file)")
+                                                        "(Recommended, but untick if recovering "
+                                                        "from a file)")
 
         self.overwrite_output_file_check_box = wx.CheckBox(self.panel, -1, "Overwrite output "
                                                            "file/disk (Enable if recovering to "
@@ -3041,31 +3011,16 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         """
         #Checkboxes:
         #Direct disk access setting.
-        if SETTINGS["DirectAccess"] == "-d":
-            self.direct_disk_access_check_box.SetValue(True)
-        else:
-            self.direct_disk_access_check_box.SetValue(False)
+        self.direct_disk_access_check_box.SetValue(SETTINGS["DirectAccess"] == "-d")
 
-        #Overwrite output Disk setting.
-        if SETTINGS["OverwriteOutputFile"] == "-f":
-            self.overwrite_output_file_check_box.SetValue(True)
-
-        else:
-            self.overwrite_output_file_check_box.SetValue(False)
+        #Overwrite output disk setting.
+        self.overwrite_output_file_check_box.SetValue(SETTINGS["OverwriteOutputFile"] == "-f")
 
         #Reverse (read data from the end to the start of the input file) setting.
-        if SETTINGS["Reverse"] == "-R":
-            self.reverse_check_box.SetValue(True)
-
-        else:
-            self.reverse_check_box.SetValue(False)
+        self.reverse_check_box.SetValue(SETTINGS["Reverse"] == "-R")
 
         #Preallocate (preallocate space in the output file) setting.
-        if SETTINGS["Preallocate"] == "-p":
-            self.preallocate_check_box.SetValue(True)
-
-        else:
-            self.preallocate_check_box.SetValue(False)
+        self.preallocate_check_box.SetValue(SETTINGS["Preallocate"] == "-p")
 
         #NoSplit (Don't split failed blocks) option.
         if SETTINGS["NoSplit"] == "-n":
@@ -3312,7 +3267,7 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
 
 #End settings Window
 #Begin Privacy Policy Window.
-class PrivPolWindow(wx.Frame):
+class PrivPolWindow(wx.Frame): #pylint: disable=too-many-ancestors
     """
     DDRescue-GUI's privacy policy window.
     """
@@ -3396,7 +3351,7 @@ class PrivPolWindow(wx.Frame):
 
 #End Privacy Policy Window.
 #Begin Finished Window
-class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
+class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-many-ancestors
     """
     This is displayed after a recovery is finished/aborted.
     Used to provide the user w/ options to restart the GUI,
@@ -3693,17 +3648,16 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
             #Handle direct disk access on OS X.
             if LINUX is False and options_list.index(option) == 0 and option != "":
                 #If we're recovering from a file, don't enable direct disk access (it won't work).
-                if SETTINGS["InputFile"][0:5] == "/dev/":
-                    #Remove InputFile and switch it with a string that uses /dev/rdisk (raw disk)
-                    #instead of /dev/disk.
-                    options_list.pop(10)
-                    options_list.insert(10, "/dev/r" + SETTINGS["InputFile"].split("/dev/")[1])
-
-                else:
+                if SETTINGS["InputFile"][0:5] != "/dev/":
                     #Make sure "-d" isn't added to the exec_list if this is a file we're reading
                     #from. It doesn't work on macOS.
                     #(continue to next iteration of loop w/o adding).
                     continue
+
+                #Remove InputFile and switch it with a string that uses /dev/rdisk (raw disk)
+                #instead of /dev/disk.
+                options_list.pop(10)
+                options_list.insert(10, "/dev/r" + SETTINGS["InputFile"].split("/dev/")[1])
 
             elif option != "":
                 exec_list.append(option)
@@ -3739,7 +3693,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                     try:
                         self.process_line(tidy_line)
 
-                    except:
+                    except Exception:
                         #Handle unexpected errors. Can happen once in normal operation on
                         #ddrescue v1.22+. TODO make smarter, don't fill log with these.
                         #TODO suppress 1st error if on new versions.
@@ -3766,67 +3720,45 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 
         #Check if we got ddrescue's init status, and if ddrescue exited with a status other
         #than 0. Handle errors in case someone is running DDRescue-GUI on an unsupported version
-        #of ddrescue. TODO refactor me.
-        if self.got_initial_status is False:
-            logger.error("MainBackendThread(): We didn't get the initial status before ddrescue "
-                         "exited! Something has gone wrong. Telling MainWindow and exiting...")
+        #of ddrescue.
+        #Prepare values.
+        tmp_return_code = int(cmd.returncode)
 
-            try:
-                wx.CallAfter(self.parent.on_recovery_ended,
-                             disk_capacity=unicode(self.disk_capacity)+" "+self.disk_capacity_unit,
-                             recovered_data=unicode(int(self.recovered_data))
-                             + " "+self.recovered_data_unit, result="NoInitialStatus",
-                             return_code=int(cmd.returncode))
+        if not self.got_initial_status:
+            logger.error("MainBackendThread(): We didn't get the initial status before "
+                         "ddrescue exited! Something has gone wrong. Telling MainWindow "
+                         "and exiting...")
 
-            except:
-                logger.error("MainBackendThread(): Unexpected error while trying to send recovery "
-                             "information to on_recovery_ended()! Continuing anyway. Are you "
-                             "running a newer/older version of ddrescue than we support?")
+            tmp_result = "NoInitialStatus"
 
-                wx.CallAfter(self.parent.on_recovery_ended, disk_capacity="Unknown Size",
-                             recovered_data="Unknown Size", result="NoInitialStatus",
-                             return_code=int(cmd.returncode))
-
-        elif int(cmd.returncode) != 0:
+        elif tmp_return_code != 0:
             logger.error("MainBackendThread(): ddrescue exited with exit status "
                          + unicode(cmd.returncode)+"! Something has gone wrong. Telling "
                          "MainWindow and exiting...")
 
-            try:
-                wx.CallAfter(self.parent.on_recovery_ended,
-                             disk_capacity=unicode(self.disk_capacity)+" "+self.disk_capacity_unit,
-                             recovered_data=unicode(int(self.recovered_data))
-                             + " "+self.recovered_data_unit, result="BadReturnCode",
-                             return_code=int(cmd.returncode))
-
-            except:
-                logger.error("MainBackendThread(): Unexpected error while trying to send recovery "
-                             "information to on_recovery_ended()! Continuing anyway. Are you "
-                             "running a newer/older version of ddrescue than we support?")
-
-                wx.CallAfter(self.parent.on_recovery_ended, disk_capacity="Unknown Size",
-                             recovered_data="Unknown Size", result="BadReturnCode",
-                             return_code=int(cmd.returncode))
+            tmp_result = "BadReturnCode"
 
         else:
             logger.info("MainBackendThread(): ddrescue finished recovering data. Telling "
                         "MainWindow and exiting...")
 
-            try:
-                wx.CallAfter(self.parent.on_recovery_ended,
-                             disk_capacity=unicode(self.disk_capacity)+" "+self.disk_capacity_unit,
-                             recovered_data=unicode(int(self.recovered_data))
-                             + " "+self.recovered_data_unit, result="Success",
-                             return_code=int(cmd.returncode))
+            tmp_result = "Success"
 
-            except:
-                logger.error("MainBackendThread(): Unexpected error while trying to send recovery "
-                             "information to on_recovery_ended()! Continuing anyway. Are you "
-                             "running a newer/older version of ddrescue than we support?")
+        try:
+            tmp_disk_capacity = unicode(self.disk_capacity)+" "+self.disk_capacity_unit
+            tmp_recovered_data = unicode(int(self.recovered_data))+" "+self.recovered_data_unit
 
-                wx.CallAfter(self.parent.on_recovery_ended, disk_capacity="Unknown Size",
-                             recovered_data="Unknown Size", result="Success",
-                             return_code=int(cmd.returncode))
+        except Exception:
+            logger.error("MainBackendThread(): Unexpected error while trying to process recovery "
+                         "information to on_recovery_ended()! Continuing anyway. Are you "
+                         "running a newer/older version of ddrescue than we support?")
+
+            tmp_disk_capacity = "Unknown Size"
+            tmp_recovered_data = "Unknown Size"
+
+        wx.CallAfter(self.parent.on_recovery_ended, disk_capacity=tmp_disk_capacity,
+                     recovered_data=tmp_recovered_data, result=tmp_result,
+                     return_code=tmp_return_code)
 
     def process_line(self, line): #pylint: disable=too-many-statements, too-many-branches
         """
@@ -4030,10 +3962,13 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
             #understandable as possible.
             if result <= 60:
                 return unicode(int(round(result)))+" seconds"
+
             elif result >= 60 and result <= 3600:
                 return unicode(round(result/60, 1))+" minutes"
+
             elif result > 3600 and result <= 86400:
                 return unicode(round(result/3600, 2))+" hours"
+
             elif result > 86400:
                 return unicode(round(result/86400, 2))+" days"
 
@@ -4042,11 +3977,9 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
             logger.warning("MainBackendThread().calculate_time_remaining(): Attempted to "
                            "divide by zero! Returning 'Unknown'")
 
-            #TODO Return -1 and handle that instead.
-            return "Unknown"
+        return "Unknown"
 
 #End Backend thread
-
 if __name__ == "__main__":
     APP = MyApp(False)
     APP.MainLoop()

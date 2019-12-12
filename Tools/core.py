@@ -82,7 +82,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.getLogger("DDRescue-GUI").getEffectiveLevel())
 
 #Begin Mac Authentication Window.
-class AuthWindow(wx.Frame): #pylint: disable=too-many-instance-attributes
+class AuthWindow(wx.Frame): #pylint: disable=too-many-ancestors,too-many-instance-attributes
     """
     A simple authentication dialog that is used when elevated privileges are required.
     Until version 2.0.0, this was used to start the GUI, but since that release, privileges
@@ -378,7 +378,7 @@ def get_helper(cmd):
 
     return "pkexec "+helper
 
-def start_process(cmd, return_output=False, privileged=False, ignore_stderr=False):
+def start_process(cmd, return_output=False, privileged=False):
     """
     Start a given process, and return the output and return value if needed.
 
@@ -392,8 +392,6 @@ def start_process(cmd, return_output=False, privileged=False, ignore_stderr=Fals
         privileged[=False]          Whether to execute the command(s) with
                                     elevated privileges or not. If not specified
                                     the default is False.
-
-        ignore_stderr[=False]       If True, don't capture stderr from the subprocess.
 
     Returns:
         May return multiple types:
@@ -430,6 +428,7 @@ def start_process(cmd, return_output=False, privileged=False, ignore_stderr=Fals
                 global AUTH_DIALOG_OPEN
                 AUTH_DIALOG_OPEN = True
 
+            #Make sure the throbber plays properly and the window is responsive.
             while AUTH_DIALOG_OPEN:
                 wx.GetApp().Yield()
                 time.sleep(0.04)
@@ -453,21 +452,15 @@ def start_process(cmd, return_output=False, privileged=False, ignore_stderr=Fals
 
             cmd = "sudo -SH "+environ+cmd
 
-    environ = dict(os.environ, LC_ALL="C") #pylint: disable=redefined-variable-type
+    environ = dict(os.environ, LC_ALL="C")
 
     cmd = shlex.split(cmd)
 
     logger.debug("start_process(): Starting process: "+' '.join(cmd))
 
-    if not ignore_stderr:
-        runcmd = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                  stderr=subprocess.STDOUT, env=environ,
-                                  shell=False)
-
-    else:
-        runcmd = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                  env=environ,
-                                  shell=False)
+    runcmd = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT, env=environ,
+                              shell=False)
 
     #Save the output, and runcmd.returncode,
     #as they tend to reset fairly quickly. Handle unicode properly.
@@ -493,7 +486,7 @@ def start_process(cmd, return_output=False, privileged=False, ignore_stderr=Fals
         #Return the return code, as well as the output.
         return retval, '\n'.join(output)
 
-def read(cmd, testing=False): #pylint: disable=redefined-variable-type
+def read(cmd, testing=False):
     """
     Read the cmd's output character by character. Also make sure everything is
     converted to unicode. Break lines by the newline and
@@ -556,6 +549,36 @@ def read(cmd, testing=False): #pylint: disable=redefined-variable-type
 
     return line_list
 
+def find_ddrescue():
+    """
+    Attempts to find GNU ddrescue, and ends the program if it couldn't be found.
+    """
+
+    #Define places we need to look for ddrescue.
+    if LINUX:
+        paths = os.getenv("PATH").split(":")
+
+    else:
+        paths = [RESOURCEPATH]
+
+    found_ddrescue = False
+
+    for path in paths:
+        if os.path.isfile(path+"/ddrescue"):
+            #Yay!
+            found_ddrescue = True
+
+    if not found_ddrescue:
+        dlg = wx.MessageDialog(None, "Couldn't find ddrescue! Are you sure it is "
+                               "installed on your system? If you're on a "
+                               "mac, this indicates an issue with the "
+                               "packaging, and if so please email me at "
+                               "hamishmb@live.co.uk.", 'DDRescue-GUI - Error!',
+                               wx.OK | wx.ICON_ERROR)
+        dlg.ShowModal()
+        dlg.Destroy()
+        sys.exit("\nCouldn't find ddrescue!")
+
 def determine_ddrescue_version():
     """
     Used to determine the version of ddrescue installed on the system,
@@ -568,6 +591,9 @@ def determine_ddrescue_version():
     Returns:
         string.         The ddrescue version present on the system.
     """
+
+    #Check we can find ddrescue.
+    find_ddrescue()
 
     #Use correct command.
     if LINUX:
@@ -744,10 +770,9 @@ def is_mounted(partition, mount_point=None):
 
         #LINUX fix: Accept any mountpoint when called with just one argument.
         for line in mount_info.split("\n"):
-            if len(line) != 0:
-                if line.split()[0] == partition or line.split()[2] == partition:
-                    disk_is_mounted = True
-                    break
+            if line and line.split()[0] == partition or line.split()[2] == partition:
+                disk_is_mounted = True
+                break
 
     else:
         #Check where it's mounted at.
@@ -762,13 +787,8 @@ def is_mounted(partition, mount_point=None):
         if get_mount_point(partition) == mount_point:
             disk_is_mounted = True
 
-    if disk_is_mounted:
-        logger.debug("is_mounted(): It is. Returning True...")
-        return True
-
-    else:
-        logger.debug("is_mounted(): It isn't. Returning False...")
-        return False
+    logger.debug("is_mounted(): Disk is mounted: "+unicode(disk_is_mounted))
+    return disk_is_mounted
 
 def get_mount_point(partition):
     """
@@ -795,7 +815,7 @@ def get_mount_point(partition):
     for line in mount_info.split("\n"):
         split_line = line.split()
 
-        if len(split_line) != 0:
+        if split_line:
             if partition == split_line[0]:
                 mount_point = split_line[2]
                 break
@@ -913,7 +933,8 @@ def unmount_disk(disk):
             retval = start_process(cmd="umount "+disk, return_output=False, privileged=True)
 
         else:
-            retval = start_process(cmd="diskutil umount "+disk, return_output=False, privileged=True)
+            retval = start_process(cmd="diskutil umount "+disk, return_output=False,
+                                   privileged=True)
 
         #Check that this worked okay.
         if retval != 0:

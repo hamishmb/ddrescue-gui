@@ -164,7 +164,7 @@ class Core:
         """
         logger.info("unmount_output_file(): Attempting to unmount output file...")
 
-        return_value = True
+        success = True
 
         #Unmount these in reverse order, otherwise it won't work.
         Core.output_file_devicenames.reverse()
@@ -193,18 +193,18 @@ class Core:
 
             if LINUX:
                 if not Linux.unmount_output_file(disk):
-                    return_value = False
+                    success = False
 
             else:
                 if "/dev" in disk:
                     if not Mac.unmount_output_file(disk):
-                        return_value = False
+                        success = False
 
         #Reset everything if it worked.
-        if return_value == True:
+        if success is True:
             Core.reset()
 
-        return return_value
+        return success
 
 #------------------------------------ LINUX-SPECIFIC FUNCTIONS ------------------------------------
 class Linux:
@@ -239,8 +239,7 @@ class Linux:
         #--------------- USING PARTED TO DETECT PARTITION TABLES AND FILESYSTEMS ---------------
         #If list of partitions is empty (or 1 partition), we have a partition.
         retval, output = CoreTools.start_process(cmd="parted -sm "+output_file+" print",
-                                                    return_output=True, privileged=True,
-                                                    ignore_stderr=True)
+                                                 return_output=True, privileged=True)
 
         if retval != 0:
             return "unknown", False
@@ -281,13 +280,13 @@ class Linux:
         if output_file_type == "unknown":
             #Check for LUKS.
             if CoreTools.start_process(cmd="cryptsetup isLuks "+output_file,
-                                          privileged=True) == 0:
+                                       privileged=True) == 0:
 
                 output_file_type = "LUKS"
 
             #Check for LVM.
             output = CoreTools.start_process(cmd="file -s "+output_file,
-                                                return_output=True, privileged=True)[1]
+                                             return_output=True, privileged=True)[1]
 
             if "LVM" in output:
                 output_file_type = "LVM"
@@ -339,8 +338,8 @@ class Linux:
             logger.info("mount_output_file(): Creating loop device...")
 
             kpartx_output = CoreTools.start_process(cmd="kpartx -av "
-                                                       + output_file,
-                                                       return_output=True, privileged=True)[1]
+                                                    + output_file,
+                                                    return_output=True, privileged=True)[1]
 
             kpartx_output = kpartx_output.split("\n")
 
@@ -349,8 +348,8 @@ class Linux:
 
         #Get some Disk information.
         lsblk_output = CoreTools.start_process(cmd="lsblk -J -o NAME,FSTYPE,SIZE",
-                                                  return_output=True,
-                                                  privileged=True)[1].split("\n")
+                                               return_output=True,
+                                               privileged=True)[1].split("\n")
 
         #Remove any errors from lsblk in the output.
         cleaned_lsblk_output = []
@@ -428,10 +427,10 @@ class Linux:
         if "/dev/" not in output_file:
             pv_device = "/dev/loop10"
             CoreTools.start_process(cmd="losetup /dev/loop10 "+output_file,
-                                       return_output=True, privileged=True)
+                                    return_output=True, privileged=True)
 
         output = CoreTools.start_process(cmd="pvs", return_output=True,
-                                            privileged=True)[1]
+                                         privileged=True)[1]
 
         #Read pvdisplay's output to find the volume group name for this device.
         for line in output.split("\n"):
@@ -440,12 +439,12 @@ class Linux:
 
         #Activate the volume group.
         CoreTools.start_process(cmd="vgchange -a y "+Linux.volume_group_name, return_output=True,
-                                   privileged=True)
+                                privileged=True)
 
         #Find logical volumes.
         retval, lvdisplay_output = CoreTools.start_process(cmd="lvdisplay -C --units M",
-                                                              return_output=True,
-                                                              privileged=True)
+                                                           return_output=True,
+                                                           privileged=True)
 
         lvdisplay_output = lvdisplay_output.split("\n")
 
@@ -468,8 +467,8 @@ class Linux:
         Core.output_file_mountpoint = "/tmp/ddrescue-gui/destination"
 
         retval = CoreTools.mount_disk(partition=partition,
-                                         mount_point=Core.output_file_mountpoint,
-                                         options="-r")
+                                      mount_point=Core.output_file_mountpoint,
+                                      options="-r")
 
         if retval != 0:
             logger.error("mount_partition_linux(): Error! Warning the user...")
@@ -589,7 +588,7 @@ class Linux:
             cmd = "kpartx -d "+output_file
 
         #Deactivate volume group if needed.
-        elif Core.output_file_types[Core.output_file_devicenames.index(output_file)] ==  "LVM":
+        elif Core.output_file_types[Core.output_file_devicenames.index(output_file)] == "LVM":
             #Shouldn't cause an error if volume group is already unmounted.
             logger.debug("unmount_output_file(): Pulling down loop device...")
             cmd = "vgchange -a n "+Linux.volume_group_name
@@ -806,7 +805,8 @@ class Mac:
         success = False
 
         if Core.output_file_types[-1] == "Device":
-            #Check that the filesystem the user wanted is among those that have been marked mountable.
+            #Check that the filesystem the user wanted is among those that
+            #have been marked mountable.
             for partition in disks:
                 disk = partition["dev-entry"]
 
@@ -945,7 +945,7 @@ class Mac:
         """
 
         retval, output = CoreTools.start_process(cmd="hdiutil "+options, return_output=True,
-                                                    privileged=True)
+                                                 privileged=True)
 
         #Handle this common error - image in use.
         if "Resource temporarily unavailable" in output or retval != 0:
@@ -956,7 +956,7 @@ class Mac:
 
             #TODO Consider dropping support for macOS 10.9 and 10.10 to improve reliability.
             for line in CoreTools.start_process(cmd="diskutil list",
-                                                   return_output=True)[1].split("\n"):
+                                                return_output=True)[1].split("\n"):
                 try:
                     if line.split()[0].split("/")[1] == "dev":
                         #This is a line with a device name on it.
@@ -964,13 +964,13 @@ class Mac:
                                        + line.split()[0]+"...")
 
                         CoreTools.start_process(cmd="hdiutil detach "+line.split()[0],
-                                                   privileged=True)
+                                                privileged=True)
 
                 except IndexError:
                     pass
 
             #Try again.
             retval, output = CoreTools.start_process(cmd="hdiutil "+options, return_output=True,
-                                                        privileged=True)
+                                                     privileged=True)
 
         return retval, output
