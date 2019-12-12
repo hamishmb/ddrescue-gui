@@ -439,13 +439,15 @@ def start_process(cmd, return_output=False, privileged=False):
                 #Fix import paths on macOS.
                 #This is necessary because the support for running extra python processes
                 #in py2app is poor.
-                #TODO: Will probably need to change w/ new major version of Py 3 eg 3.7, 3.8.
+                major = sys.version_info[0]
+                minor = sys.version_info[1]
+
                 environ = 'LC_ALL="C" PYTHONHOME="'+RESOURCEPATH+'" PYTHONPATH="' \
-                          + RESOURCEPATH+'/lib/python37.zip:' \
-                          + RESOURCEPATH+'/lib/python3.7:' \
-                          + RESOURCEPATH+'/lib/python3.7/lib-dynload:' \
-                          + RESOURCEPATH+'/lib/python3.7/site-packages.zip:' \
-                          + RESOURCEPATH+'/lib/python3.7/site-packages" '
+                          + RESOURCEPATH+'/lib/python'+major+minor+'.zip:' \
+                          + RESOURCEPATH+'/lib/python'+major+'.'minor+':' \
+                          + RESOURCEPATH+'/lib/python'+major+'.'minor+'/lib-dynload:' \
+                          + RESOURCEPATH+'/lib/python'+major+'.'minor+'/site-packages.zip:' \
+                          + RESOURCEPATH+'/lib/python'+major+'.'minor+'/site-packages" '
 
             else:
                 environ = 'LC_ALL="C" '
@@ -724,7 +726,6 @@ def send_notification(msg):
     """
     if LINUX:
         #Use notify-send.
-        #FIXME Doesn't always work as root - may not show up during unit tests.
         start_process(cmd="notify-send 'DDRescue-GUI' '"+msg
                       +"' -i /usr/share/pixmaps/ddrescue-gui.png", return_output=False)
 

@@ -37,9 +37,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-#open fix for python 2.
-from io import open #pylint: disable=redefined-builtin
-
 #Import other modules
 from distutils.version import LooseVersion
 
