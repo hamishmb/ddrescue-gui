@@ -906,12 +906,7 @@ class Mac:
         """
 
         #Parse the plist (Property List).
-        #TODO no longer handle UnicodeDecodeErrors (shouldn't happen on py3)
-        try:
-            hdiutil_output = plistlib.readPlistFromString(output.encode())
-
-        except UnicodeDecodeError:
-            return None, None, "UnicodeError"
+        hdiutil_output = plistlib.readPlistFromString(output.encode())
 
         #Find the disk and get the mountpoint.
         try:
