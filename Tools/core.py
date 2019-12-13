@@ -444,11 +444,11 @@ def start_process(cmd, return_output=False, privileged=False):
                 minor = sys.version_info[1]
 
                 environ = 'LC_ALL="C" PYTHONHOME="'+RESOURCEPATH+'" PYTHONPATH="' \
-                          + RESOURCEPATH+'/lib/python'+major+minor+'.zip:' \
-                          + RESOURCEPATH+'/lib/python'+major+'.'+minor+':' \
-                          + RESOURCEPATH+'/lib/python'+major+'.'+minor+'/lib-dynload:' \
-                          + RESOURCEPATH+'/lib/python'+major+'.'+minor+'/site-packages.zip:' \
-                          + RESOURCEPATH+'/lib/python'+major+'.'+minor+'/site-packages" '
+                          + RESOURCEPATH+'/lib/python'+unicode(major)+unicode(minor)+'.zip:' \
+                          + RESOURCEPATH+'/lib/python'+unicode(major)+unicode(minor)+':' \
+                          + RESOURCEPATH+'/lib/python'+unicode(major)+unicode(minor)+'/lib-dynload:' \
+                          + RESOURCEPATH+'/lib/python'unicode(major)+unicode(minor)+'/site-packages.zip:' \
+                          + RESOURCEPATH+'/lib/python'+unicode(major)+unicode(minor)+'/site-packages" '
 
             else:
                 environ = 'LC_ALL="C" '
