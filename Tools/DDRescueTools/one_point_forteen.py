@@ -97,7 +97,7 @@ def get_time_remaining(average_read_rate, average_read_rate_unit, disk_capacity,
                             "10.2 minutes", "4.3 days" etc, or "Unknown"
                             if unable to calculate.
 
-    Works with ddrescue versions: 1.14,1.15,1.16,1.17,1.18,1.19,1.20,1.21,1.22,1.23,1.24
+    Works with ddrescue versions: 1.14,1.15,1.16,1.17,1.18,1.19
     """
 
     #Make sure everything's in the correct units.

@@ -3809,6 +3809,12 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 
                 wx.CallAfter(self.parent.update_time_since_last_read, self.time_since_last_read)
 
+            #Get remaining time on ddrescue 1.20
+            if int(SETTINGS["DDRescueVersion"].split(".")[1]) == 20:
+                #pylint: disable=no-member
+                self.time_remaining = self.get_time_remaining(split_line)
+                wx.CallAfter(self.parent.update_time_remaining, self.time_remaining)
+
             wx.CallAfter(self.parent.update_output_pos, self.output_pos)
 
         elif split_line[0] == "non-tried:":
@@ -3841,19 +3847,11 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 
                 self.recovered_data = round(self.recovered_data, 3)
 
-                #pylint: disable=no-member
-                self.time_remaining = self.get_time_remaining(self.average_read_rate,
-                                                              self.average_read_rate_unit,
-                                                              self.disk_capacity,
-                                                              self.disk_capacity_unit,
-                                                              self.recovered_data)
-
                 wx.CallAfter(self.parent.update_recovered_data, unicode(self.recovered_data)
                              + " "+self.recovered_data_unit)
 
                 wx.CallAfter(self.parent.update_num_errors, self.num_errors)
                 wx.CallAfter(self.parent.update_progress, self.recovered_data, self.disk_capacity)
-                wx.CallAfter(self.parent.update_time_remaining, self.time_remaining)
 
             except AttributeError:
                 pass
@@ -3892,21 +3890,29 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 
                 self.recovered_data = round(self.recovered_data, 3)
 
-                #pylint: disable=no-member
-                self.time_remaining = self.get_time_remaining(self.average_read_rate,
-                                                              self.average_read_rate_unit,
-                                                              self.disk_capacity,
-                                                              self.disk_capacity_unit,
-                                                              self.recovered_data)
+                #Calculate remaining time if not on ddrescue 1.20.
+                if int(SETTINGS["DDRescueVersion"].split(".")[1]) != 20:
+                    #pylint: disable=no-member
+                    self.time_remaining = self.get_time_remaining(self.average_read_rate,
+                                                                  self.average_read_rate_unit,
+                                                                  self.disk_capacity,
+                                                                  self.disk_capacity_unit,
+                                                                  self.recovered_data)
+
+                    wx.CallAfter(self.parent.update_time_remaining, self.time_remaining)
 
                 wx.CallAfter(self.parent.update_error_size, self.error_size)
                 wx.CallAfter(self.parent.update_recovered_data, unicode(self.recovered_data)
                              + " "+self.recovered_data_unit)
 
                 wx.CallAfter(self.parent.update_progress, self.recovered_data, self.disk_capacity)
-                wx.CallAfter(self.parent.update_time_remaining, self.time_remaining)
 
             wx.CallAfter(self.parent.update_current_read_rate, self.current_read_rate)
+
+        elif split_line[0] == "pct" and int(SETTINGS["DDRescueVersion"].split(".")[1]) >= 21:
+            #pylint: disable=no-member
+            self.time_remaining = self.get_time_remaining(split_line)
+            wx.CallAfter(self.parent.update_time_remaining, self.time_remaining)
 
         elif "pct" not in line:
             #Probably a status line (maybe the initial one).

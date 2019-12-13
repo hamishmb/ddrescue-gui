@@ -46,3 +46,19 @@ def get_time_since_last_read(split_line):
     Works with ddrescue versions: 1.20,1.21,1.22,1.23,1.24
     """
     return split_line[-1]
+
+@decorators.define_versions
+def get_time_remaining(split_line):
+    """
+    Get Time Since Last Read value.
+
+    Args:
+        split_line (string):        The line from ddrescue's output that contains
+                                    the information, split by whitespace.
+
+    Works with ddrescue versions: 1.20,1.21,1.22,1.23,1.24
+    """
+    #Find where "remaining" is in the line, and return all data elements after that.
+    remaining_index = split_line.index("remaining")
+
+    return ' '.join(split_line[remaining_index+2:])
