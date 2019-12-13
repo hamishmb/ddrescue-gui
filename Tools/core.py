@@ -447,7 +447,7 @@ def start_process(cmd, return_output=False, privileged=False):
                           + RESOURCEPATH+'/lib/python'+unicode(major)+unicode(minor)+'.zip:' \
                           + RESOURCEPATH+'/lib/python'+unicode(major)+unicode(minor)+':' \
                           + RESOURCEPATH+'/lib/python'+unicode(major)+unicode(minor)+'/lib-dynload:' \
-                          + RESOURCEPATH+'/lib/python'unicode(major)+unicode(minor)+'/site-packages.zip:' \
+                          + RESOURCEPATH+'/lib/python'+unicode(major)+unicode(minor)+'/site-packages.zip:' \
                           + RESOURCEPATH+'/lib/python'+unicode(major)+unicode(minor)+'/site-packages" '
 
             else:
