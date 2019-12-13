@@ -45,7 +45,10 @@ def get_time_since_last_read(split_line):
 
     Works with ddrescue versions: 1.20,1.21,1.22,1.23,1.24
     """
-    return split_line[-1]
+    #Find the index where "read:" is, and get all useful information after that.
+    read_index = split_line.index("read:")
+
+    return ' '.join(split_line[read_index+1:])
 
 @decorators.define_versions
 def get_time_remaining(split_line):

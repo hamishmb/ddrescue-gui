@@ -67,8 +67,10 @@ def get_outputpos_time_since_last_read(split_line): #pylint: disable=invalid-nam
 
     Works with ddrescue versions: 1.14,1.15,1.16,1.17
     """
+    #Find the index where "read:" is, and get all useful information after that.
+    read_index = split_line.index("read:")
 
-    return (' '.join(split_line[1:3]).replace(",", ""), ' '.join(split_line[-2:]))
+    return (' '.join(split_line[1:3]).replace(",", ""), ' '.join(split_line[read_index+1:]))
 
 @decorators.define_versions
 def get_current_rate_error_size_recovered_data(split_line): #pylint: disable=invalid-name
