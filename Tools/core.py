@@ -74,6 +74,7 @@ elif "wxMac" in wx.PlatformInfo:
 
 AUTH_DIALOG_OPEN = False
 APPICON = None
+UNIT_LIST = ('null', 'B', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
 DISKINFO = {}
 SETTINGS = {}
 
@@ -444,10 +445,10 @@ def start_process(cmd, return_output=False, privileged=False):
 
                 environ = 'LC_ALL="C" PYTHONHOME="'+RESOURCEPATH+'" PYTHONPATH="' \
                           + RESOURCEPATH+'/lib/python'+major+minor+'.zip:' \
-                          + RESOURCEPATH+'/lib/python'+major+'.'minor+':' \
-                          + RESOURCEPATH+'/lib/python'+major+'.'minor+'/lib-dynload:' \
-                          + RESOURCEPATH+'/lib/python'+major+'.'minor+'/site-packages.zip:' \
-                          + RESOURCEPATH+'/lib/python'+major+'.'minor+'/site-packages" '
+                          + RESOURCEPATH+'/lib/python'+major+'.'+minor+':' \
+                          + RESOURCEPATH+'/lib/python'+major+'.'+minor+'/lib-dynload:' \
+                          + RESOURCEPATH+'/lib/python'+major+'.'+minor+'/site-packages.zip:' \
+                          + RESOURCEPATH+'/lib/python'+major+'.'+minor+'/site-packages" '
 
             else:
                 environ = 'LC_ALL="C" '
@@ -737,6 +738,32 @@ def send_notification(msg):
                       +"""-sender org.pythonmac.unspecified.DDRescue-GUI """ \
                       +"""-group \"DDRescue-GUI\"""",
                       return_output=False)
+
+def change_units(number_to_change, current_unit, required_unit):
+    """
+    Convert data so it uses the correct unit of measurement.
+
+    Args:
+        number_to_change (int).         The number we wish to change the units
+                                        for.
+
+        current_unit (string).          The current unit of this number.
+        required_unit (string).         The required unit for this number.
+
+    Returns:
+        tuple(int, string).
+
+            1st element:                The number's value in its new unit.
+            2nd element:                The new unit.
+    """
+    #Prepare for the change.
+    old_unit_number = UNIT_LIST.index(current_unit[0])
+    required_unit_number = UNIT_LIST.index(required_unit[0])
+    change_in_unit_number = required_unit_number - old_unit_number
+    power = -change_in_unit_number * 3
+
+    #Do it.
+    return number_to_change * 10**power, required_unit[:2]
 
 def is_mounted(partition, mount_point=None):
     """

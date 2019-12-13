@@ -27,8 +27,15 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import sys
+import os
 
 from . import decorators
+
+#Allow imports of modules & packages 1 level up.
+sys.path.insert(0, os.path.abspath('..'))
+
+#Import tools.
+from Tools import core as CoreTools #pylint: disable=import-error
 
 #Make unicode an alias for str in Python 3.
 if sys.version_info[0] == 3:
@@ -77,3 +84,46 @@ def get_current_rate_error_size_recovered_data(split_line): #pylint: disable=inv
 
     return (' '.join(split_line[7:9]), ' '.join(split_line[3:5]).replace(",", ""),
             split_line[0], split_line[1][:2])
+
+@decorators.define_versions
+def get_time_remaining(average_read_rate, average_read_rate_unit, disk_capacity,
+                       disk_capacity_unit, recovered_data):
+    """
+    Calculate remaining time based on the average read rate and the current amount
+    of data recovered.
+
+    Returns:
+        string.             The remaining time in human-readable form eg
+                            "10.2 minutes", "4.3 days" etc, or "Unknown"
+                            if unable to calculate.
+
+    Works with ddrescue versions: 1.14,1.15,1.16,1.17,1.18,1.19,1.20,1.21,1.22,1.23,1.24
+    """
+
+    #Make sure everything's in the correct units.
+    new_average_read_rate = CoreTools.change_units(float(average_read_rate),
+                                                   average_read_rate_unit,
+                                                   disk_capacity_unit)[0]
+
+    try:
+        #Perform the calculation and round it.
+        result = (int(disk_capacity) - recovered_data) / new_average_read_rate
+
+        #Convert between Seconds, Minutes, Hours, and Days to make the value as
+        #understandable as possible.
+        if result <= 60:
+            return unicode(int(round(result)))+" seconds"
+
+        elif result >= 60 and result <= 3600:
+            return unicode(round(result/60, 1))+" minutes"
+
+        elif result > 3600 and result <= 86400:
+            return unicode(round(result/3600, 2))+" hours"
+
+        elif result > 86400:
+            return unicode(round(result/86400, 2))+" days"
+
+    except ZeroDivisionError:
+        pass
+
+    return "Unknown"

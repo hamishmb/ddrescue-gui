@@ -3591,7 +3591,6 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
         #any info from ddrescue.
         self.old_status = ""
         self.got_initial_status = False
-        self.unit_list = ['null', 'B', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
         self.input_pos = "0 B"
         self.disk_capacity = "An unknown amount of"
         self.disk_capacity_unit = "B"
@@ -3837,12 +3836,17 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 
                 #Change the unit of measurement of the current amount of recovered data if needed.
                 (self.recovered_data, self.recovered_data_unit) = \
-                self.change_units(float(self.recovered_data), self.recovered_data_unit,
-                                  self.disk_capacity_unit)
+                CoreTools.change_units(float(self.recovered_data), self.recovered_data_unit,
+                                       self.disk_capacity_unit)
 
                 self.recovered_data = round(self.recovered_data, 3)
 
-                self.time_remaining = self.calculate_time_remaining()
+                #pylint: disable=no-member
+                self.time_remaining = self.get_time_remaining(self.average_read_rate,
+                                                              self.average_read_rate_unit,
+                                                              self.disk_capacity,
+                                                              self.disk_capacity_unit,
+                                                              self.recovered_data)
 
                 wx.CallAfter(self.parent.update_recovered_data, unicode(self.recovered_data)
                              + " "+self.recovered_data_unit)
@@ -3883,12 +3887,17 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 
                 #Change the unit of measurement of the current amount of recovered data if needed.
                 (self.recovered_data, self.recovered_data_unit) = \
-                self.change_units(float(self.recovered_data), self.recovered_data_unit,
-                                  self.disk_capacity_unit)
+                CoreTools.change_units(float(self.recovered_data), self.recovered_data_unit,
+                                       self.disk_capacity_unit)
 
                 self.recovered_data = round(self.recovered_data, 3)
 
-                self.time_remaining = self.calculate_time_remaining()
+                #pylint: disable=no-member
+                self.time_remaining = self.get_time_remaining(self.average_read_rate,
+                                                              self.average_read_rate_unit,
+                                                              self.disk_capacity,
+                                                              self.disk_capacity_unit,
+                                                              self.recovered_data)
 
                 wx.CallAfter(self.parent.update_error_size, self.error_size)
                 wx.CallAfter(self.parent.update_recovered_data, unicode(self.recovered_data)
@@ -3906,73 +3915,6 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
             if status != self.old_status:
                 wx.CallAfter(self.parent.update_status_bar, status)
                 self.old_status = status
-
-    def change_units(self, number_to_change, current_unit, required_unit):
-        """
-        Convert data so it uses the correct unit of measurement.
-
-        Args:
-            number_to_change (int).         The number we wish to change the units
-                                            for.
-
-            current_unit (string).          The current unit of this number.
-            required_unit (string).         The required unit for this number.
-
-        Returns:
-            tuple(int, string).
-
-                1st element:                The number's value in its new unit.
-                2nd element:                The new unit.
-        """
-        #Prepare for the change.
-        old_unit_number = self.unit_list.index(current_unit[0])
-        required_unit_number = self.unit_list.index(required_unit[0])
-        change_in_unit_number = required_unit_number - old_unit_number
-        power = -change_in_unit_number * 3
-
-        #Do it.
-        return number_to_change * 10**power, required_unit[:2]
-
-    def calculate_time_remaining(self):
-        """
-        Calculate remaining time based on the average read rate and the current amount
-        of data recovered.
-
-        Returns:
-            string.             The remaining time in human-readable form eg
-                                "10.2 minutes", "4.3 days" etc, or "Unknown"
-                                if unable to calculate.
-        """
-
-        #Make sure everything's in the correct units.
-        new_average_read_rate = self.change_units(float(self.average_read_rate),
-                                                  self.average_read_rate_unit,
-                                                  self.disk_capacity_unit)[0]
-
-        try:
-            #Perform the calculation and round it.
-            result = (int(self.disk_capacity) - self.recovered_data) / new_average_read_rate
-
-            #Convert between Seconds, Minutes, Hours, and Days to make the value as
-            #understandable as possible.
-            if result <= 60:
-                return unicode(int(round(result)))+" seconds"
-
-            elif result >= 60 and result <= 3600:
-                return unicode(round(result/60, 1))+" minutes"
-
-            elif result > 3600 and result <= 86400:
-                return unicode(round(result/3600, 2))+" hours"
-
-            elif result > 86400:
-                return unicode(round(result/86400, 2))+" days"
-
-        except ZeroDivisionError:
-            #We can't divide by zero!
-            logger.warning("MainBackendThread().calculate_time_remaining(): Attempted to "
-                           "divide by zero! Returning 'Unknown'")
-
-        return "Unknown"
 
 #End Backend thread
 if __name__ == "__main__":
