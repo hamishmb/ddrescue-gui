@@ -722,6 +722,10 @@ class Mac:
                     continue
 
             elif Core.output_file_types[-1] == "CD":
+                #Ignore "partitions" that don't start at 0.
+                if partition["partition-start"] != 0:
+                    continue
+
                 #Set the partition number for CD images.
                 partition["partition-number"] = 1
 
