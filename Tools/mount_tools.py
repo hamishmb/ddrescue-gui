@@ -643,12 +643,15 @@ class Mac:
                                          +" -plist")
 
         #If "whole disk" is in the output, this is a partition.
-        if "whole disk" in output:
+        if "whole disk" in output and not "APFS" in output:
             output_file_type = "Partition"
 
         #If there's an ISO9660 filesystem, treat this as a CD image.
         elif "ISO9660" in output:
             output_file_type = "CD"
+
+        elif "APFS" in output:
+            output_file_type = "APFS"
 
         else:
             output_file_type = "Device"
@@ -710,6 +713,8 @@ class Mac:
 
         output = hdiutil_imageinfo_output["partitions"]["partitions"]
 
+        partno = 1
+
         choices = []
 
         #TODO Round to best size using Unitlist?
@@ -721,13 +726,19 @@ class Mac:
                 if "partition-number" not in partition:
                     continue
 
+            elif Core.output_file_types[-1] == "APFS":
+                #Manually count partition number.
+                partition["partition-number"] = partno
+                partno += 1
+
             elif Core.output_file_types[-1] == "CD":
                 #Ignore "partitions" that don't start at 0.
                 if partition["partition-start"] != 0:
                     continue
 
                 #Set the partition number for CD images.
-                partition["partition-number"] = 1
+                partition["partition-number"] = partno
+                partno += 1
 
             choices.append("Partition "+unicode(partition["partition-number"])
                            + ", with size "+unicode((partition["partition-length"] \
