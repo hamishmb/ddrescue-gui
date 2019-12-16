@@ -725,6 +725,11 @@ class Mac:
                 if "partition-number" not in partition and "APFS" not in partition["partition-hint"]:
                     continue
 
+                #Set the partition number for APFS volumes.
+                if "APFS" in partition["partition-hint"]:
+                    partition["partition-number"] = partno
+                    partno += 1
+
             elif Core.output_file_types[-1] == "CD":
                 #Ignore "partitions" that don't start at 0.
                 if partition["partition-start"] != 0:
