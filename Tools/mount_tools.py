@@ -661,7 +661,7 @@ class Mac:
                                          + " -nomount -readonly -plist")
 
         #Get the device name
-        devicename, junk, result = Mac.get_device_name_mount_point(output)
+        devicename, result = Mac.get_device_name(output)
 
         return retval, devicename
 
@@ -872,13 +872,13 @@ class Mac:
             return False
 
     @classmethod
-    def get_device_name_mount_point(cls, output):
+    def get_device_name(cls, output):
         """
-        Get the device name and mount point of an output file,
-        given output from hdiutil mount -plist.
+        Get the device name of an output file,
+        given output from hdiutil attach -plist.
 
         Args:
-            output (string).                Output from "hdiutil mount -plist",
+            output (string).                Output from "hdiutil attach -plist",
                                             the command used to mount the output file.
 
         Returns:
@@ -887,10 +887,7 @@ class Mac:
                 1st element:        The device name of the output file eg
                                     "/dev/disk5", or None if unable to determine it.
 
-                2nd element:        The mount point of the output file, or None if
-                                    unable to determine it.
-
-                3rd element:        True (boolean) if successful in determining
+                2nd element:        True (boolean) if successful in determining
                                     device name and mount point. Otherwise, a
                                     string describing the error eg "UnicodeError".
         """
@@ -909,13 +906,13 @@ class Mac:
         except IndexError:
             return None, None, "IndexError"
 
-        return mounted_disk["dev-entry"], mounted_disk["mount-point"], True
+        return mounted_disk["dev-entry"], True
 
     @classmethod
     def run_hdiutil(cls, options):
         """
         Runs hdiutil on behalf of the rest of the program when called.
-        Tries to handle and fix hdiutil errors (e.g. 'Resource Temporarily
+        Tries to handle and ix hdiutil errors (e.g. 'Resource Temporarily
         Unavailable') if they occur.
 
         Args:
