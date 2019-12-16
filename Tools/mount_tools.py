@@ -148,7 +148,7 @@ class Core:
                 return Linux.mount_partition(SETTINGS["OutputFile"])
 
             else:
-                return Mac.mount_partition(SETTINGS["OutputFile"])
+                return Mac.mount_partition(SETTINGS["OutputFile"], attach=True)
         else:
             #We have a device/container of some kind.
             if LINUX:
@@ -656,12 +656,30 @@ class Mac:
         return output_file_type, retval == 0
 
     @classmethod
-    def mount_partition(cls, output_file):
+    def attach_file(cls, output_file):
         retval, output = Mac.run_hdiutil("attach "+output_file
-                                         + " -readonly -plist")
+                                         + " -nomount -readonly -plist")
+
+        #Get the device name
+        devicename, junk, result = Mac.get_device_name_mount_point(output)
+
+        return retval, devicename
+
+    @classmethod
+    def mount_partition(cls, output_file, attach=False):
+        #Attach the file first if needed.
+        if attach:
+            retval, partition = Mac.attach_file(output_file)
+
+        #We will mount the file/device in /tmp/ddrescue-gui/destination
+        Core.output_file_mountpoint = "/tmp/ddrescue-gui/destination"
+
+        retval = CoreTools.mount_disk(partition=partition,
+                                      mount_point=Core.output_file_mountpoint,
+                                      options="readOnly")
 
         if retval != 0:
-            logger.error("mount_partition_macos(): Error! Warning the user...")
+            logger.error("mount_partition_linux(): Error! Warning the user...")
             dlg = wx.MessageDialog(None, "Couldn't mount your output file. Most "
                                    "probably, the filesystem is damaged and you'll need to "
                                    "use another tool to read it from here. It could also be "
@@ -669,24 +687,6 @@ class Mac:
                                    "the recovery is incomplete, as that can sometimes cause "
                                    "this problem.", "DDRescue-GUI - Error!",
                                    style=wx.OK | wx.ICON_ERROR)
-
-            dlg.ShowModal()
-            dlg.Destroy()
-            return False
-
-        #Get the mount point - we don't decide where it is on macOS.
-        devicename, Core.output_file_mountpoint, result \
-        = Mac.get_device_name_mount_point(output)
-
-        Core.output_file_devicenames.append(devicename)
-
-        if result is not True:
-            logger.error("mount_output_partition(): FIXME: Unable to mount output file "
-                         " due to "+result+"! Cleaning up and warning user...")
-
-            Core.unmount_output_file()
-            dlg = wx.MessageDialog(None, "Couldn't mount output file due to an unhandled error.",
-                                   "DDRescue-GUI - Error", style=wx.OK | wx.ICON_ERROR)
 
             dlg.ShowModal()
             dlg.Destroy()
@@ -813,12 +813,7 @@ class Mac:
                 if disk.split("s")[-1] == selected_partition:
                     #Check if the partition we want is mountable
                     if "potentially-mountable" in partition:
-                        #We will mount the file/device in /tmp/ddrescue-gui/destination
-                        Core.output_file_mountpoint = "/tmp/ddrescue-gui/destination"
-
-                        retval = CoreTools.mount_disk(partition=disk,
-                                                      mount_point=Core.output_file_mountpoint,
-                                                      options="readOnly")
+                        Mac.mount_partition(disk)
                         success = retval == 0
                         break
 
@@ -826,12 +821,7 @@ class Mac:
             disk = disks[0]["dev-entry"]
 
             if disks[0]["potentially-mountable"]:
-                #We will mount the file/device in /tmp/ddrescue-gui/destination
-                Core.output_file_mountpoint = "/tmp/ddrescue-gui/destination"
-
-                retval = CoreTools.mount_disk(partition=disk,
-                                              mount_point=Core.output_file_mountpoint,
-                                              options="readOnly")
+                Mac.mount_partition(disk)
                 success = retval == 0
 
         if not success:
