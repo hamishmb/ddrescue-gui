@@ -666,10 +666,10 @@ class Mac:
         return retval, devicename
 
     @classmethod
-    def mount_partition(cls, output_file, attach=False):
+    def mount_partition(cls, partition, attach=False):
         #Attach the file first if needed.
         if attach:
-            retval, partition = Mac.attach_file(output_file)
+            retval, partition = Mac.attach_file(partition)
 
         #We will mount the file/device in /tmp/ddrescue-gui/destination
         Core.output_file_mountpoint = "/tmp/ddrescue-gui/destination"
