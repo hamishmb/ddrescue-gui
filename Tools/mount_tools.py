@@ -819,7 +819,7 @@ class Mac:
 
         success = False
 
-        if Core.output_file_types[-1] == "Device":
+        if Core.output_file_types[-1] in ("Device", "APFS"):
             #Check that the filesystem the user wanted is among those that
             #have been marked mountable.
             for partition in disks:
