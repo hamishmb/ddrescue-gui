@@ -651,7 +651,7 @@ class Mac:
             output_file_type = "CD"
 
         elif "APFS" in output:
-            output_file_type = "APFS"
+            output_file_type = "APFSContainer"
 
         else:
             output_file_type = "Device"
@@ -708,7 +708,7 @@ class Mac:
         hdiutil_imageinfo_output = plistlib.readPlistFromString(hdiutil_imageinfo_output.encode())
 
         #Get the block size of the image.
-        #FIXME Meaningless with CD images - random values on Catalina (check prev versions).
+        #FIXME Meaningless with CD images - random values on macOS.
         blocksize = hdiutil_imageinfo_output["partitions"]["block-size"]
 
         output = hdiutil_imageinfo_output["partitions"]["partitions"]
@@ -726,7 +726,7 @@ class Mac:
                 if "partition-number" not in partition:
                     continue
 
-            elif Core.output_file_types[-1] == "APFS":
+            elif Core.output_file_types[-1] == "APFSContainer":
                 #Manually count partition number.
                 partition["partition-number"] = partno
                 partno += 1
@@ -819,18 +819,28 @@ class Mac:
 
         success = False
 
-        if Core.output_file_types[-1] in ("Device", "APFS"):
+        if Core.output_file_types[-1] in ("Device", "APFSContainer"):
             #Check that the filesystem the user wanted is among those that
             #have been marked mountable.
             for partition in disks:
                 disk = partition["dev-entry"]
 
                 if disk.split("s")[-1] == selected_partition:
+                    #Find the type of this partition.
+                    _type, success = Mac.determine_output_file_type(disk)
+
                     #Check if the partition we want is mountable
-                    if "potentially-mountable" in partition:
+                    if partition["potentially-mountable"] and _type == "Partition":
                         Mac.mount_partition(disk)
                         success = retval == 0
                         break
+
+                    #Handle APFS containers.
+                    elif _type == "APFSContainer":
+                        Core.output_file_types.append("APFSContainer")
+                        Core.output_file_devicenames.append(disk)
+
+                        success = Mac.mount_device(disk)
 
         elif Core.output_file_types[-1] == "CD":
             disk = disks[0]["dev-entry"]
