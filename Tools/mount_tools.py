@@ -714,22 +714,16 @@ class Mac:
         output = hdiutil_imageinfo_output["partitions"]["partitions"]
 
         partno = 1
-
         choices = []
 
         #TODO Round to best size using Unitlist?
         #TODO Get some more info to make this easier for the user if possible.
         for partition in output:
-            if Core.output_file_types[-1] == "Device":
+            if Core.output_file_types[-1] in ("Device", "APFSContainer"):
                 #Skip non-partition things and any "partitions" that don't have numbers.
                 #CD images work differently, and we must ignore this rule.
-                if "partition-number" not in partition:
+                if "partition-number" not in partition and "APFS" not in partition["partition-hint"]:
                     continue
-
-            elif Core.output_file_types[-1] == "APFSContainer":
-                #Manually count partition number.
-                partition["partition-number"] = partno
-                partno += 1
 
             elif Core.output_file_types[-1] == "CD":
                 #Ignore "partitions" that don't start at 0.
