@@ -380,16 +380,20 @@ class Linux:
             return False
 
         if Linux.using_loop_device:
-            #TODO handle IndexError.
             #Get the name of the loop device.
             #The list comprehensions are needed because the kpartx output has the partitions only.
             #eg: add map loop1p1 (253:0): 0 251904 linear 7:1 2048
 
-            #First, get the loop-and-partition section (eg loop1p1).
-            temp = kpartx_output[0].split()[2]
+            try:
+                #First, get the loop-and-partition section (eg loop1p1).
+                temp = kpartx_output[0].split()[2]
 
-            #Now get rid of the partition number to get just the loop device name.
-            target_device = 'p'.join(temp.split("p")[0:2])
+                #Now get rid of the partition number to get just the loop device name.
+                target_device = 'p'.join(temp.split("p")[0:2])
+
+
+            except IndexError:
+                return []
 
         else:
             target_device = output_file
@@ -419,18 +423,37 @@ class Linux:
         return []
 
     @classmethod
-    def get_volumes_lvm(cls, output_file): #TODO error handling.
-        pv_device = output_file
+    def get_volumes_lvm(cls, output_file):
+        pv_device = None
 
         #First, set up a loop device if this is a file.
-        #TODO find a loop device that isn't currently in use.
         if "/dev/" not in output_file:
-            pv_device = "/dev/loop10"
-            CoreTools.start_process(cmd="losetup /dev/loop10 "+output_file,
-                                    return_output=True, privileged=True)
+            counter = 0
 
-        output = CoreTools.start_process(cmd="pvs", return_output=True,
-                                         privileged=True)[1]
+            while counter < 100:
+                if not os.path.exists("/dev/loop"+unicode(counter)):
+                    pv_device = "/dev/loop"+unicode(counter)
+                    break
+
+                counter += 1
+
+            if pv_device is None:
+                logger.error("Linux.get_volumes_lvm(): No free loop devices!")
+                return []
+
+            retval = CoreTools.start_process(cmd="losetup "+pv_device+" "+output_file,
+                                             privileged=True)
+
+        if retval != 0:
+            logger.error("Linux.get_volumes_lvm(): Unable to set up loop device!")
+            return []
+
+        retval, output = CoreTools.start_process(cmd="pvs -y", return_output=True,
+                                                 privileged=True)
+
+        if retval != 0:
+            logger.error("Linux.get_volumes_lvm(): Could not obtain information about LVM PVs!")
+            return []
 
         #Read pvdisplay's output to find the volume group name for this device.
         for line in output.split("\n"):
@@ -438,13 +461,19 @@ class Linux:
                 Linux.volume_group_name = line.split()[1]
 
         #Activate the volume group.
-        CoreTools.start_process(cmd="vgchange -a y "+Linux.volume_group_name, return_output=True,
-                                privileged=True)
+        retval = CoreTools.start_process(cmd="vgchange -a y "+Linux.volume_group_name, privileged=True)
+
+        if retval != 0:
+            logger.error("Linux.get_volumes_lvm(): Unable to activate volume group!")
+            return []
 
         #Find logical volumes.
         retval, lvdisplay_output = CoreTools.start_process(cmd="lvdisplay -C --units M",
                                                            return_output=True,
                                                            privileged=True)
+        if retval != 0:
+            logger.error("Linux.get_volumes_lvm(): Unable to obtain information about LVM LVs!")
+            return []
 
         lvdisplay_output = lvdisplay_output.split("\n")
 
@@ -669,6 +698,89 @@ class Mac:
         return retval, devicename
 
     @classmethod
+    def get_volumes_std_device(cls, output_file, cd=False):
+        """For standard devices and CD images"""
+        hdiutil_imageinfo_output = Mac.run_hdiutil(options="imageinfo "+output_file
+                                                   +" -plist")[1]
+
+        hdiutil_imageinfo_output = plistlib.readPlistFromString(hdiutil_imageinfo_output.encode())
+
+        #Get the block size of the image.
+        #FIXME Meaningless with CD images - random values on macOS.
+        blocksize = hdiutil_imageinfo_output["partitions"]["block-size"]
+
+        output = hdiutil_imageinfo_output["partitions"]["partitions"]
+
+        partno = 1
+        choices = []
+
+        #TODO Round to best size using Unitlist?
+        #TODO Get some more info to make this easier for the user if possible.
+        for partition in output:
+            if not cd:
+                #Skip non-partition things and any "partitions" that don't have numbers.
+                #CD images work differently, and we must ignore this rule.
+                if "partition-number" not in partition and "APFS" not in partition["partition-hint"]:
+                    continue
+
+            else:
+                #Ignore "partitions" that don't start at 0.
+                if partition["partition-start"] != 0:
+                    continue
+
+                #Set the partition number for CD images.
+                partition["partition-number"] = partno
+                partno += 1
+
+            choices.append("Partition "+unicode(partition["partition-number"])
+                           + ", with size "+unicode((partition["partition-length"] \
+                                                     * blocksize) // 1000000)
+                           +" MB")
+
+        return choices
+
+    @classmethod
+    def get_volumes_apfsc(cls, output_file):
+        #TODO may be better to use diskutil apfs
+        hdiutil_imageinfo_output = Mac.run_hdiutil(options="imageinfo "+output_file
+                                                   +" -plist")[1]
+
+        hdiutil_imageinfo_output = plistlib.readPlistFromString(hdiutil_imageinfo_output.encode())
+
+        #Get the block size of the image.
+        blocksize = hdiutil_imageinfo_output["partitions"]["block-size"]
+
+        output = hdiutil_imageinfo_output["partitions"]["partitions"]
+
+        partno = 1
+        choices = []
+
+        #TODO Round to best size using Unitlist?
+        #TODO Get some more info to make this easier for the user if possible.
+        for partition in output:
+            #Skip non-partition things and any "partitions" that don't have numbers.
+            #CD images work differently, and we must ignore this rule.
+            if "partition-number" not in partition and "APFS" not in partition["partition-hint"]:
+                continue
+
+            #Set the partition number for APFS volumes.
+            if "APFS" in partition["partition-hint"]:
+                partition["partition-number"] = partno
+                partno += 1
+
+            choices.append("Partition "+unicode(partition["partition-number"])
+                           + ", with size "+unicode((partition["partition-length"] \
+                                                     * blocksize) // 1000000)
+                           +" MB")
+
+        return choices
+
+    @classmethod
+    def get_volumes_apfsv(cls, output_file):
+        #TODO
+        pass
+
+    @classmethod
     def mount_partition(cls, partition, attach=False):
         #Attach the file first if needed.
         if attach:
@@ -702,47 +814,21 @@ class Mac:
         logger.debug("mount_output_file(): Output file isn't a partition! Getting "
                      "list of contained partitions...")
 
-        hdiutil_imageinfo_output = Mac.run_hdiutil(options="imageinfo "+output_file
-                                                   +" -plist")[1]
+        #Only look at the last type - this way if we're mounting a sub-partition, we'll collect
+        #information for that, not the container it's inside.
+        if Core.output_file_types[-1] == "Device":
+            choices = Mac.get_volumes_std_device(output_file)
 
-        hdiutil_imageinfo_output = plistlib.readPlistFromString(hdiutil_imageinfo_output.encode())
+        elif Core.output_file_types[-1] == "CD":
+            choices = Mac.get_volumes_std_device(output_file, cd=True)
 
-        #Get the block size of the image.
-        #FIXME Meaningless with CD images - random values on macOS.
-        blocksize = hdiutil_imageinfo_output["partitions"]["block-size"]
+        #APFS containers.
+        elif Core.output_file_types[-1] == "APFSContainer":
+            choices = Mac.get_volumes_apfsc(output_file)
 
-        output = hdiutil_imageinfo_output["partitions"]["partitions"]
-
-        partno = 1
-        choices = []
-
-        #TODO Round to best size using Unitlist?
-        #TODO Get some more info to make this easier for the user if possible.
-        for partition in output:
-            if Core.output_file_types[-1] in ("Device", "APFSContainer"):
-                #Skip non-partition things and any "partitions" that don't have numbers.
-                #CD images work differently, and we must ignore this rule.
-                if "partition-number" not in partition and "APFS" not in partition["partition-hint"]:
-                    continue
-
-                #Set the partition number for APFS volumes.
-                if "APFS" in partition["partition-hint"]:
-                    partition["partition-number"] = partno
-                    partno += 1
-
-            elif Core.output_file_types[-1] == "CD":
-                #Ignore "partitions" that don't start at 0.
-                if partition["partition-start"] != 0:
-                    continue
-
-                #Set the partition number for CD images.
-                partition["partition-number"] = partno
-                partno += 1
-
-            choices.append("Partition "+unicode(partition["partition-number"])
-                           + ", with size "+unicode((partition["partition-length"] \
-                                                     * blocksize) // 1000000)
-                           +" MB")
+        #Single APFS volumes.
+        elif Core.output_file_types[-1] == "APFSVolume":
+            choices = Mac.get_volumes_apfsv(output_file)
 
         #Check that this list isn't empty.
         if not choices:
