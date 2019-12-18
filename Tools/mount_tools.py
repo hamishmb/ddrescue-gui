@@ -81,6 +81,10 @@ logger.setLevel(logging.getLogger("DDRescue-GUI").getEffectiveLevel())
 
 # -------------------- CORE METHODS --------------------
 class Core:
+    """
+    This class contains core methods used on both Linux and macOS
+    """
+
     #The output file we're mounting.
     output_file = None
 
@@ -99,7 +103,7 @@ class Core:
     @classmethod
     def reset(cls):
         """
-        Resets the state of this class, and that of the Linux and Mac classes.
+        Resets the state of this class, and triggers reset of the Linux and Mac classes.
         """
         cls.output_file = None
         cls.output_file_mountpoint = None
@@ -112,7 +116,12 @@ class Core:
     @classmethod
     def mount_output_file(cls):
         """
-        Mount the output file
+        Mount the output file in SETTINGS["OutputFile"].
+
+        Returns:
+            boolean.
+                True - Success
+                False - Failed
         """
 
         logger.info("mount_output_file(): Mounting Disk: "+SETTINGS["OutputFile"]+"...")
@@ -160,8 +169,14 @@ class Core:
     @classmethod
     def unmount_output_file(cls):
         """
-        Unmount the output file
+        Unmount the output file.
+
+        Returns:
+            boolean.
+                True - Success
+                False - Failed
         """
+
         logger.info("unmount_output_file(): Attempting to unmount output file...")
 
         success = True
@@ -208,6 +223,10 @@ class Core:
 
 #------------------------------------ LINUX-SPECIFIC FUNCTIONS ------------------------------------
 class Linux:
+    """
+    Linux-specific stuff for mounting the output file.
+    """
+
     volume_group_name = None
     using_loop_device = False
 
@@ -222,13 +241,13 @@ class Linux:
     @classmethod
     def determine_output_file_type(cls, output_file): #pylint: disable=invalid-name
         """
-        Determines output File Type (partition or device)..
+        Determines output File Type (partition or device).
 
         Returns:
             tuple(string, bool).
 
                 1st element:                The type of the output file. "Partition",
-                                            or "Device".
+                                            "Device", "LUKS", or "LVM".
 
                 2nd element:                True - success, False - failed.
         """
@@ -312,23 +331,25 @@ class Linux:
                 dlg.Destroy()
                 return "unknown", False
 
-            if answer == choices[0]:
-                output_file_type = "Partition"
-
-            elif answer == choices[1]:
-                output_file_type = "Device"
-
-            elif answer == choices[2]:
-                output_file_type = "LUKS"
-
-            elif answer == choices[3]:
-                output_file_type = "LVM"
+            #The first word in our human-readable choices is the type.
+            output_file_type = answer.split()[0]
 
         return output_file_type, True
 
     #--------------- FUNCTIONS FOR GETTING VOLUME INFORMATION ---------------
     @classmethod
     def get_volumes_std_device(cls, output_file):
+        """
+        Gets a list of volumes on the given output file or device name.
+        This method expects the given file or device to be a standard device.
+
+        Args:
+            output_file (str):          The output file or device to get volumes for.
+
+        Returns.
+            list. The volumes that were found in human-readable form.
+        """
+
         Linux.using_loop_device = False
 
         #Create a loop device if this is a file and a regular device.
@@ -420,10 +441,32 @@ class Linux:
 
     @classmethod
     def get_volumes_luks(cls, output_file): #TODO
+        """
+        Gets a list of volumes on the given output file or device name.
+        This method expects the given file or device to be a LUKS device.
+
+        Args:
+            output_file (str):          The output file or device to get volumes for.
+
+        Returns.
+            list. The volumes that were found in human-readable form.
+        """
+
         return []
 
     @classmethod
     def get_volumes_lvm(cls, output_file):
+        """
+        Gets a list of volumes on the given output file or device name.
+        This method expects the given file or device to be an LVM Physical Volume.
+
+        Args:
+            output_file (str):          The output file or device to get volumes for.
+
+        Returns.
+            list. The volumes that were found in human-readable form.
+        """
+
         pv_device = None
 
         #First, set up a loop device if this is a file.
@@ -461,7 +504,8 @@ class Linux:
                 Linux.volume_group_name = line.split()[1]
 
         #Activate the volume group.
-        retval = CoreTools.start_process(cmd="vgchange -a y "+Linux.volume_group_name, privileged=True)
+        retval = CoreTools.start_process(cmd="vgchange -a y "+Linux.volume_group_name,
+                                         privileged=True)
 
         if retval != 0:
             logger.error("Linux.get_volumes_lvm(): Unable to activate volume group!")
@@ -492,6 +536,18 @@ class Linux:
     #--------------- MOUNTING AND UNMOUNTING FUNCTIONS ---------------
     @classmethod
     def mount_partition(cls, partition):
+        """
+        Mounts the given file or device name as a single volume or partition.
+
+        Args:
+            partition (str):            The file or device to mount.
+
+        Returns:
+            Boolean.
+                True - Success
+                False - Failed
+        """
+
         #We will mount the file/device in /tmp/ddrescue-gui/destination
         Core.output_file_mountpoint = "/tmp/ddrescue-gui/destination"
 
@@ -517,6 +573,19 @@ class Linux:
 
     @classmethod
     def mount_device(cls, output_file):
+        """
+        Mounts the given output file or device, expecting it to be a standard device
+        or another kind of container for volumes - LUKS or LVM.
+
+        Args:
+            output_file (str).          The device or file to mount.
+
+        Returns:
+            Boolean.
+                True - Success
+                False - Failure
+        """
+
         #TODO Warnings for LVM disks: make sure there are no duplicates before mounting.
         #Create a nice list of volumes for the user to pick from.
         choices = []
@@ -610,6 +679,18 @@ class Linux:
 
     @classmethod
     def unmount_output_file(cls, output_file): #TODO handle LUKS
+        """
+        Unmounts the output file or device. Handles partitions, devices, LVM and LUKS disks.
+
+        Args:
+            output_file (str).      The device or file to unmount.
+
+        Returns:
+            Boolean.
+                True - Success
+                False - Failed
+        """
+
         #Pull down loops if the OutputFile is a Device.
         if Core.output_file_types[Core.output_file_devicenames.index(output_file)] == "Device":
             #This won't error on LINUX even if the loop device wasn't set up.
@@ -647,6 +728,10 @@ class Linux:
 
 #------------------------------------ MACOS-SPECIFIC FUNCTIONS ------------------------------------
 class Mac:
+    """
+    Macos-specific stuff for mounting the output file.
+    """
+
     @classmethod
     def reset(cls):
         """
@@ -663,7 +748,7 @@ class Mac:
             tuple(string, bool).
 
                 1st element:                The type of the output file. "Partition",
-                                            or "Device".
+                                            "Device", "CD", "APFSContainer" or "APFSVolume".
 
                 2nd element:                True - success, False - failed.
         """
@@ -689,17 +774,44 @@ class Mac:
 
     @classmethod
     def attach_file(cls, output_file):
+        """
+        Attaches the given output file to the system as a read-only device.
+
+        Args:
+            output_file (str).          The output file to attach.
+
+        Returns:
+            tuple. Elements:
+                1 - int.                 The return value from hdiutil attach.
+                2 - str.                 The device name of the file, or None if attaching failed.
+        """
+
         retval, output = Mac.run_hdiutil("attach "+output_file
                                          + " -nomount -readonly -plist")
 
         #Get the device name
         devicename, result = Mac.get_device_name(output)
 
+        if not result:
+            return retval, None
+
         return retval, devicename
 
     @classmethod
-    def get_volumes_std_device(cls, output_file, cd=False):
-        """For standard devices and CD images"""
+    def get_volumes_std_device(cls, output_file, cdimage=False):
+        """
+        Finds volumes contained by standard devices.
+
+        Args:
+            output_file (str).          The output file or device to investigate.
+
+        Kwargs:
+            cdimage[=False] (bool).     Whether or not we are finding volumes on a CD device/image.
+
+        Returns.
+            list. The volumes that were found in human-readable form.
+        """
+
         hdiutil_imageinfo_output = Mac.run_hdiutil(options="imageinfo "+output_file
                                                    +" -plist")[1]
 
@@ -717,10 +829,12 @@ class Mac:
         #TODO Round to best size using Unitlist?
         #TODO Get some more info to make this easier for the user if possible.
         for partition in output:
-            if not cd:
+            if not cdimage:
                 #Skip non-partition things and any "partitions" that don't have numbers.
                 #CD images work differently, and we must ignore this rule.
-                if "partition-number" not in partition and "APFS" not in partition["partition-hint"]:
+                if "partition-number" not in partition and \
+                    "APFS" not in partition["partition-hint"]:
+
                     continue
 
             else:
@@ -741,6 +855,16 @@ class Mac:
 
     @classmethod
     def get_volumes_apfsc(cls, output_file):
+        """
+        Finds volumes contained by APFS containers.
+
+        Args:
+            output_file (str).          The output file or device to investigate.
+
+        Returns.
+            list. The volumes that were found in human-readable form.
+        """
+
         #TODO may be better to use diskutil apfs
         hdiutil_imageinfo_output = Mac.run_hdiutil(options="imageinfo "+output_file
                                                    +" -plist")[1]
@@ -777,11 +901,38 @@ class Mac:
 
     @classmethod
     def get_volumes_apfsv(cls, output_file):
+        """
+        Finds volumes inside an APFS volume or image.
+        Seems counter-intuitive, but is required because of the way macOS handles
+        APFS volumes.
+
+        Args:
+            output_file (str).          The output file or device to investigate.
+
+        Returns.
+            list. The volumes that were found in human-readable form.
+        """
+
         #TODO
-        pass
+        return []
 
     @classmethod
     def mount_partition(cls, partition, attach=False):
+        """
+        Mounts the given partition, also attaching the file if needed.
+
+        Args:
+            partition (str).            The partition or file to mount.
+
+        Kwargs:
+            attach[=False] (bool).      Whether to attach the file first.
+
+        Returns:
+            boolean.
+                True - Success
+                False - Failed
+        """
+
         #Attach the file first if needed.
         if attach:
             retval, partition = Mac.attach_file(partition)
@@ -811,6 +962,19 @@ class Mac:
 
     @classmethod
     def mount_device(cls, output_file): #TODO error handling
+        """
+        Mount the given device or file. This is expected to be a standard device or other
+        container of volumes (eg an APFS container).
+
+        Args:
+            output_file (str).              The device or file to mount.
+
+        Returns:
+            Boolean.
+                True - Success
+                False - Failure
+        """
+
         logger.debug("mount_output_file(): Output file isn't a partition! Getting "
                      "list of contained partitions...")
 
@@ -820,7 +984,7 @@ class Mac:
             choices = Mac.get_volumes_std_device(output_file)
 
         elif Core.output_file_types[-1] == "CD":
-            choices = Mac.get_volumes_std_device(output_file, cd=True)
+            choices = Mac.get_volumes_std_device(output_file, cdimage=True)
 
         #APFS containers.
         elif Core.output_file_types[-1] == "APFSContainer":
@@ -910,22 +1074,24 @@ class Mac:
             for partition in disks:
                 disk = partition["dev-entry"]
 
-                if disk.split("s")[-1] == selected_partition:
-                    #Find the type of this partition.
-                    _type, success = Mac.determine_output_file_type(disk)
+                if disk.split("s")[-1] != selected_partition:
+                    continue
 
-                    #Check if the partition we want is mountable
-                    if partition["potentially-mountable"] and _type == "Partition":
-                        Mac.mount_partition(disk)
-                        success = retval == 0
-                        break
+                #Find the type of this partition.
+                _type, success = Mac.determine_output_file_type(disk)
 
-                    #Handle APFS containers.
-                    elif _type == "APFSContainer":
-                        Core.output_file_types.append("APFSContainer")
-                        Core.output_file_devicenames.append(disk)
+                #Check if the partition we want is mountable
+                if partition["potentially-mountable"] and _type == "Partition":
+                    Mac.mount_partition(disk)
+                    success = retval == 0
+                    break
 
-                        success = Mac.mount_device(disk)
+                #Handle APFS containers.
+                elif _type == "APFSContainer":
+                    Core.output_file_types.append("APFSContainer")
+                    Core.output_file_devicenames.append(disk)
+
+                    success = Mac.mount_device(disk)
 
         elif Core.output_file_types[-1] == "CD":
             disk = disks[0]["dev-entry"]
@@ -955,6 +1121,20 @@ class Mac:
 
     @classmethod
     def unmount_output_file(cls, devicename):
+        """
+        Unmounts the given device. Can be used for output files as well, but needs
+        to be given the device associated with them.
+
+        Args:
+            devicename (str).               The device to unmount.
+
+        Returns:
+            Boolean.
+                True - Success
+                False - Failed
+        """
+
+        #TODO handle APFS.
         #Always detach the image's device file.
         #FIXME will error out if it was never attached.
         logger.debug("unmount_output_file(): Detaching the device that "
@@ -1014,7 +1194,7 @@ class Mac:
                 mounted_disk = hdiutil_output["system-entities"][0]
 
         except IndexError:
-            return None, None, "IndexError"
+            return None, "IndexError"
 
         return mounted_disk["dev-entry"], True
 
@@ -1022,7 +1202,7 @@ class Mac:
     def run_hdiutil(cls, options):
         """
         Runs hdiutil on behalf of the rest of the program when called.
-        Tries to handle and ix hdiutil errors (e.g. 'Resource Temporarily
+        Tries to handle and fix hdiutil errors (e.g. 'Resource Temporarily
         Unavailable') if they occur.
 
         Args:

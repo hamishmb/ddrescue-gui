@@ -16,7 +16,8 @@ Contents:
     unit_tests_file
     unit_tests_pkg
     tools_pkg
-    tools_backendtools
+    tools_coretools
+    tools_mounttools
     tools_ddrescuetools
     tools_ddrescuetools_setup
     tools_ddrescuetools_decorators
