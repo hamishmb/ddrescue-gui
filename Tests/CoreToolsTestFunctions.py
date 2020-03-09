@@ -359,7 +359,7 @@ def get_helper(cmd):
         #Note: These are only used in the process of mounting files.
         helper = "/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_mount.sh"
 
-    elif "ddrescue" in cmd and "killall" not in cmd:
+    elif " ddrescue " in cmd and "killall" not in cmd:
         helper = "/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_ddrescue.sh"
 
     else:
