@@ -810,10 +810,12 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         Create all choiceboxes for MainWindow
         """
         self.input_choice_box = wx.Choice(self.panel, -1, choices=['-- Please Select --',
-                                                                   'Specify Path/File'])
+                                                                   'Specify Path/File',
+                                                                   'Enter Custom Path'])
 
         self.map_choice_box = wx.Choice(self.panel, -1, choices=['-- Please Select --',
                                                                  'Specify Path/File',
+                                                                 'Enter Custom Path',
                                                                  'None (not recommended)'])
 
         if not LINUX:
@@ -822,7 +824,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                                       + "the file will not be overwritten"))
 
         self.output_choice_box = wx.Choice(self.panel, -1, choices=['-- Please Select --',
-                                                                    'Specify Path/File'])
+                                                                    'Specify Path/File',
+                                                                    'Enter Custom Path'])
 
         if not LINUX:
             self.output_choice_box.SetToolTip(wx.ToolTip("Please ignore the macOS overwrite "
@@ -1271,10 +1274,12 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         current_output_string_selection = self.output_choice_box.GetStringSelection()
 
         #Set all the items.
-        self.input_choice_box.SetItems(['-- Please Select --', 'Specify Path/File']
+        self.input_choice_box.SetItems(['-- Please Select --', 'Specify Path/File',
+                                        'Enter Custom Path']
                                        + sorted(list(DISKINFO) + list(self.custom_input_paths)))
 
-        self.output_choice_box.SetItems(['-- Please Select --', 'Specify Path/File']
+        self.output_choice_box.SetItems(['-- Please Select --', 'Specify Path/File',
+                                         'Enter Custom Path']
                                         + sorted(list(DISKINFO)
                                                  + list(self.custom_output_paths)))
 
@@ -1433,7 +1438,86 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                 unique_key = None
 
                 for key in paths:
-                    print(paths[key], user_selection)
+                    if paths[key] == user_selection:
+                        unique_key = key
+                        break
+
+                choice_box.SetStringSelection(unique_key)
+
+            elif user_selection in list(DISKINFO):
+                #No need to add it to the choice box.
+                choice_box.SetStringSelection(user_selection)
+
+            else:
+                #Get a unique key for the dictionary using the tools function.
+                unique_key = CoreTools.create_unique_key(paths, user_selection, 30)
+
+                #Use it to organise the data.
+                paths[unique_key] = user_selection
+                choice_box.Append(unique_key)
+                choice_box.SetStringSelection(unique_key)
+
+        elif user_selection == "Enter Custom Path":
+            te_dialog = wx.TextEntryDialog(self.panel, "Enter a custom path.")
+
+            #Gracefully handle it if the user closed the dialog without selecting a file.
+            if te_dialog.ShowModal() != wx.ID_OK:
+                logger.info("MainWindow().file_choice_handler(): User declined custom text "
+                            "entry. Resetting choice box for "+key+"...")
+
+                choice_box.SetStringSelection("-- Please Select --")
+                SETTINGS[key] = None
+                return
+
+            #Get the path.
+            user_selection = te_dialog.GetValue()
+
+            #Handle it according to cases depending on its _type.
+            if _type in ["Output", "Map"]:
+                if _type == "Output":
+                    #Automatically add a file extension of .img if there isn't any (3-letter)
+                    #file extension (fixes bugs on OS X).
+                    if "/dev" not in user_selection and user_selection[-4] != ".":
+                        user_selection += ".img"
+
+                else:
+                    #Automatically add a file extension of .log for map files if extension is wrong
+                    #or missing.
+                    if user_selection[-4:] != ".log":
+                        user_selection += ".log"
+
+                #Don't allow user to save output or map files in root's home dir on Pmagic.
+                if PARTED_MAGIC and user_selection[0:5] == "/root":
+                    logger.warning("MainWindow().file_choice_handler(): "+_type+" File is in "
+                                   "root's home directory on Parted Magic! There is no space "
+                                   "here, warning user and declining selection...")
+
+                    dlg = wx.MessageDialog(self.panel, "You can't save the "+_type+" file in "
+                                           "root's home directory in Parted Magic! There's "
+                                           "not enough space there, please select a new folder. "
+                                           "Note: / is cleared on shutdown on parted magic, "
+                                           "as pmagic is a live disk, so you probably want "
+                                           "to store the file on a different disk drive.",
+                                           'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
+
+                    dlg.ShowModal()
+                    dlg.Destroy()
+                    choice_box.SetStringSelection("-- Please Select --")
+                    SETTINGS[key] = None
+                    return
+
+            logger.info("MainWindow().file_choice_handler(): User selected custom file: "
+                        +user_selection+"...")
+
+            SETTINGS[key] = user_selection
+
+            #Handle custom paths properly.
+            #If it's in the dictionary or in DISKINFO, don't add it.
+            if user_selection in paths.values():
+                #Set the selection using the unique key in the paths dictionary.
+                unique_key = None
+
+                for key in paths:
                     if paths[key] == user_selection:
                         unique_key = key
                         break
