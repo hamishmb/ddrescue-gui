@@ -181,9 +181,21 @@ if __name__ == "__main__":
 
     #Set up logging with default logging mode as debug.
     logger = logging.getLogger("DDRescue-GUI")
-    logging.basicConfig(filename='/tmp/ddrescue-gui.log',
-                        format='%(asctime)s - %(name)s - %(levelname)s: %(message)s',
-                        datefmt='%d/%m/%Y %I:%M:%S %p')
+
+    #Try to find a free log file name.
+    #Prevents accidental overwriting, and allows multiple instances.
+    LOG_SUFFIX = 1
+
+    while True:
+        if os.path.isfile("/tmp/ddrescue-gui.log"+"."+unicode(LOG_SUFFIX)):
+            LOG_SUFFIX += 1
+            continue
+
+        logging.basicConfig(filename="/tmp/ddrescue-gui.log"+"."+unicode(LOG_SUFFIX),
+                            format='%(asctime)s - %(name)s - %(levelname)s: %(message)s',
+                            datefmt='%d/%m/%Y %I:%M:%S %p')
+
+        break
 
     logger.setLevel(LOGGER_LEVEL)
 
@@ -192,6 +204,7 @@ if __name__ == "__main__":
     import Tools.mount_tools as MountingTools
     import Tools.DDRescueTools.setup as DDRescueTools
 
+    CoreTools.LOG_SUFFIX = LOG_SUFFIX
     #Set up MountingTools.
     #TODO Remove when possible.
     MountingTools.SETTINGS = SETTINGS
@@ -2561,7 +2574,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             #FIXME check this works.
             self.on_abort()
             logging.shutdown()
-            os.remove("/tmp/ddrescue-gui.log")
+            os.remove("/tmp/ddrescue-gui.log"+"."+unicode(LOG_SUFFIX))
             self.Destroy()
 
         #Check if DDRescue-GUI is recovering data.
@@ -2630,7 +2643,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
                         else:
                             #Copy it to the specified path.
-                            if CoreTools.start_process("cp /tmp/ddrescue-gui.log "+_file) == 0:
+                            if CoreTools.start_process("cp /tmp/ddrescue-gui.log"+"."
+                                                       + unicode(LOG_SUFFIX)+" "+_file) == 0:
+
                                 dlg = wx.MessageDialog(self.panel, "Done! DDRescue-GUI will now "
                                                        "exit", "DDRescue-GUI - Information",
                                                        wx.OK | wx.ICON_INFORMATION)
@@ -2670,7 +2685,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                 dlg.Destroy()
 
             #Delete the log file.
-            os.remove('/tmp/ddrescue-gui.log')
+            os.remove("/tmp/ddrescue-gui.log"+"."+unicode(LOG_SUFFIX))
 
             self.Destroy()
 

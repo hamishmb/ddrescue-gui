@@ -77,6 +77,7 @@ APPICON = None
 UNIT_LIST = ('null', 'B', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
 DISKINFO = {}
 SETTINGS = {}
+LOG_SUFFIX = None
 
 #Set up logging.
 logger = logging.getLogger(__name__)
@@ -1052,7 +1053,7 @@ def emergency_exit(msg):
             dialog.ShowModal()
             dialog.Destroy()
 
-    start_process("mv -v /tmp/ddrescue-gui.log "+log_file)
+    start_process("mv -v /tmp/ddrescue-gui.log"+"."+unicode(log_suffix)+" "+log_file)
 
     #Exit.
     dialog = wx.MessageDialog(None, "Done. DDRescue-GUI will now exit.",
