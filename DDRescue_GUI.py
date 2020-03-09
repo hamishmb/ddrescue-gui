@@ -3405,7 +3405,10 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         """
         self.restart_button = wx.Button(self.panel, -1, "Reset")
         self.mount_button = wx.Button(self.panel, -1, "Mount Image/Disk")
+        self.browse_button = wx.Button(self.panel, -1, "Open File Viewer")
         self.quit_button = wx.Button(self.panel, -1, "Quit")
+
+        self.browse_button.Disable()
 
     def create_text(self):
         """
@@ -3416,7 +3419,6 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
 
         self.top_text = wx.StaticText(self.panel, -1, "Your recovered data is at:")
         self.path_text = wx.StaticText(self.panel, -1, SETTINGS["OutputFile"])
-        self.bottom_text = wx.StaticText(self.panel, -1, "What do you want to do now?")
 
     def setup_sizers(self):
         """
@@ -3432,6 +3434,14 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         button_sizer.Add((5, 5), 1)
         button_sizer.Add(self.quit_button, 4, wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, 10)
 
+        #Make a browse button boxsizer.
+        browse_button_sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        #Add each object to the browse button sizer.
+        browse_button_sizer.Add((5, 5), 1)
+        browse_button_sizer.Add(self.browse_button, 0, wx.ALIGN_CENTER_VERTICAL)
+        browse_button_sizer.Add((5, 5), 1)
+
         #Make a boxsizer.
         main_sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -3439,7 +3449,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         main_sizer.Add(self.stats_text, 1, wx.ALL ^ wx.BOTTOM|wx.CENTER, 10)
         main_sizer.Add(self.top_text, 1, wx.ALL ^ wx.BOTTOM|wx.CENTER, 10)
         main_sizer.Add(self.path_text, 1, wx.ALL ^ wx.BOTTOM|wx.CENTER, 10)
-        main_sizer.Add(self.bottom_text, 1, wx.ALL ^ wx.BOTTOM|wx.CENTER, 10)
+        main_sizer.Add(browse_button_sizer, 0, wx.TOP|wx.BOTTOM|wx.EXPAND, 10)
         main_sizer.Add(button_sizer, 0, wx.BOTTOM|wx.EXPAND, 10)
 
         #Get the sizer set up for the frame.
@@ -3471,6 +3481,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
                 self.mount_button.SetLabel("Unmount Image/Disk")
                 self.restart_button.Disable()
                 self.quit_button.Disable()
+                self.browse_button.Enable()
 
                 dlg = wx.MessageDialog(self.panel, "Your output file is now mounted. Leave "
                                        "DDRescue-GUI open and click unmount when you're finished.",
@@ -3488,11 +3499,27 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
                 self.mount_button.SetLabel("Mount Image/Disk")
                 self.restart_button.Enable()
                 self.quit_button.Enable()
+                self.browse_button.Disable()
 
         #Call Layout() on self.panel() to ensure it displays properly.
         self.panel.Layout()
 
         wx.CallAfter(self.parent.update_status_bar, "Finished")
+
+    def on_browse(self, event=None): #pylint: disable=unused-argument
+        """
+        Open the file viewer and browse the mounted volume.
+        """
+        logger.info("FinishedWindow().on_browse(): Opening file viewer at "
+                    +MountingTools.Core.output_file_mountpoint+"...")
+
+        if LINUX:
+            subprocess.Popen("xdg-open "+MountingTools.Core.output_file_mountpoint,
+                             shell=True)
+
+        else:
+            subprocess.Popen("open "+MountingTools.Core.output_file_mountpoint,
+                             shell=True)
 
     def on_exit(self, event=None): #pylint: disable=unused-argument
         """
@@ -3510,6 +3537,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         """
         self.Bind(wx.EVT_BUTTON, self.restart, self.restart_button)
         self.Bind(wx.EVT_BUTTON, self.on_mount, self.mount_button)
+        self.Bind(wx.EVT_BUTTON, self.on_browse, self.browse_button)
         self.Bind(wx.EVT_BUTTON, self.on_exit, self.quit_button)
         self.Bind(wx.EVT_CLOSE, self.on_exit)
 
