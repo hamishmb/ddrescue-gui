@@ -33,7 +33,7 @@ import sys
 
 #Import tools modules.
 from . import allversions
-from . import one_point_forteen
+from . import one_point_fourteen
 from . import one_point_eighteen
 from . import one_point_twenty
 from . import one_point_twenty_one
@@ -46,7 +46,7 @@ if sys.version_info[0] == 3:
 #Get a list of functions in all of our ddrescue tools modules.
 FUNCTIONS = []
 
-for Module in (allversions, one_point_forteen, one_point_eighteen, one_point_twenty,
+for Module in (allversions, one_point_fourteen, one_point_eighteen, one_point_twenty,
                one_point_twenty_one, one_point_twenty_two):
 
     for function in dir(Module):
@@ -56,7 +56,7 @@ for Module in (allversions, one_point_forteen, one_point_eighteen, one_point_twe
 def setup_for_ddrescue_version(ddrescue_version):
     """
     Selects and returns a list of the correct functions for our version of
-    ddrescue. 
+    ddrescue.
 
     Args:
         ddrescue_version (unicode):             The version of ddrescue installed
@@ -69,7 +69,7 @@ def setup_for_ddrescue_version(ddrescue_version):
     """
 
     #Select the best tools if we have an unsupported version of ddrescue.
-    minor_version = int(ddrescue_version.split(".")[1])    
+    minor_version = int(ddrescue_version.split(".")[1])
 
     if minor_version < 14:
         #Too old.
