@@ -24,7 +24,7 @@ NOTE: To generate documentation, the directory containing the files in this repo
 Running The Tests
 =================
 
-These have to be run as the superuser.
+As of v2.1.0, these no longer have to be run as the superuser.
 
 The process for running these is the same on both Linux and macOS. It can be done on both Python 2 and Python 3.
 

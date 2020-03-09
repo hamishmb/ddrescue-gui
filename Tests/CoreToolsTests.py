@@ -160,7 +160,7 @@ class TestMacRunHdiutil(unittest.TestCase):
             dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a device name to test against.\n"
                                      +"No data on your device will be modified. Suggested: "
                                      +"insert a USB disk and leave it mounted.\nNote: Do not use "
-                                     +"your device while these test are running, or it may "
+                                     +"your device while these tests are running, or it may "
                                      +"interfere with the tests.", "DDRescue-GUI Tests",
                                      POTENTIAL_DEVICE_PATH, style=wx.OK)
 
@@ -186,7 +186,7 @@ class TestIsMounted(unittest.TestCase):
             dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a partition name to test against.\n"
                                      +"No data on your device will be modified. Suggested: "
                                      +"insert a USB disk and leave it mounted.\nNote: Do not use "
-                                     +"your device while these test are running, or it may "
+                                     +"your device while these tests are running, or it may "
                                      +"interfere with the tests.", "DDRescue-GUI Tests",
                                      POTENTIAL_PARTITION_PATH, style=wx.OK)
 
@@ -244,7 +244,7 @@ class TestGetMountPoint(unittest.TestCase):
             dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a partition name to test against.\n"
                                      +"No data on your device will be modified. Suggested: "
                                      +"insert a USB disk and leave it mounted.\nNote: Do not use "
-                                     +"your device while these test are running, or it may "
+                                     +"your device while these tests are running, or it may "
                                      +"interfere with the tests.", "DDRescue-GUI Tests",
                                      POTENTIAL_PARTITION_PATH, style=wx.OK)
 
@@ -297,7 +297,7 @@ class TestMountDisk(unittest.TestCase):
             dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a partition name to test against.\n"
                                      +"No data on your device will be modified. Suggested: "
                                      +"insert a USB disk and leave it mounted.\nNote: Do not use "
-                                     +"your device while these test are running, or it may "
+                                     +"your device while these tests are running, or it may "
                                      +"interfere with the tests.", "DDRescue-GUI Tests",
                                      POTENTIAL_PARTITION_PATH, style=wx.OK)
 
@@ -351,7 +351,7 @@ class TestMountDisk(unittest.TestCase):
         dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a second (different) partition name to "
                                  +"test against.\nNo data on your device will be modified. "
                                  +"Suggested: insert a USB disk and leave it mounted.\nNote: "
-                                 +"Do not use your device while these test are running, or it "
+                                 +"Do not use your device while these tests are running, or it "
                                  +"may interfere with the tests.", "DDRescue-GUI Tests",
                                  "", style=wx.OK)
         dlg.ShowModal()

@@ -56,10 +56,6 @@ def usage():
     print("Copyright (C) Hamish McIntyre-Bhatty 2013-2020")
 
 if __name__ == "__main__":
-    #Exit if not running as root.
-    if os.geteuid() != 0:
-        sys.exit("You must run the tests as root! Exiting...")
-
     #Check all cmdline options are valid.
     try:
         OPTIONS, ARGUMENTS = getopt.getopt(sys.argv[1:], "hdbmat", ["help", "debug", "coretools",
