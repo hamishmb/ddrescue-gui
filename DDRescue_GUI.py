@@ -1402,7 +1402,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                         user_selection += ".log"
 
                 #Don't allow user to save output or map files in root's home dir on Pmagic.
-                if PARTED_MAGIC and "/root" in user_selection:
+                if PARTED_MAGIC and user_selection[0:5] == "/root":
                     logger.warning("MainWindow().file_choice_handler(): "+_type+" File is in "
                                    "root's home directory on Parted Magic! There is no space "
                                    "here, warning user and declining selection...")
