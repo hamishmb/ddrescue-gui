@@ -43,7 +43,7 @@ def get_outputpos_average_read_rate(split_line):
         split_line (string):        The line from ddrescue's output that contains
                                     the information, split by whitespace.
 
-    Works with ddrescue versions: 1.21,1.22,1.23,1.24
+    Works with ddrescue versions: 1.21,1.22,1.23,1.24,1.25
     """
     return ' '.join(split_line[1:3]).replace(",", ""), split_line[8], split_line[9]
 
@@ -56,7 +56,7 @@ def get_unreadable_data(split_line):
         split_line (string):        The line from ddrescue's output that contains
                                     the information, split by whitespace.
 
-    Works with ddrescue versions: 1.21,1.22,1.23,1.24
+    Works with ddrescue versions: 1.21,1.22,1.23,1.24,1.25
     """
     return ' '.join(split_line[4:6]).replace(",", "")
 
@@ -82,6 +82,6 @@ def get_current_rate_inputpos(split_line):
         split_line (string):        The line from ddrescue's output that contains
                                     the information, split by whitespace.
 
-    Works with ddrescue versions: 1.21,1.22,1.23,1.24
+    Works with ddrescue versions: 1.21,1.22,1.23,1.24,1.25
     """
     return ' '.join(split_line[7:9]), ' '.join(split_line[0:2]).replace(",", "")

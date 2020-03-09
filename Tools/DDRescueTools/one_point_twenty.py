@@ -43,7 +43,7 @@ def get_time_since_last_read(split_line):
         split_line (string):        The line from ddrescue's output that contains
                                     the information, split by whitespace.
 
-    Works with ddrescue versions: 1.20,1.21,1.22,1.23,1.24
+    Works with ddrescue versions: 1.20,1.21,1.22,1.23,1.24,1.25
     """
     #Find the index where "read:" is, and get all useful information after that.
     read_index = split_line.index("read:")
@@ -59,7 +59,7 @@ def get_time_remaining(split_line):
         split_line (string):        The line from ddrescue's output that contains
                                     the information, split by whitespace.
 
-    Works with ddrescue versions: 1.20,1.21,1.22,1.23,1.24
+    Works with ddrescue versions: 1.20,1.21,1.22,1.23,1.24,1.25
     """
     #Find where "remaining" is in the line, and return all data elements after that.
     remaining_index = split_line.index("remaining")

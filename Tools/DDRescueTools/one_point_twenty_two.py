@@ -44,7 +44,7 @@ def get_recovered_data_num_errors(split_line):
         split_line (string):        The line from ddrescue's output that contains
                                     the information, split by whitespace.
 
-    Works with ddrescue versions: 1.22,1.23,1.24
+    Works with ddrescue versions: 1.22,1.23,1.24,1.25
     """
     return split_line[1], split_line[2][:2], split_line[5].replace(",", "")
 
