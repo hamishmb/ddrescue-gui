@@ -1450,9 +1450,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                 #Set the selection using the unique key in the paths dictionary.
                 unique_key = None
 
-                for key in paths:
-                    if paths[key] == user_selection:
-                        unique_key = key
+                for _key in paths:
+                    if paths[_key] == user_selection:
+                        unique_key = _key
                         break
 
                 choice_box.SetStringSelection(unique_key)
@@ -1522,6 +1522,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             logger.info("MainWindow().file_choice_handler(): User selected custom file: "
                         +user_selection+"...")
 
+            print(user_selection, key)
+
             SETTINGS[key] = user_selection
 
             #Handle custom paths properly.
@@ -1530,9 +1532,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                 #Set the selection using the unique key in the paths dictionary.
                 unique_key = None
 
-                for key in paths:
-                    if paths[key] == user_selection:
-                        unique_key = key
+                for _key in paths:
+                    if paths[_key] == user_selection:
+                        unique_key = _key
                         break
 
                 choice_box.SetStringSelection(unique_key)
@@ -1570,6 +1572,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         if user_selection[0:3] == "...":
             #Get the full path name to set the inputfile to.
             SETTINGS[key] = paths[user_selection]
+
+        print(user_selection, key)
 
         #Handle special cases if the file is the output file.
         if _type == "Output" and SETTINGS[key] is not None:
