@@ -1148,8 +1148,11 @@ class Mac:
 
         cmd = "hdiutil detach "+devicename
 
-        #Ignore retval 1 - when device didn't exist.
-        if CoreTools.start_process(cmd=cmd, return_output=False, privileged=True) in (0, 1):
+        #Ignore when devices don't exist - can happen if already unmounted.
+        if not os.path.exists(devicename):
+            return True
+
+        if CoreTools.start_process(cmd=cmd, return_output=False, privileged=True) == 0:
             logger.info("unmount_output_file(): Successfully pulled down "
                         "loop device...")
 
