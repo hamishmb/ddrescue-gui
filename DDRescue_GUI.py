@@ -3256,6 +3256,7 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
                 logger.info("SettingsWindow().save_options(): Using disk size: "
                             +SETTINGS["DiskSize"]+".")
 
+            #TODO determine disk size in bytes if not in disk info. Not sure how yet.
             #Otherwise, it isn't needed.
             else:
                 SETTINGS["DiskSize"] = ""

@@ -748,7 +748,8 @@ class Mac:
             tuple(string, bool).
 
                 1st element:                The type of the output file. "Partition",
-                                            "Device", "CD", "APFSContainer" or "APFSVolume".
+                                            "Device", "CD", "APFSStore", "APFSContainer"
+                                            or "APFSVolume".
 
                 2nd element:                True - success, False - failed.
         """
@@ -764,8 +765,19 @@ class Mac:
         elif "ISO9660" in output:
             output_file_type = "CD"
 
-        elif "APFS" in output:
-            output_file_type = "APFSContainer"
+        elif False:
+            output_file_type = "APFSVolume"
+
+        #APFS stuff.
+        elif "partition-hint: Apple_APFS" in output:
+            if "whole disk" in output:
+                output_file_type = "APFSContainer"
+
+            elif "unknown partition" in output:
+                output_file_type = "APFSVolume"
+
+            else:
+                output_file_type = "APFSStore"
 
         else:
             output_file_type = "Device"
@@ -980,7 +992,7 @@ class Mac:
 
         #Only look at the last type - this way if we're mounting a sub-partition, we'll collect
         #information for that, not the container it's inside.
-        if Core.output_file_types[-1] == "Device":
+        if Core.output_file_types[-1] in ("Device", "APFSStore"):
             choices = Mac.get_volumes_std_device(output_file)
 
         elif Core.output_file_types[-1] == "CD":
@@ -992,7 +1004,7 @@ class Mac:
 
         #Single APFS volumes.
         elif Core.output_file_types[-1] == "APFSVolume":
-            choices = Mac.get_volumes_apfsv(output_file)
+            choices = Mac.get_volumes_apfsc(output_file)
 
         #Check that this list isn't empty.
         if not choices:
@@ -1068,7 +1080,7 @@ class Mac:
 
         success = False
 
-        if Core.output_file_types[-1] in ("Device", "APFSContainer"):
+        if Core.output_file_types[-1] in ("Device", "APFSStore", "APFSContainer"):
             #Check that the filesystem the user wanted is among those that
             #have been marked mountable.
             for partition in disks:
@@ -1089,6 +1101,13 @@ class Mac:
                 #Handle APFS containers.
                 elif _type == "APFSContainer":
                     Core.output_file_types.append("APFSContainer")
+                    Core.output_file_devicenames.append(disk)
+
+                    success = Mac.mount_device(disk)
+
+                #Handle APFS stores.
+                elif _type == "APFSStore":
+                    Core.output_file_types.append("APFSStore")
                     Core.output_file_devicenames.append(disk)
 
                     success = Mac.mount_device(disk)
