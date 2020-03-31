@@ -868,7 +868,7 @@ class Mac:
         return choices
 
     @classmethod
-    def get_volumes_apfsc(cls, output_file):
+    def get_volumes_apfs(cls, output_file):
         """
         Finds volumes contained by APFS containers.
 
