@@ -782,6 +782,8 @@ class Mac:
         else:
             output_file_type = "Device"
 
+        logger.debug("determine_output_file_type(): Type is "+output_file_type+"...")
+
         return output_file_type, retval == 0
 
     @classmethod
