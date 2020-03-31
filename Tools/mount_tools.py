@@ -879,7 +879,6 @@ class Mac:
             list. The volumes that were found in human-readable form.
         """
 
-        #TODO may be better to use diskutil apfs
         hdiutil_imageinfo_output = Mac.run_hdiutil(options="imageinfo "+output_file
                                                    +" -plist")[1]
 
@@ -912,23 +911,6 @@ class Mac:
                            +" MB")
 
         return choices
-
-    @classmethod
-    def get_volumes_apfsv(cls, output_file):
-        """
-        Finds volumes inside an APFS volume or image.
-        Seems counter-intuitive, but is required because of the way macOS handles
-        APFS volumes.
-
-        Args:
-            output_file (str).          The output file or device to investigate.
-
-        Returns.
-            list. The volumes that were found in human-readable form.
-        """
-
-        #TODO
-        return []
 
     @classmethod
     def mount_partition(cls, partition, attach=False):
@@ -1001,12 +983,8 @@ class Mac:
             choices = Mac.get_volumes_std_device(output_file, cdimage=True)
 
         #APFS containers.
-        elif Core.output_file_types[-1] == "APFSContainer":
-            choices = Mac.get_volumes_apfsc(output_file)
-
-        #Single APFS volumes.
-        elif Core.output_file_types[-1] == "APFSVolume":
-            choices = Mac.get_volumes_apfsc(output_file)
+        elif Core.output_file_types[-1] in ("APFSContainer", "APFSVolume"):
+            choices = Mac.get_volumes_apfs(output_file)
 
         #Check that this list isn't empty.
         if not choices:
@@ -1088,7 +1066,9 @@ class Mac:
             for partition in disks:
                 disk = partition["dev-entry"]
 
-                if disk.split("s")[-1] != selected_partition:
+                if Core.output_file_types[-1] in ("Device", "APFSStore") \
+                    and disk.split("s")[-1] != selected_partition:
+
                     continue
 
                 #Find the type of this partition.
@@ -1099,6 +1079,13 @@ class Mac:
                     Mac.mount_partition(disk)
                     success = retval == 0
                     break
+
+                #If this is an APFS container and we haven't reached the last
+                #disk yet, keep going.
+                elif Core.output_file_types[-1] == "APFSContainer" \
+                    and disks.index(partition) != (len(disks) - 1):
+
+                    continue
 
                 #Handle APFS containers.
                 elif _type == "APFSContainer":
@@ -1155,7 +1142,6 @@ class Mac:
                 False - Failed
         """
 
-        #TODO handle APFS.
         #Always detach the image's device file.
         #FIXME will error out if it was never attached.
         logger.debug("unmount_output_file(): Detaching the device that "
