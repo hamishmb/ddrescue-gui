@@ -765,9 +765,6 @@ class Mac:
         elif "ISO9660" in output:
             output_file_type = "CD"
 
-        elif False:
-            output_file_type = "APFSVolume"
-
         #APFS stuff.
         elif "Apple_APFS" in output:
             if "whole disk" in output:
@@ -941,7 +938,7 @@ class Mac:
                                       options="readOnly")
 
         if retval != 0:
-            logger.error("mount_partition_linux(): Error! Warning the user...")
+            logger.error("mount_partition(): Error! Warning the user...")
             dlg = wx.MessageDialog(None, "Couldn't mount your output file. Most "
                                    "probably, the filesystem is damaged and you'll need to "
                                    "use another tool to read it from here. It could also be "
@@ -1076,8 +1073,8 @@ class Mac:
 
                 #Check if the partition we want is mountable
                 if partition["potentially-mountable"] and _type == "Partition":
-                    Mac.mount_partition(disk)
-                    success = retval == 0
+                    success = Mac.mount_partition(disk)
+
                     break
 
                 #If this is an APFS container and we haven't reached the last
@@ -1105,8 +1102,7 @@ class Mac:
             disk = disks[0]["dev-entry"]
 
             if disks[0]["potentially-mountable"]:
-                Mac.mount_partition(disk)
-                success = retval == 0
+                success = Mac.mount_partition(disk)
 
         if not success:
             logger.info("mount_output_file(): Unsupported or damaged filesystem. "
