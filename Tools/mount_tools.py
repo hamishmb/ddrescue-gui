@@ -769,7 +769,7 @@ class Mac:
             output_file_type = "APFSVolume"
 
         #APFS stuff.
-        elif "partition-hint: Apple_APFS" in output:
+        elif "Apple_APFS" in output:
             if "whole disk" in output:
                 output_file_type = "APFSContainer"
 
