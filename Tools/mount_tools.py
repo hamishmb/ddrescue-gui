@@ -1143,13 +1143,13 @@ class Mac:
         """
 
         #Always detach the image's device file.
-        #FIXME will error out if it was never attached.
         logger.debug("unmount_output_file(): Detaching the device that "
                      "represents the image...")
 
         cmd = "hdiutil detach "+devicename
 
-        if CoreTools.start_process(cmd=cmd, return_output=False, privileged=True) == 0:
+        #Ignore retval 1 - when device didn't exist.
+        if CoreTools.start_process(cmd=cmd, return_output=False, privileged=True) in (0, 1):
             logger.info("unmount_output_file(): Successfully pulled down "
                         "loop device...")
 
