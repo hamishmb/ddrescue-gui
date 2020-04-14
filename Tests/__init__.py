@@ -20,6 +20,10 @@ This is the Tests package.
 """
 
 from __future__ import absolute_import
+
 from . import CoreToolsTests
 from . import CoreToolsTestData
 from . import CoreToolsTestFunctions
+
+from . import MountingToolsTests
+

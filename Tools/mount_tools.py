@@ -829,7 +829,6 @@ class Mac:
         hdiutil_imageinfo_output = plistlib.readPlistFromString(hdiutil_imageinfo_output.encode())
 
         #Get the block size of the image.
-        #FIXME Meaningless with CD images - random values on macOS.
         blocksize = hdiutil_imageinfo_output["partitions"]["block-size"]
 
         output = hdiutil_imageinfo_output["partitions"]["partitions"]
@@ -840,6 +839,8 @@ class Mac:
         #TODO Round to best size using Unitlist?
         #TODO Get some more info to make this easier for the user if possible.
         for partition in output:
+            size = unicode((partition["partition-length"] * blocksize) // 1000000)+" MB"
+
             if not cdimage:
                 #Skip non-partition things and any "partitions" that don't have numbers.
                 #CD images work differently, and we must ignore this rule.
@@ -857,10 +858,11 @@ class Mac:
                 partition["partition-number"] = partno
                 partno += 1
 
+                #Ignore partition size for CD images.
+                size = "N/A"
+
             choices.append("Partition "+unicode(partition["partition-number"])
-                           + ", with size "+unicode((partition["partition-length"] \
-                                                     * blocksize) // 1000000)
-                           +" MB")
+                           + ", with size "+size)
 
         return choices
 
@@ -1074,7 +1076,6 @@ class Mac:
                 #Check if the partition we want is mountable
                 if partition["potentially-mountable"] and _type == "Partition":
                     success = Mac.mount_partition(disk)
-
                     break
 
                 #If this is an APFS container and we haven't reached the last
@@ -1233,6 +1234,8 @@ class Mac:
             #10.10, we have to just detach all possible disks and ignore failures.
 
             #TODO Consider dropping support for macOS 10.9 and 10.10 to improve reliability.
+            #Or could detect version and behave differently on newer versions.
+            #This bug doesn't seem to be a big deal anyway.
             for line in CoreTools.start_process(cmd="diskutil list",
                                                 return_output=True)[1].split("\n"):
                 try:
