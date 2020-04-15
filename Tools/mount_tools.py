@@ -754,8 +754,8 @@ class Mac:
                 2nd element:                True - success, False - failed.
         """
 
-        retval, output = Mac.run_hdiutil(options="imageinfo "+output_file
-                                         +" -plist")
+        retval, output = Mac.run_hdiutil(options="imageinfo '"+output_file
+                                         +"' -plist")
 
         #If "whole disk" is in the output, this is a partition.
         if "whole disk" in output and not "APFS" in output:
@@ -797,8 +797,8 @@ class Mac:
                 2 - str.                 The device name of the file, or None if attaching failed.
         """
 
-        retval, output = Mac.run_hdiutil("attach "+output_file
-                                         + " -nomount -readonly -plist")
+        retval, output = Mac.run_hdiutil("attach '"+output_file
+                                         + "' -nomount -readonly -plist")
 
         #Get the device name
         devicename, result = Mac.get_device_name(output)
@@ -823,8 +823,8 @@ class Mac:
             list. The volumes that were found in human-readable form.
         """
 
-        hdiutil_imageinfo_output = Mac.run_hdiutil(options="imageinfo "+output_file
-                                                   +" -plist")[1]
+        hdiutil_imageinfo_output = Mac.run_hdiutil(options="imageinfo '"+output_file
+                                                   +"' -plist")[1]
 
         hdiutil_imageinfo_output = plistlib.readPlistFromString(hdiutil_imageinfo_output.encode())
 
@@ -878,8 +878,8 @@ class Mac:
             list. The volumes that were found in human-readable form.
         """
 
-        hdiutil_imageinfo_output = Mac.run_hdiutil(options="imageinfo "+output_file
-                                                   +" -plist")[1]
+        hdiutil_imageinfo_output = Mac.run_hdiutil(options="imageinfo '"+output_file
+                                                   +"' -plist")[1]
 
         hdiutil_imageinfo_output = plistlib.readPlistFromString(hdiutil_imageinfo_output.encode())
 
@@ -1030,7 +1030,7 @@ class Mac:
         #Attempt to mount the disk (this mounts all partitions inside),
         #and parse the resulting plist.
         (retval, mount_output) = \
-        Mac.run_hdiutil("attach "+output_file+" -readonly -nomount -plist")
+        Mac.run_hdiutil("attach '"+output_file+"' -readonly -nomount -plist")
 
         mount_output = plistlib.readPlistFromString(mount_output.encode())
 
