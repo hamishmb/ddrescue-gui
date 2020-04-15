@@ -257,7 +257,7 @@ class Linux:
 
         #--------------- USING PARTED TO DETECT PARTITION TABLES AND FILESYSTEMS ---------------
         #If list of partitions is empty (or 1 partition), we have a partition.
-        retval, output = CoreTools.start_process(cmd="parted -sm "+output_file+" print",
+        retval, output = CoreTools.start_process(cmd="parted -sm '"+output_file+"' print",
                                                  return_output=True, privileged=True)
 
         if retval != 0:
@@ -279,6 +279,7 @@ class Linux:
 
         output = output.split(":")
 
+        #FIXME will break if output file path has spaces in the name.
         #We want field 6 - the partition table type.
         try:
             #The type will be "loop" if this is a partition.
@@ -298,13 +299,13 @@ class Linux:
         #Check if this is a LUKS or LVM container if parted didn't help.
         if output_file_type == "unknown":
             #Check for LUKS.
-            if CoreTools.start_process(cmd="cryptsetup isLuks "+output_file,
+            if CoreTools.start_process(cmd="cryptsetup isLuks '"+output_file+"'",
                                        privileged=True) == 0:
 
                 output_file_type = "LUKS"
 
             #Check for LVM.
-            output = CoreTools.start_process(cmd="file -s "+output_file,
+            output = CoreTools.start_process(cmd="file -s '"+output_file+"'",
                                              return_output=True, privileged=True)[1]
 
             if "LVM" in output:
@@ -358,8 +359,8 @@ class Linux:
 
             logger.info("mount_output_file(): Creating loop device...")
 
-            kpartx_output = CoreTools.start_process(cmd="kpartx -av "
-                                                    + output_file,
+            kpartx_output = CoreTools.start_process(cmd="kpartx -av '"
+                                                    + output_file+"'",
                                                     return_output=True, privileged=True)[1]
 
             kpartx_output = kpartx_output.split("\n")
@@ -484,7 +485,7 @@ class Linux:
                 logger.error("Linux.get_volumes_lvm(): No free loop devices!")
                 return []
 
-            retval = CoreTools.start_process(cmd="losetup "+pv_device+" "+output_file,
+            retval = CoreTools.start_process(cmd="losetup "+pv_device+" '"+output_file+"'",
                                              privileged=True)
 
         if retval != 0:
@@ -622,25 +623,32 @@ class Linux:
 
             return False
 
-        #Sort the list alphabetically (it can sometimes be out of order).
-        choices.sort()
+        if len(choices) >= 2:
+            #Sort the list alphabetically (it can sometimes be out of order).
+            choices.sort()
 
-        #Ask the user which partition to mount.
-        logger.debug("mount_output_file(): Asking user which partition to mount...")
-        dlg = wx.SingleChoiceDialog(None, "Please select which partition you wish "
-                                    "to mount.", "DDRescue-GUI - Select a Partition", choices)
+            #Ask the user which partition to mount.
+            logger.debug("mount_output_file(): Asking user which partition to mount...")
+            dlg = wx.SingleChoiceDialog(None, "Please select which partition you wish "
+                                        "to mount.", "DDRescue-GUI - Select a Partition", choices)
 
-        #Respond to the user's action.
-        if dlg.ShowModal() != wx.ID_OK:
-            Core.output_file_mountpoint = None
-            logger.debug("mount_output_file(): User cancelled operation. "
-                         "Cleaning up...")
+            #Respond to the user's action.
+            if dlg.ShowModal() != wx.ID_OK:
+                Core.output_file_mountpoint = None
+                logger.debug("mount_output_file(): User cancelled operation. "
+                             "Cleaning up...")
 
-            Core.unmount_output_file()
-            return False
+                Core.unmount_output_file()
+                return False
 
-        #Get selected partition's name.
-        selected_partition = dlg.GetStringSelection().split()[1].replace(",", "")
+            #Get selected partition's name.
+            full_selection = dlg.GetStringSelection()
+            selected_partition = full_selection.split()[1].replace(",", "")
+
+        else:
+            #There is only 1 choice so we'll pick that automatically.
+            full_selection = choices[0]
+            selected_partition = choices[0].split()[1].replace(",", "")
 
         #Attempt to mount, and handle it if the mount attempt failed.
         if Core.output_file_types[-1] == "Device":
@@ -658,13 +666,13 @@ class Linux:
             device_to_mount = "/dev/"+Linux.volume_group_name+"/"+selected_partition
 
         #Caveats for mounting LVM and LUKS volumes just selected.
-        if Core.output_file_types[-1] == "Device" and "LVM" in dlg.GetStringSelection():
+        if Core.output_file_types[-1] == "Device" and "LVM" in full_selection:
             Core.output_file_types.append("LVM")
             Core.output_file_devicenames.append(device_to_mount)
 
             Linux.mount_device(device_to_mount)
 
-        elif Core.output_file_types[-1] == "Device" and "LUKS" in dlg.GetStringSelection():
+        elif Core.output_file_types[-1] == "Device" and "LUKS" in full_selection:
             #TODO LUKS.
             pass
 
@@ -695,7 +703,7 @@ class Linux:
         if Core.output_file_types[Core.output_file_devicenames.index(output_file)] == "Device":
             #This won't error on LINUX even if the loop device wasn't set up.
             logger.debug("unmount_output_file(): Pulling down loop device...")
-            cmd = "kpartx -d "+output_file
+            cmd = "kpartx -d '"+output_file+"'"
 
         #Deactivate volume group if needed.
         elif Core.output_file_types[Core.output_file_devicenames.index(output_file)] == "LVM":
@@ -1004,24 +1012,34 @@ class Mac:
 
             return False
 
-        #Sort the list alphabetically (it can sometimes be out of order).
-        choices.sort()
+        if len(choices) >= 2:
+            #Sort the list alphabetically (it can sometimes be out of order).
+            choices.sort()
 
-        #Ask the user which partition to mount.
-        logger.debug("mount_output_file(): Asking user which partition to mount...")
-        dlg = wx.SingleChoiceDialog(None, "Please select which partition you wish "
-                                    "to mount.", "DDRescue-GUI - Select a Partition", choices)
+            #Ask the user which partition to mount.
+            logger.debug("mount_output_file(): Asking user which partition to mount...")
+            dlg = wx.SingleChoiceDialog(None, "Please select which partition you wish "
+                                        "to mount.", "DDRescue-GUI - Select a Partition", choices)
 
-        #Respond to the user's action.
-        if dlg.ShowModal() != wx.ID_OK:
-            Core.output_file_mountpoint = None
-            logger.debug("mount_output_file(): User cancelled operation. "
-                         "Cleaning up...")
+            #Respond to the user's action.
+            if dlg.ShowModal() != wx.ID_OK:
+                Core.output_file_mountpoint = None
+                logger.debug("mount_output_file(): User cancelled operation. "
+                             "Cleaning up...")
 
-            return False
+                return False
 
-        #Get selected partition's name.
-        selected_partition = dlg.GetStringSelection().split()[1].replace(",", "")
+            #Get selected partition's name.
+            selected_partition = dlg.GetStringSelection().split()[1].replace(",", "")
+
+            #Get selected partition's name.
+            full_selection = dlg.GetStringSelection()
+            selected_partition = full_selection.split()[1].replace(",", "")
+
+        else:
+            #There is only 1 choice so we'll pick that automatically.
+            full_selection = choices[0]
+            selected_partition = choices[0].split()[1].replace(",", "")
 
         #Notify user of mount attempt.
         logger.info("mount_output_file(): Mounting partition "
