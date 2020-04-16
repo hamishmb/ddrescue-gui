@@ -256,7 +256,7 @@ class Linux:
 
         #--------------- USING PARTED TO DETECT PARTITION TABLES AND FILESYSTEMS ---------------
         #If list of partitions is empty (or 1 partition), we have a partition.
-        retval, output = CoreTools.start_process(cmd="parted -sm "+output_file+" print",
+        retval, output = CoreTools.start_process(cmd="parted -sm '"+output_file+"' print",
                                                  return_output=True, privileged=True)
 
         if retval != 0:
@@ -278,6 +278,7 @@ class Linux:
 
         output = output.split(":")
 
+        #FIXME will break if output file path has spaces in the name.
         #We want field 6 - the partition table type.
         try:
             #The type will be "loop" if this is a partition.
@@ -297,13 +298,13 @@ class Linux:
         #Check if this is a LUKS or LVM container if parted didn't help.
         if output_file_type == "unknown":
             #Check for LUKS.
-            if CoreTools.start_process(cmd="cryptsetup isLuks "+output_file,
+            if CoreTools.start_process(cmd="cryptsetup isLuks '"+output_file+"'",
                                        privileged=True) == 0:
 
                 output_file_type = "LUKS"
 
             #Check for LVM.
-            output = CoreTools.start_process(cmd="file -s "+output_file,
+            output = CoreTools.start_process(cmd="file -s '"+output_file+"'",
                                              return_output=True, privileged=True)[1]
 
             if "LVM" in output:
@@ -357,8 +358,8 @@ class Linux:
 
             logger.info("Linux.get_volumes_std_device(): Creating loop device...")
 
-            kpartx_output = CoreTools.start_process(cmd="kpartx -av "
-                                                    + output_file,
+            kpartx_output = CoreTools.start_process(cmd="kpartx -av '"
+                                                    + output_file+"'",
                                                     return_output=True, privileged=True)[1]
 
             kpartx_output = kpartx_output.split("\n")
@@ -483,7 +484,7 @@ class Linux:
                 logger.error("Linux.get_volumes_lvm(): No free loop devices!")
                 return []
 
-            retval = CoreTools.start_process(cmd="losetup "+pv_device+" "+output_file,
+            retval = CoreTools.start_process(cmd="losetup "+pv_device+" '"+output_file+"'",
                                              privileged=True)
 
         if retval != 0:
@@ -621,29 +622,33 @@ class Linux:
 
             return False
 
-        #Sort the list alphabetically (it can sometimes be out of order).
-        choices.sort()
+        if len(choices) >= 2:
+            #Sort the list alphabetically (it can sometimes be out of order).
+            choices.sort()
 
-        #Ask the user which partition to mount.
-        logger.debug("Linux.mount_device(): Asking user which partition to mount...")
-        dlg = wx.SingleChoiceDialog(None, "Please select which partition you wish "
-                                    "to mount.", "DDRescue-GUI - Select a Partition", choices)
+            #Ask the user which partition to mount.
+            logger.debug("mount_output_file(): Asking user which partition to mount...")
+            dlg = wx.SingleChoiceDialog(None, "Please select which partition you wish "
+                                        "to mount.", "DDRescue-GUI - Select a Partition", choices)
 
-        #Respond to the user's action.
-        if dlg.ShowModal() != wx.ID_OK:
-            dlg.Destroy()
-            Core.output_file_mountpoint = None
-            logger.debug("Linux.mount_device(): User cancelled operation. "
-                         "Cleaning up...")
+            #Respond to the user's action.
+            if dlg.ShowModal() != wx.ID_OK:
+                Core.output_file_mountpoint = None
+                logger.debug("mount_output_file(): User cancelled operation. "
+                             "Cleaning up...")
 
-            Core.unmount_output_file()
-            return False
+                Core.unmount_output_file()
+                return False
 
-        #Get selected partition's name.
-        full_selection = dlg.GetStringSelection()
-        selected_partition = full_selection.split()[1].replace(",", "")
+            #Get selected partition's name.
+            full_selection = dlg.GetStringSelection()
+            selected_partition = full_selection.split()[1].replace(",", "")
 
-        dlg.Destroy()
+        else:
+            #There is only 1 choice so we'll pick that automatically.
+            full_selection = choices[0]
+            selected_partition = choices[0].split()[1].replace(",", "")
+
 
         #Attempt to mount, and handle it if the mount attempt failed.
         if Core.output_file_types[-1] == "Device":
@@ -697,8 +702,8 @@ class Linux:
         #Pull down loops if the OutputFile is a Device.
         if Core.output_file_types[Core.output_file_devicenames.index(output_file)] == "Device":
             #This won't error on LINUX even if the loop device wasn't set up.
-            logger.debug("Linux.unmount_output_file(): Pulling down loop device...")
-            cmd = "kpartx -d "+output_file
+            logger.debug("unmount_output_file(): Pulling down loop device...")
+            cmd = "kpartx -d '"+output_file+"'"
 
         #Deactivate volume group if needed.
         elif Core.output_file_types[Core.output_file_devicenames.index(output_file)] == "LVM":
@@ -751,13 +756,14 @@ class Mac:
             tuple(string, bool).
 
                 1st element:                The type of the output file. "Partition",
-                                            "Device", "CD", "APFSContainer" or "APFSVolume".
+                                            "Device", "CD", "APFSStore", "APFSContainer"
+                                            or "APFSVolume".
 
                 2nd element:                True - success, False - failed.
         """
 
-        retval, output = Mac.run_hdiutil(options="imageinfo "+output_file
-                                         +" -plist")
+        retval, output = Mac.run_hdiutil(options="imageinfo '"+output_file
+                                         +"' -plist")
 
         #If "whole disk" is in the output, this is a partition.
         if "whole disk" in output and not "APFS" in output:
@@ -767,11 +773,21 @@ class Mac:
         elif "ISO9660" in output:
             output_file_type = "CD"
 
-        elif "APFS" in output:
-            output_file_type = "APFSContainer"
+        #APFS stuff.
+        elif "Apple_APFS" in output:
+            if "whole disk" in output:
+                output_file_type = "APFSContainer"
+
+            elif "unknown partition" in output:
+                output_file_type = "APFSVolume"
+
+            else:
+                output_file_type = "APFSStore"
 
         else:
             output_file_type = "Device"
+
+        logger.debug("determine_output_file_type(): Type is "+output_file_type+"...")
 
         return output_file_type, retval == 0
 
@@ -789,8 +805,8 @@ class Mac:
                 2 - str.                 The device name of the file, or None if attaching failed.
         """
 
-        retval, output = Mac.run_hdiutil("attach "+output_file
-                                         + " -nomount -readonly -plist")
+        retval, output = Mac.run_hdiutil("attach '"+output_file
+                                         + "' -nomount -readonly -plist")
 
         #Get the device name
         devicename, result = Mac.get_device_name(output)
@@ -815,13 +831,12 @@ class Mac:
             list. The volumes that were found in human-readable form.
         """
 
-        hdiutil_imageinfo_output = Mac.run_hdiutil(options="imageinfo "+output_file
-                                                   +" -plist")[1]
+        hdiutil_imageinfo_output = Mac.run_hdiutil(options="imageinfo '"+output_file
+                                                   +"' -plist")[1]
 
         hdiutil_imageinfo_output = plistlib.readPlistFromString(hdiutil_imageinfo_output.encode())
 
         #Get the block size of the image.
-        #FIXME Meaningless with CD images - random values on macOS.
         blocksize = hdiutil_imageinfo_output["partitions"]["block-size"]
 
         output = hdiutil_imageinfo_output["partitions"]["partitions"]
@@ -830,6 +845,8 @@ class Mac:
         choices = []
 
         for partition in output:
+            size = unicode((partition["partition-length"] * blocksize) // 1000000)+" MB"
+
             if not cdimage:
                 #Skip non-partition things and any "partitions" that don't have numbers.
                 #CD images work differently, and we must ignore this rule.
@@ -847,15 +864,16 @@ class Mac:
                 partition["partition-number"] = partno
                 partno += 1
 
+                #Ignore partition size for CD images.
+                size = "N/A"
+
             choices.append("Partition "+unicode(partition["partition-number"])
-                           + ", with size "+unicode((partition["partition-length"] \
-                                                     * blocksize) // 1000000)
-                           +" MB")
+                           + ", with size "+size)
 
         return choices
 
     @classmethod
-    def get_volumes_apfsc(cls, output_file):
+    def get_volumes_apfs(cls, output_file):
         """
         Finds volumes contained by APFS containers.
 
@@ -866,8 +884,8 @@ class Mac:
             list. The volumes that were found in human-readable form.
         """
 
-        hdiutil_imageinfo_output = Mac.run_hdiutil(options="imageinfo "+output_file
-                                                   +" -plist")[1]
+        hdiutil_imageinfo_output = Mac.run_hdiutil(options="imageinfo '"+output_file
+                                                   +"' -plist")[1]
 
         hdiutil_imageinfo_output = plistlib.readPlistFromString(hdiutil_imageinfo_output.encode())
 
@@ -896,23 +914,6 @@ class Mac:
                            +" MB")
 
         return choices
-
-    @classmethod
-    def get_volumes_apfsv(cls, output_file):
-        """
-        Finds volumes inside an APFS volume or image.
-        Seems counter-intuitive, but is required because of the way macOS handles
-        APFS volumes.
-
-        Args:
-            output_file (str).          The output file or device to investigate.
-
-        Returns.
-            list. The volumes that were found in human-readable form.
-        """
-
-        #TODO
-        return []
 
     @classmethod
     def mount_partition(cls, partition, attach=False):
@@ -978,19 +979,15 @@ class Mac:
 
         #Only look at the last type - this way if we're mounting a sub-partition, we'll collect
         #information for that, not the container it's inside.
-        if Core.output_file_types[-1] == "Device":
+        if Core.output_file_types[-1] in ("Device", "APFSStore"):
             choices = Mac.get_volumes_std_device(output_file)
 
         elif Core.output_file_types[-1] == "CD":
             choices = Mac.get_volumes_std_device(output_file, cdimage=True)
 
         #APFS containers.
-        elif Core.output_file_types[-1] == "APFSContainer":
-            choices = Mac.get_volumes_apfsc(output_file)
-
-        #Single APFS volumes.
-        elif Core.output_file_types[-1] == "APFSVolume":
-            choices = Mac.get_volumes_apfsv(output_file)
+        elif Core.output_file_types[-1] in ("APFSContainer", "APFSVolume"):
+            choices = Mac.get_volumes_apfs(output_file)
 
         #Check that this list isn't empty.
         if not choices:
@@ -1011,25 +1008,34 @@ class Mac:
 
             return False
 
-        #Sort the list alphabetically (it can sometimes be out of order).
-        choices.sort()
+        if len(choices) >= 2:
+            #Sort the list alphabetically (it can sometimes be out of order).
+            choices.sort()
 
-        #Ask the user which partition to mount.
-        logger.debug("Mac.mount_device(): Asking user which partition to mount...")
-        dlg = wx.SingleChoiceDialog(None, "Please select which partition you wish "
-                                    "to mount.", "DDRescue-GUI - Select a Partition", choices)
+            #Ask the user which partition to mount.
+            logger.debug("mount_output_file(): Asking user which partition to mount...")
+            dlg = wx.SingleChoiceDialog(None, "Please select which partition you wish "
+                                        "to mount.", "DDRescue-GUI - Select a Partition", choices)
 
-        #Respond to the user's action.
-        if dlg.ShowModal() != wx.ID_OK:
-            dlg.Destroy()
-            Core.output_file_mountpoint = None
-            logger.debug("Mac.mount_device(): User cancelled operation. "
-                         "Cleaning up...")
+            #Respond to the user's action.
+            if dlg.ShowModal() != wx.ID_OK:
+                Core.output_file_mountpoint = None
+                logger.debug("mount_output_file(): User cancelled operation. "
+                             "Cleaning up...")
 
-            return False
+                return False
 
-        #Get selected partition's name.
-        selected_partition = dlg.GetStringSelection().split()[1].replace(",", "")
+            #Get selected partition's name.
+            selected_partition = dlg.GetStringSelection().split()[1].replace(",", "")
+
+            #Get selected partition's name.
+            full_selection = dlg.GetStringSelection()
+            selected_partition = full_selection.split()[1].replace(",", "")
+
+        else:
+            #There is only 1 choice so we'll pick that automatically.
+            full_selection = choices[0]
+            selected_partition = choices[0].split()[1].replace(",", "")
 
         dlg.Destroy()
 
@@ -1040,7 +1046,7 @@ class Mac:
         #Attempt to mount the disk (this mounts all partitions inside),
         #and parse the resulting plist.
         (retval, mount_output) = \
-        Mac.run_hdiutil("attach "+output_file+" -readonly -nomount -plist")
+        Mac.run_hdiutil("attach '"+output_file+"' -readonly -nomount -plist")
 
         mount_output = plistlib.readPlistFromString(mount_output.encode())
 
@@ -1069,13 +1075,15 @@ class Mac:
 
         success = False
 
-        if Core.output_file_types[-1] in ("Device", "APFSContainer"):
+        if Core.output_file_types[-1] in ("Device", "APFSStore", "APFSContainer"):
             #Check that the filesystem the user wanted is among those that
             #have been marked mountable.
             for partition in disks:
                 disk = partition["dev-entry"]
 
-                if disk.split("s")[-1] != selected_partition:
+                if Core.output_file_types[-1] in ("Device", "APFSStore") \
+                    and disk.split("s")[-1] != selected_partition:
+
                     continue
 
                 #Find the type of this partition.
@@ -1083,9 +1091,15 @@ class Mac:
 
                 #Check if the partition we want is mountable
                 if partition["potentially-mountable"] and _type == "Partition":
-                    Mac.mount_partition(disk)
-                    success = retval == 0
+                    success = Mac.mount_partition(disk)
                     break
+
+                #If this is an APFS container and we haven't reached the last
+                #disk yet, keep going.
+                elif Core.output_file_types[-1] == "APFSContainer" \
+                    and disks.index(partition) != (len(disks) - 1):
+
+                    continue
 
                 #Handle APFS containers.
                 elif _type == "APFSContainer":
@@ -1094,12 +1108,18 @@ class Mac:
 
                     success = Mac.mount_device(disk)
 
+                #Handle APFS stores.
+                elif _type == "APFSStore":
+                    Core.output_file_types.append("APFSStore")
+                    Core.output_file_devicenames.append(disk)
+
+                    success = Mac.mount_device(disk)
+
         elif Core.output_file_types[-1] == "CD":
             disk = disks[0]["dev-entry"]
 
             if disks[0]["potentially-mountable"]:
-                Mac.mount_partition(disk)
-                success = retval == 0
+                success = Mac.mount_partition(disk)
 
         if not success:
             logger.info("Mac.mount_device(): Unsupported or damaged filesystem. "
@@ -1142,6 +1162,10 @@ class Mac:
                      "represents the image...")
 
         cmd = "hdiutil detach "+devicename
+
+        #Ignore when devices don't exist - can happen if already unmounted.
+        if not os.path.exists(devicename):
+            return True
 
         if CoreTools.start_process(cmd=cmd, return_output=False, privileged=True) == 0:
             logger.info("Mac.unmount_output_file(): Successfully pulled down "
@@ -1228,6 +1252,8 @@ class Mac:
             #10.10, we have to just detach all possible disks and ignore failures.
 
             #TODO Consider dropping support for macOS 10.9 and 10.10 to improve reliability.
+            #Or could detect version and behave differently on newer versions.
+            #This bug doesn't seem to be a big deal anyway.
             for line in CoreTools.start_process(cmd="diskutil list",
                                                 return_output=True)[1].split("\n"):
                 try:

@@ -133,43 +133,6 @@ class TestSendNotification(unittest.TestCase):
 
         self.assertEqual(result, wx.ID_YES)
 
-class TestMacRunHdiutil(unittest.TestCase):
-    """Tests for mac_run_hdiutil()"""
-
-    def setUp(self):
-        self.app = wx.App()
-        self.path = ""
-
-    def tearDown(self):
-        self.app.Destroy()
-        del self.app
-
-    @unittest.skipUnless(not LINUX, "Mac-specific test")
-    def test_mac_run_hdiutil(self):
-        """Simple test for mac_run_hdiutil()"""
-        #TODO Add more tests for when "resource is temporarily unavailable" errors happen
-        #TODO Create image to test against?
-        #TODO Test against a device too.
-        #Get a device path from the user to test against.
-        global POTENTIAL_DEVICE_PATH
-
-        self.path = POTENTIAL_DEVICE_PATH
-
-        if POTENTIAL_DEVICE_PATH == "":
-            dlg = wx.TextEntryDialog(None, "DDRescue-GUI needs a device name to test against.\n"
-                                     +"No data on your device will be modified. Suggested: "
-                                     +"insert a USB disk and leave it mounted.\nNote: Do not use "
-                                     +"your device while these tests are running, or it may "
-                                     +"interfere with the tests.", "DDRescue-GUI Tests",
-                                     POTENTIAL_DEVICE_PATH, style=wx.OK)
-
-            dlg.ShowModal()
-            self.path = dlg.GetValue()
-            dlg.Destroy()
-            POTENTIAL_DEVICE_PATH = self.path
-
-        self.assertEqual(CoreTools.mac_run_hdiutil("info")[0], 0)
-
 class TestIsMounted(unittest.TestCase):
     """Tests for is_mounted()"""
 

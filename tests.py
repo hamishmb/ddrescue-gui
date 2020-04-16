@@ -49,7 +49,7 @@ def usage():
     print("       -d, --debug:                  Set logging level to debug; show all messages.")
     print("                                     Default: show only critical logging messages.\n")
     print("       -c, --coretools:              Run tests for CoreTools module.")
-    print("       -m, --main:                   Run tests for main file (DDRescue-GUI.py).")
+    print("       -m, --mountingtools:          Run tests for MountingTools module.")
     print("       -a, --all:                    Run all the tests. The default.\n")
     print("       -t, --tests:                  Ignored.")
     print("DDRescue-GUI "+VERSION+" is released under the GNU GPL VERSION 3")
@@ -58,8 +58,9 @@ def usage():
 if __name__ == "__main__":
     #Check all cmdline options are valid.
     try:
-        OPTIONS, ARGUMENTS = getopt.getopt(sys.argv[1:], "hdbmat", ["help", "debug", "coretools",
-                                                                    "main", "all", "tests"])
+        OPTIONS, ARGUMENTS = getopt.getopt(sys.argv[1:], "hdcmat", ["help", "debug", "coretools",
+                                                                     "mountingtools",
+                                                                     "all", "tests"])
 
     except getopt.GetoptError as err:
         #Invalid option. Show the help message and then exit.
@@ -89,30 +90,37 @@ if __name__ == "__main__":
     #Custom tools module.
     import Tools #pylint: disable=import-error
     from Tools import core as CoreTools #pylint: disable=import-error
+    from Tools import mount_tools as MountingTools #pylint: disable=import-error
 
     #Import test modules.
     from Tests import CoreToolsTests #pylint: disable=import-error
+    from Tests import MountingToolsTests #pylint: disable=import-error
 
     #Set up which tests to run based on options given.
-    TEST_SUITES = [CoreToolsTests] #*** Set up full defaults when finished ***
+    #TODO Set up full defaults when finished.
+    TEST_SUITES = [CoreToolsTests, MountingToolsTests]
 
     for o, a in OPTIONS:
         if o in ["-c", "--coretools"]:
             TEST_SUITES = [CoreToolsTests]
-        elif o in ["-m", "--main"]:
-            #TEST_SUITES = [MainTests]
-            assert False, "Not implemented yet"
+
+        elif o in ("-m", "--mountingtools"):
+            TEST_SUITES = [MountingToolsTests]
+
         elif o in ["-a", "--all"]:
-            TEST_SUITES = [CoreToolsTests]
+            TEST_SUITES = [CoreToolsTests, MountingToolsTests]
             #TEST_SUITES.append(MainTests)
+
         elif o in ["-t", "--tests"]:
             pass
+
         elif o in ["-d", "--debug"]:
             LOGGER_LEVEL = logging.DEBUG
 
         elif o in ["-h", "--help"]:
             usage()
             sys.exit()
+
         else:
             assert False, "unhandled option"
 
@@ -141,6 +149,9 @@ if __name__ == "__main__":
     #Setup test modules.
     CoreToolsTests.CoreTools = CoreTools
     CoreToolsTests.Tools = Tools
+
+    MountingToolsTests.MountingTools = MountingTools
+    MountingToolsTests.Tools = Tools
 
     for module in TEST_SUITES:
         print("\n\n---------------------------- Tests for "

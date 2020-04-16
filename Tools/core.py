@@ -866,7 +866,7 @@ def mount_disk(partition, mount_point, options=""):
 
     Args:
         partition (string).             The partition to mount.
-        mount_point (string).           The part where the partition is to be \
+        mount_point (string).           The path where the partition is to be \
                                         mounted.
 
     Kwargs:
@@ -919,11 +919,11 @@ def mount_disk(partition, mount_point, options=""):
     #Mount the device to the mount point.
     #Use diskutil on OS X.
     if LINUX:
-        retval = start_process("mount "+options+" "+partition+" "+mount_point, privileged=True)
+        retval = start_process("mount "+options+" '"+partition+"' "+mount_point, privileged=True)
 
     else:
         retval = start_process("diskutil mount "+options+" "+" -mountPoint "
-                               +mount_point+" "+partition, privileged=True)
+                               +mount_point+" '"+partition+"'", privileged=True)
 
     if retval == 0:
         logger.debug("mount_disk(): Successfully mounted partition!")
