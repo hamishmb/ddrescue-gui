@@ -205,10 +205,9 @@ if __name__ == "__main__":
     import Tools.DDRescueTools.setup as DDRescueTools
 
     CoreTools.LOG_SUFFIX = LOG_SUFFIX
+
     #Set up MountingTools.
-    #TODO Remove when possible.
     MountingTools.SETTINGS = SETTINGS
-    MountingTools.DISKINFO = DISKINFO
 
     #Log which OS we're running on (helpful for debugging).
     if LINUX:
@@ -1632,7 +1631,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         Get the input file/Disk by calling self.file_choice_handler.
         """
         logger.debug("MainWindow().SelectInputFile(): Calling File Choice Handler...")
-        #TODO Later workaround for macOS?
         default_dir = "/dev"
 
         self.file_choice_handler(_type="Input",
@@ -3708,7 +3706,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
     and forwards it back to the GUI thread as required.
     """
 
-    def __init__(self, parent): #TODO refactor me.
+    def __init__(self, parent):
         """
         Initialize and start the thread.
 
@@ -3740,7 +3738,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
         threading.Thread.__init__(self)
         self.start()
 
-    def run(self):
+    def run(self): #TODO refactor me.
         """
         Main body of the thread, started with self.start().
         """

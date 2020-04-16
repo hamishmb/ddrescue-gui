@@ -72,7 +72,6 @@ elif "wxMac" in wx.PlatformInfo:
     PARTED_MAGIC = False
 
 #Dictionary variables.
-DISKINFO = {}
 SETTINGS = {}
 
 #Set up logging.
@@ -869,7 +868,6 @@ class Mac:
             list. The volumes that were found in human-readable form.
         """
 
-        #TODO may be better to use diskutil apfs
         hdiutil_imageinfo_output = Mac.run_hdiutil(options="imageinfo "+output_file
                                                    +" -plist")[1]
 
@@ -1141,7 +1139,7 @@ class Mac:
                 False - Failed
         """
 
-        #TODO handle APFS.
+        #TODO handle APFS. Done now?
         #Always detach the image's device file.
         #FIXME will error out if it was never attached.
         logger.debug("unmount_output_file(): Detaching the device that "

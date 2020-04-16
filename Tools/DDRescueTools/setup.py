@@ -81,7 +81,7 @@ def setup_for_ddrescue_version(ddrescue_version):
 
     else:
         #Supported version.
-        #NB: Ignore minor revisions eg 1.18.1. TODO Make sure this always works!
+        #NB: Ignore minor revisions eg 1.18.1.
         best_version = '.'.join(ddrescue_version.split(".")[0:2])
 
     suitable_functions = []

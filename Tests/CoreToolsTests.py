@@ -108,8 +108,6 @@ class TestSendNotification(unittest.TestCase):
 
     def test_send_notification(self):
         """Simple test for send_notification()"""
-        #FIXME: Won't always show on Linux if run as root.
-
         #Tell the user we are about to send a notification.
         dlg = wx.MessageDialog(None, "DDRescue-GUI's CoreTools tests are about to send you a "
                                +"notification to test that notifications are working. You will "
