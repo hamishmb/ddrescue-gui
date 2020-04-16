@@ -368,7 +368,10 @@ def get_helper(cmd):
         helper = "/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_umount.sh"
 
     elif ("mount" in cmd or "kpartx -l" in cmd or "kpartx -a" in cmd or "lsblk" in cmd
-          or "partprobe" in cmd):
+          or "partprobe" in cmd or "parted" in cmd or "cryptsetup" in cmd
+          or "file" in cmd or "losetup" in cmd or "pvs" in cmd
+          or "vgchange -a y" in cmd or "lvdisplay" in cmd):
+
         #Note: These are only used in the process of mounting files.
         helper = "/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux_mount.sh"
 
@@ -1053,7 +1056,7 @@ def emergency_exit(msg):
             dialog.ShowModal()
             dialog.Destroy()
 
-    start_process("mv -v /tmp/ddrescue-gui.log"+"."+unicode(log_suffix)+" "+log_file)
+    start_process("mv -v /tmp/ddrescue-gui.log"+"."+unicode(LOG_SUFFIX)+" "+log_file)
 
     #Exit.
     dialog = wx.MessageDialog(None, "Done. DDRescue-GUI will now exit.",
