@@ -1935,7 +1935,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         logger.info("MainWindow().on_mount(): Got file "+SETTINGS["InputFile"]
                     + ". Opening FinishedWindow...")
 
-        FinishedWindow(self, "0 Bytes", "0 Bytes").Show()
+        self.recovered_data = "0 Bytes"
+        self.disk_capacity = "0 Bytes"
+
+        FinishedWindow(self, self.disk_capacity, self.recovered_data).Show()
 
     def on_start(self): #pylint: disable=too-many-statements
         """
