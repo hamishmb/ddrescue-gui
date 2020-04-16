@@ -123,7 +123,7 @@ class Core:
                 False - Failed
         """
 
-        logger.info("mount_output_file(): Mounting Disk: "+SETTINGS["OutputFile"]+"...")
+        logger.info("Core.mount_output_file(): Mounting Disk: "+SETTINGS["OutputFile"]+"...")
 
         #Determine what type of OutputFile we have (Partition or Device).
         if LINUX:
@@ -138,7 +138,7 @@ class Core:
 
         #If we failed, report to user.
         if not success:
-            logger.error("mount_output_file(): Error! Warning the user...")
+            logger.error("Core.mount_output_file(): Error! Warning the user...")
             dlg = wx.MessageDialog(None, "Couldn't mount your output file. The hard disk "
                                    "image utility failed to run. This could mean your disk image "
                                    "is damaged, and you need to use a different tool to read it.",
@@ -149,7 +149,7 @@ class Core:
 
         if "Partition" in Core.output_file_types:
 		    #We have a partition.
-            logger.debug("mount_output_file(): Output file is a partition...")
+            logger.debug("Core.mount_output_file(): Output file is a partition...")
 
             #Attempt to mount the disk.
             if LINUX:
@@ -176,7 +176,7 @@ class Core:
                 False - Failed
         """
 
-        logger.info("unmount_output_file(): Attempting to unmount output file...")
+        logger.info("Core.unmount_output_file(): Attempting to unmount output file...")
 
         success = True
 
@@ -189,11 +189,11 @@ class Core:
             #Try to umount the output file, if it has been mounted.
             if Core.output_file_mountpoint is not None:
                 if CoreTools.unmount_disk(Core.output_file_mountpoint) == 0:
-                    logger.info("unmount_output_file(): Successfully unmounted "
+                    logger.info("Core.unmount_output_file(): Successfully unmounted "
                                 "output file...")
 
                 else:
-                    logger.error("unmount_output_file(): Error unmounting output "
+                    logger.error("Core.unmount_output_file(): Error unmounting output "
                                  "file! Warning user...")
 
                     dlg = wx.MessageDialog(None, "It seems your output file is in use. "
@@ -355,7 +355,7 @@ class Linux:
         if "/dev/" not in output_file:
             Linux.using_loop_device = True
 
-            logger.info("mount_output_file(): Creating loop device...")
+            logger.info("Linux.get_volumes_std_device(): Creating loop device...")
 
             kpartx_output = CoreTools.start_process(cmd="kpartx -av "
                                                     + output_file,
@@ -385,7 +385,7 @@ class Linux:
             lsblk_output = json.loads(lsblk_output)
 
         except ValueError as error:
-            logger.error("mount_output_file(): Failed to run lsblk. Error:"
+            logger.error("Linux.get_volumes_std_device(): Failed to run lsblk. Error:"
                          +unicode(error))
 
             dlg = wx.MessageDialog(None, "Failed to gather information about the output file."
@@ -555,7 +555,7 @@ class Linux:
                                       options="-r")
 
         if retval != 0:
-            logger.error("mount_partition_linux(): Error! Warning the user...")
+            logger.error("Linux.mount_partition(): Error! Warning the user...")
             dlg = wx.MessageDialog(None, "Couldn't mount your output file. Most "
                                    "probably, the filesystem is damaged and you'll need to "
                                    "use another tool to read it from here. It could also be "
@@ -589,7 +589,7 @@ class Linux:
         #Create a nice list of volumes for the user to pick from.
         choices = []
 
-        logger.debug("mount_output_file(): Output file isn't a partition! Getting "
+        logger.debug("Linux.mount_device(): Output file isn't a partition! Getting "
                      "list of contained volumes...")
 
         #Only look at the last type - this way if we're mounting a sub-partition, we'll collect
@@ -607,7 +607,7 @@ class Linux:
 
         #Check that this list isn't empty.
         if not choices:
-            logger.error("mount_output_file(): Couldn't find any partitions "
+            logger.error("Linux.mount_device(): Couldn't find any partitions "
                          "to mount!")
 
             dlg = wx.MessageDialog(None, "Couldn't find any partitions to mount! "
@@ -625,7 +625,7 @@ class Linux:
         choices.sort()
 
         #Ask the user which partition to mount.
-        logger.debug("mount_output_file(): Asking user which partition to mount...")
+        logger.debug("Linux.mount_device(): Asking user which partition to mount...")
         dlg = wx.SingleChoiceDialog(None, "Please select which partition you wish "
                                     "to mount.", "DDRescue-GUI - Select a Partition", choices)
 
@@ -633,7 +633,7 @@ class Linux:
         if dlg.ShowModal() != wx.ID_OK:
             dlg.Destroy()
             Core.output_file_mountpoint = None
-            logger.debug("mount_output_file(): User cancelled operation. "
+            logger.debug("Linux.mount_device(): User cancelled operation. "
                          "Cleaning up...")
 
             Core.unmount_output_file()
@@ -675,7 +675,7 @@ class Linux:
             if not Linux.mount_partition(device_to_mount):
                 return False
 
-        logger.info("mount_output_file(): Success! Waiting for user to finish "
+        logger.info("Linux.mount_device(): Success! Waiting for user to finish "
                     "with it and prompt to unmount it...")
 
         return True
@@ -697,13 +697,13 @@ class Linux:
         #Pull down loops if the OutputFile is a Device.
         if Core.output_file_types[Core.output_file_devicenames.index(output_file)] == "Device":
             #This won't error on LINUX even if the loop device wasn't set up.
-            logger.debug("unmount_output_file(): Pulling down loop device...")
+            logger.debug("Linux.unmount_output_file(): Pulling down loop device...")
             cmd = "kpartx -d "+output_file
 
         #Deactivate volume group if needed.
         elif Core.output_file_types[Core.output_file_devicenames.index(output_file)] == "LVM":
             #Shouldn't cause an error if volume group is already unmounted.
-            logger.debug("unmount_output_file(): Pulling down loop device...")
+            logger.debug("Linux.unmount_output_file(): Pulling down loop device...")
             cmd = "vgchange -a n "+Linux.volume_group_name
 
         elif Core.output_file_types[Core.output_file_devicenames.index(output_file)] == "Partition":
@@ -711,13 +711,13 @@ class Linux:
             return True
 
         if CoreTools.start_process(cmd=cmd, return_output=False, privileged=True) == 0:
-            logger.info("unmount_output_file(): Successfully pulled down "
+            logger.info("Linux.unmount_output_file(): Successfully pulled down "
                         "loop device...")
 
             return True
 
         else:
-            logger.info("unmount_output_file(): Failed to pull down the "
+            logger.info("Linux.unmount_output_file(): Failed to pull down the "
                         "loop device! Warning user...")
 
             dlg = wx.MessageDialog(None, "Couldn't finish unmounting your output file! "
@@ -829,8 +829,6 @@ class Mac:
         partno = 1
         choices = []
 
-        #TODO Round to best size using Unitlist?
-        #TODO Get some more info to make this easier for the user if possible.
         for partition in output:
             if not cdimage:
                 #Skip non-partition things and any "partitions" that don't have numbers.
@@ -881,8 +879,6 @@ class Mac:
         partno = 1
         choices = []
 
-        #TODO Round to best size using Unitlist?
-        #TODO Get some more info to make this easier for the user if possible.
         for partition in output:
             #Skip non-partition things and any "partitions" that don't have numbers.
             #CD images work differently, and we must ignore this rule.
@@ -947,7 +943,7 @@ class Mac:
                                       options="readOnly")
 
         if retval != 0:
-            logger.error("mount_partition_linux(): Error! Warning the user...")
+            logger.error("Mac.mount_partition(): Error! Warning the user...")
             dlg = wx.MessageDialog(None, "Couldn't mount your output file. Most "
                                    "probably, the filesystem is damaged and you'll need to "
                                    "use another tool to read it from here. It could also be "
@@ -977,7 +973,7 @@ class Mac:
                 False - Failure
         """
 
-        logger.debug("mount_output_file(): Output file isn't a partition! Getting "
+        logger.debug("Mac.mount_device(): Output file isn't a partition! Getting "
                      "list of contained partitions...")
 
         #Only look at the last type - this way if we're mounting a sub-partition, we'll collect
@@ -998,7 +994,7 @@ class Mac:
 
         #Check that this list isn't empty.
         if not choices:
-            logger.error("mount_output_file(): Couldn't find any partitions "
+            logger.error("Mac.mount_device(): Couldn't find any partitions "
                          "to mount! This could indicate a bug in the GUI, or a problem "
                          "with your recovered image. It's possible that the data you "
                          "recovered is partially corrupted, and you need to use "
@@ -1019,7 +1015,7 @@ class Mac:
         choices.sort()
 
         #Ask the user which partition to mount.
-        logger.debug("mount_output_file(): Asking user which partition to mount...")
+        logger.debug("Mac.mount_device(): Asking user which partition to mount...")
         dlg = wx.SingleChoiceDialog(None, "Please select which partition you wish "
                                     "to mount.", "DDRescue-GUI - Select a Partition", choices)
 
@@ -1027,7 +1023,7 @@ class Mac:
         if dlg.ShowModal() != wx.ID_OK:
             dlg.Destroy()
             Core.output_file_mountpoint = None
-            logger.debug("mount_output_file(): User cancelled operation. "
+            logger.debug("Mac.mount_device(): User cancelled operation. "
                          "Cleaning up...")
 
             return False
@@ -1038,7 +1034,7 @@ class Mac:
         dlg.Destroy()
 
         #Notify user of mount attempt.
-        logger.info("mount_output_file(): Mounting partition "
+        logger.info("Mac.mount_device(): Mounting partition "
                     + selected_partition+" of "+output_file+"...")
 
         #Attempt to mount the disk (this mounts all partitions inside),
@@ -1050,7 +1046,7 @@ class Mac:
 
         #Handle it if the mount attempt failed.
         if retval != 0:
-            logger.error("mount_output_file(): Error! Warning the user...")
+            logger.error("Mac.mount_device(): Error! Warning the user...")
             dlg = wx.MessageDialog(None, "Couldn't mount your output file. Most "
                                    "probably, the filesystem is damaged or unsupported "
                                    "and you'll need to use another tool to read it from "
@@ -1106,7 +1102,7 @@ class Mac:
                 success = retval == 0
 
         if not success:
-            logger.info("mount_output_file(): Unsupported or damaged filesystem. "
+            logger.info("Mac.mount_device(): Unsupported or damaged filesystem. "
                         "Warning user and cleaning up...")
 
             Core.unmount_output_file()
@@ -1119,7 +1115,7 @@ class Mac:
             dlg.Destroy()
             return False
 
-        logger.info("mount_output_file(): Success! Waiting for user to finish with "
+        logger.info("Mac.mount_device(): Success! Waiting for user to finish with "
                     "it and prompt to unmount it...")
 
         return True
@@ -1142,19 +1138,19 @@ class Mac:
         #TODO handle APFS. Done now?
         #Always detach the image's device file.
         #FIXME will error out if it was never attached.
-        logger.debug("unmount_output_file(): Detaching the device that "
+        logger.debug("Mac.unmount_output_file(): Detaching the device that "
                      "represents the image...")
 
         cmd = "hdiutil detach "+devicename
 
         if CoreTools.start_process(cmd=cmd, return_output=False, privileged=True) == 0:
-            logger.info("unmount_output_file(): Successfully pulled down "
+            logger.info("Mac.unmount_output_file(): Successfully pulled down "
                         "loop device...")
 
             return True
 
         else:
-            logger.info("unmount_output_file(): Failed to pull down the "
+            logger.info("Mac.unmount_output_file(): Failed to pull down the "
                         "loop device! Warning user...")
 
             dlg = wx.MessageDialog(None, "Couldn't finish unmounting your output file! "
