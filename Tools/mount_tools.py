@@ -632,6 +632,7 @@ class Linux:
 
         #Respond to the user's action.
         if dlg.ShowModal() != wx.ID_OK:
+            dlg.Destroy()
             Core.output_file_mountpoint = None
             logger.debug("mount_output_file(): User cancelled operation. "
                          "Cleaning up...")
@@ -640,7 +641,10 @@ class Linux:
             return False
 
         #Get selected partition's name.
-        selected_partition = dlg.GetStringSelection().split()[1].replace(",", "")
+        full_selection = dlg.GetStringSelection()
+        selected_partition = full_selection.split()[1].replace(",", "")
+
+        dlg.Destroy()
 
         #Attempt to mount, and handle it if the mount attempt failed.
         if Core.output_file_types[-1] == "Device":
@@ -658,13 +662,13 @@ class Linux:
             device_to_mount = "/dev/"+Linux.volume_group_name+"/"+selected_partition
 
         #Caveats for mounting LVM and LUKS volumes just selected.
-        if Core.output_file_types[-1] == "Device" and "LVM" in dlg.GetStringSelection():
+        if Core.output_file_types[-1] == "Device" and "LVM" in full_selection:
             Core.output_file_types.append("LVM")
             Core.output_file_devicenames.append(device_to_mount)
 
             Linux.mount_device(device_to_mount)
 
-        elif Core.output_file_types[-1] == "Device" and "LUKS" in dlg.GetStringSelection():
+        elif Core.output_file_types[-1] == "Device" and "LUKS" in full_selection:
             #TODO LUKS.
             pass
 
@@ -1023,6 +1027,7 @@ class Mac:
 
         #Respond to the user's action.
         if dlg.ShowModal() != wx.ID_OK:
+            dlg.Destroy()
             Core.output_file_mountpoint = None
             logger.debug("mount_output_file(): User cancelled operation. "
                          "Cleaning up...")
@@ -1031,6 +1036,8 @@ class Mac:
 
         #Get selected partition's name.
         selected_partition = dlg.GetStringSelection().split()[1].replace(",", "")
+
+        dlg.Destroy()
 
         #Notify user of mount attempt.
         logger.info("mount_output_file(): Mounting partition "
