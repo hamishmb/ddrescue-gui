@@ -1521,8 +1521,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             logger.info("MainWindow().file_choice_handler(): User selected custom file: "
                         +user_selection+"...")
 
-            print(user_selection, key)
-
             SETTINGS[key] = user_selection
 
             #Handle custom paths properly.
@@ -1571,8 +1569,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         if user_selection[0:3] == "...":
             #Get the full path name to set the inputfile to.
             SETTINGS[key] = paths[user_selection]
-
-        print(user_selection, key)
 
         #Handle special cases if the file is the output file.
         if _type == "Output" and SETTINGS[key] is not None:

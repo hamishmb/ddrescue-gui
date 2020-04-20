@@ -132,10 +132,6 @@ class Core:
         else:
             _type, success = Mac.determine_output_file_type(SETTINGS["OutputFile"])
 
-        Core.output_file_devicenames.append(SETTINGS["OutputFile"])
-
-        Core.output_file_types.append(_type)
-
         #If we failed, report to user.
         if not success:
             logger.error("Core.mount_output_file(): Error! Warning the user...")
@@ -146,6 +142,9 @@ class Core:
             dlg.ShowModal()
             dlg.Destroy()
             return False
+
+        Core.output_file_devicenames.append(SETTINGS["OutputFile"])
+        Core.output_file_types.append(_type)
 
         if "Partition" in Core.output_file_types:
 		    #We have a partition.
@@ -182,6 +181,7 @@ class Core:
 
         #Unmount these in reverse order, otherwise it won't work.
         Core.output_file_devicenames.reverse()
+        Core.output_file_types.reverse()
 
         for disk in Core.output_file_devicenames:
             logger.info("Core.unmount_output_file(): Unmounting "+disk+"...")
@@ -259,7 +259,8 @@ class Linux:
         retval, output = CoreTools.start_process(cmd="parted -sm '"+output_file+"' print",
                                                  return_output=True, privileged=True)
 
-        if retval != 0:
+        #NOTE: Exit code 1 on CD images, but still works.
+        if retval not in (0, 1):
             return "unknown", False
 
         temp_output = output.split("\n")
@@ -487,9 +488,12 @@ class Linux:
             retval = CoreTools.start_process(cmd="losetup "+pv_device+" '"+output_file+"'",
                                              privileged=True)
 
-        if retval != 0:
-            logger.error("Linux.get_volumes_lvm(): Unable to set up loop device!")
-            return []
+            if retval != 0:
+                logger.error("Linux.get_volumes_lvm(): Unable to set up loop device!")
+                return []
+
+        else:
+            pv_device = output_file
 
         retval, output = CoreTools.start_process(cmd="pvs -y", return_output=True,
                                                  privileged=True)
@@ -649,7 +653,6 @@ class Linux:
             full_selection = choices[0]
             selected_partition = choices[0].split()[1].replace(",", "")
 
-
         #Attempt to mount, and handle it if the mount attempt failed.
         if Core.output_file_types[-1] == "Device":
             if Linux.using_loop_device:
@@ -664,6 +667,11 @@ class Linux:
 
         elif Core.output_file_types[-1] == "LVM":
             device_to_mount = "/dev/"+Linux.volume_group_name+"/"+selected_partition
+
+            #Add this partition to the list so it is unmounted before
+            #deactivating the volume group.
+            Core.output_file_types.append("Partition")
+            Core.output_file_devicenames.append(device_to_mount)
 
         #Caveats for mounting LVM and LUKS volumes just selected.
         if Core.output_file_types[-1] == "Device" and "LVM" in full_selection:
