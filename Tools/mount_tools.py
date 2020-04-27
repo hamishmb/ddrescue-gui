@@ -904,6 +904,15 @@ class Mac:
         hdiutil_imageinfo_output = Mac.run_hdiutil(options="imageinfo '"+output_file
                                                    +"' -plist")[1]
 
+        #Fix for older macOS versions that put kernel messages in the output.
+        temp = ""
+
+        for line in hdiutil_imageinfo_output.split("\n"):
+            if "nx_kernel_mount" not in line:
+                temp += line                
+
+        hdiutil_imageinfo_output = plistlib.readPlistFromString(temp.encode())
+
         hdiutil_imageinfo_output = plistlib.readPlistFromString(hdiutil_imageinfo_output.encode())
 
         #Get the block size of the image.
