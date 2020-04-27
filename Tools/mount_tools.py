@@ -648,6 +648,8 @@ class Linux:
             full_selection = dlg.GetStringSelection()
             selected_partition = full_selection.split()[1].replace(",", "")
 
+            dlg.Destroy()
+
         else:
             #There is only 1 choice so we'll pick that automatically.
             full_selection = choices[0]
@@ -1040,12 +1042,12 @@ class Mac:
             full_selection = dlg.GetStringSelection()
             selected_partition = full_selection.split()[1].replace(",", "")
 
+            dlg.Destroy()
+
         else:
             #There is only 1 choice so we'll pick that automatically.
             full_selection = choices[0]
             selected_partition = choices[0].split()[1].replace(",", "")
-
-        dlg.Destroy()
 
         #Notify user of mount attempt.
         logger.info("Mac.mount_device(): Mounting partition "
