@@ -913,8 +913,6 @@ class Mac:
 
         hdiutil_imageinfo_output = plistlib.readPlistFromString(temp.encode())
 
-        hdiutil_imageinfo_output = plistlib.readPlistFromString(hdiutil_imageinfo_output.encode())
-
         #Get the block size of the image.
         blocksize = hdiutil_imageinfo_output["partitions"]["block-size"]
 
