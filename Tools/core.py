@@ -24,13 +24,6 @@
 This is the tools package for DDRescue-GUI.
 """
 
-#Do future imports to prepare to support python 3.
-#Use unicode strings rather than ASCII strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 #Import other modules.
 import os
 import sys
@@ -38,17 +31,8 @@ import subprocess
 import threading
 import shlex
 import logging
-import plistlib
 import time
 import wx
-
-#Make unicode an alias for str in Python 3.
-if sys.version_info[0] == 3:
-    unicode = str #pylint: disable=redefined-builtin,invalid-name
-    str = bytes #pylint: disable=redefined-builtin,invalid-name
-
-    #Plist hack for Python 3.
-    plistlib.readPlistFromString = plistlib.loads #pylint: disable=no-member
 
 #Determine if running on Linux or Mac.
 if "wxGTK" in wx.PlatformInfo:
@@ -448,11 +432,11 @@ def start_process(cmd, return_output=False, privileged=False):
                 minor = sys.version_info[1]
 
                 environ = 'LC_ALL="C" PYTHONHOME="'+RESOURCEPATH+'" PYTHONPATH="' \
-                          + RESOURCEPATH+'/lib/python'+unicode(major)+unicode(minor)+'.zip:' \
-                          + RESOURCEPATH+'/lib/python'+unicode(major)+unicode(minor)+':' \
-                          + RESOURCEPATH+'/lib/python'+unicode(major)+unicode(minor)+'/lib-dynload:' \
-                          + RESOURCEPATH+'/lib/python'+unicode(major)+unicode(minor)+'/site-packages.zip:' \
-                          + RESOURCEPATH+'/lib/python'+unicode(major)+unicode(minor)+'/site-packages" '
+                          + RESOURCEPATH+'/lib/python'+str(major)+str(minor)+'.zip:' \
+                          + RESOURCEPATH+'/lib/python'+str(major)+str(minor)+':' \
+                          + RESOURCEPATH+'/lib/python'+str(major)+str(minor)+'/lib-dynload:' \
+                          + RESOURCEPATH+'/lib/python'+str(major)+str(minor)+'/site-packages.zip:' \
+                          + RESOURCEPATH+'/lib/python'+str(major)+str(minor)+'/site-packages" '
 
             else:
                 environ = 'LC_ALL="C" '
@@ -477,7 +461,7 @@ def start_process(cmd, return_output=False, privileged=False):
 
     #Log this info in a debug message.
     logger.debug("start_process(): Process: "+' '.join(cmd)+": Return Value: "
-                 +unicode(retval)+", output: \"\n\n"+'\n'.join(output)+"\"\n")
+                 +str(retval)+", output: \"\n\n"+'\n'.join(output)+"\"\n")
 
     if privileged and (retval == 126 or retval == 127):
         #Try again, auth dismissed / bad password 3 times.
@@ -518,7 +502,7 @@ def read(cmd, testing=False):
     #Read up to 100 empty "" characters after the process finishes to
     #make sure we get all the output.
     counter = 0
-    line = str(b"")
+    line = bytes(b"")
     line_list = []
 
     while cmd.poll() is None or counter < 100:
@@ -541,7 +525,7 @@ def read(cmd, testing=False):
                 line_list.append(line.replace("\n", "").replace("\r", ""))
 
             #Reset line.
-            line = str(b"")
+            line = bytes(b"")
 
     #Catch it if there's not a newline at the end.
     if line != b"":
@@ -694,7 +678,7 @@ def create_unique_key(dictionary, data, length):
 
         while True:
             #Add a digit to the end of the key to get a new key, repeat until the key is unique.
-            digit_length = len(unicode(digit))
+            digit_length = len(str(digit))
 
             if key[-digit_length:] == digit and key[-digit_length-1] == "~":
                 #Remove the old non-unique digit and underscore at the end.
@@ -703,7 +687,7 @@ def create_unique_key(dictionary, data, length):
             #Add 1 to the digit.
             digit += 1
 
-            key = key+unicode(digit)
+            key = key+str(digit)
             key = key[-length:]
 
             if "..."+key not in dictionary.keys():
@@ -821,7 +805,7 @@ def is_mounted(partition, mount_point=None):
         if get_mount_point(partition) == mount_point:
             disk_is_mounted = True
 
-    logger.debug("is_mounted(): Disk is mounted: "+unicode(disk_is_mounted))
+    logger.debug("is_mounted(): Disk is mounted: "+str(disk_is_mounted))
     return disk_is_mounted
 
 def get_mount_point(partition):
@@ -1005,7 +989,7 @@ def is_partition(disk, disk_info):
     else:
         result = ("s" in disk.split("disk")[1])
 
-    logger.info("is_partition(): result: "+unicode(result)+"...")
+    logger.info("is_partition(): result: "+str(result)+"...")
 
     return result
 
@@ -1058,7 +1042,7 @@ def emergency_exit(msg):
             dialog.ShowModal()
             dialog.Destroy()
 
-    start_process("mv -v /tmp/ddrescue-gui.log"+"."+unicode(LOG_SUFFIX)+" "+log_file)
+    start_process("mv -v /tmp/ddrescue-gui.log"+"."+str(LOG_SUFFIX)+" "+log_file)
 
     #Exit.
     dialog = wx.MessageDialog(None, "Done. DDRescue-GUI will now exit.",

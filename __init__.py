@@ -19,7 +19,6 @@
 This is DDRescue-GUI.
 """
 
-from __future__ import absolute_import
 from . import DDRescue_GUI
 from . import setup
 from . import Tests

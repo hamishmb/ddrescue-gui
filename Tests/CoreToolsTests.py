@@ -19,13 +19,6 @@
 These are the backend tools tests.
 """
 
-#Do future imports to prepare to support python 3.
-#Use unicode strings rather than ASCII strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 #Import modules
 import unittest
 import os
@@ -42,10 +35,6 @@ from Tools import core as CoreTools #pylint: disable=import-error
 #Import test data and functions.
 from . import CoreToolsTestData as Data
 from . import CoreToolsTestFunctions as Functions
-
-#Make unicode an alias for str in Python 3.
-if sys.version_info[0] == 3:
-    unicode = str #pylint: disable=redefined-builtin
 
 #Set up resource path and determine OS.
 if "wxGTK" in wx.PlatformInfo:
@@ -357,4 +346,3 @@ class TestMountDisk(unittest.TestCase):
         #Clean up.
         if os.path.isdir(self.mount_point+"/subdir"):
             os.rmdir(self.mount_point+"/subdir")
-

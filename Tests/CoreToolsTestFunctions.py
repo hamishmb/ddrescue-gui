@@ -20,30 +20,14 @@ If you're wondering why this is here, it's so that there are some known good/san
 functions to aid testing the ones in BackendTools.
 """
 
-#Do future imports to prepare to support python 3.
-#Use unicode strings rather than ASCII strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 #Do other imports.
 import subprocess
 import threading
 import time
 import os
 import shlex
-import plistlib
 import sys
 import wx
-
-#Make unicode an alias for str in Python 3.
-if sys.version_info[0] == 3:
-    unicode = str #pylint: disable=redefined-builtin,invalid-name
-    str = bytes #pylint: disable=redefined-builtin,invalid-name
-
-    #Plist hack for Python 3.
-    plistlib.readPlistFromString = plistlib.loads #pylint: disable=no-member
 
 #Determine if running on LINUX or Mac.
 if "wxGTK" in wx.PlatformInfo:
@@ -432,11 +416,11 @@ def start_process(cmd, return_output=False, privileged=False):
                 minor = sys.version_info[1]
 
                 environ = 'LC_ALL="C" PYTHONHOME="'+RESOURCEPATH+'" PYTHONPATH="' \
-                          + RESOURCEPATH+'/lib/python'+unicode(major)+unicode(minor)+'.zip:' \
-                          + RESOURCEPATH+'/lib/python'+unicode(major)+unicode(minor)+':' \
-                          + RESOURCEPATH+'/lib/python'+unicode(major)+unicode(minor)+'/lib-dynload:' \
-                          + RESOURCEPATH+'/lib/python'+unicode(major)+unicode(minor)+'/site-packages.zip:' \
-                          + RESOURCEPATH+'/lib/python'+unicode(major)+unicode(minor)+'/site-packages" '
+                          + RESOURCEPATH+'/lib/python'+str(major)+str(minor)+'.zip:' \
+                          + RESOURCEPATH+'/lib/python'+str(major)+str(minor)+':' \
+                          + RESOURCEPATH+'/lib/python'+str(major)+str(minor)+'/lib-dynload:' \
+                          + RESOURCEPATH+'/lib/python'+str(major)+str(minor)+'/site-packages.zip:' \
+                          + RESOURCEPATH+'/lib/python'+str(major)+str(minor)+'/site-packages" '
 
             else:
                 environ = 'LC_ALL="C" '
@@ -495,7 +479,7 @@ def read(cmd, testing=False):
     #Read up to 100 empty "" characters after the process finishes to
     #make sure we get all the output.
     counter = 0
-    line = str(b"")
+    line = bytes(b"")
     line_list = []
 
     while cmd.poll() is None or counter < 100:
@@ -518,7 +502,7 @@ def read(cmd, testing=False):
                 line_list.append(line.replace("\n", "").replace("\r", ""))
 
             #Reset line.
-            line = str(b"")
+            line = bytes(b"")
 
     #Catch it if there's not a newline at the end.
     if line != b"":

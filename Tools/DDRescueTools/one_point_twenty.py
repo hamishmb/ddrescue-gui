@@ -19,20 +19,7 @@
 Tools for ddrescue v1.20 or newer.
 """
 
-#Do future imports to prepare to support python 3.
-#Use unicode strings rather than ASCII strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
-import sys
-
 from . import decorators
-
-#Make unicode an alias for str in Python 3.
-if sys.version_info[0] == 3:
-    unicode = str #pylint: disable=redefined-builtin,invalid-name
 
 @decorators.define_versions
 def get_time_since_last_read(split_line):

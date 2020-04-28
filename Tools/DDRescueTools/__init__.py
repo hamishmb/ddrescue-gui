@@ -19,7 +19,6 @@
 These are the ddrescue tools.
 """
 
-from __future__ import absolute_import
 from . import setup
 from . import decorators
 from . import allversions

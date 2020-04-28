@@ -19,19 +19,6 @@
 Decorators for DDRescue tools
 """
 
-#Do future imports to prepare to support python 3.
-#Use unicode strings rather than ASCII strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
-import sys
-
-#Make unicode an alias for str in Python 3.
-if sys.version_info[0] == 3:
-    unicode = str #pylint: disable=redefined-builtin,invalid-name
-
 def define_versions(function):
     """
     Reads the function docstring to find the ddrescue versions the function

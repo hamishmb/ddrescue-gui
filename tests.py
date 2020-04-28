@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Disabled coding declaration to maintain py2 compatibility for now.
+# -*- coding: utf-8 -*-
 # Unit tests for DDRescue-GUI
 # This file is part of DDRescue-GUI.
 # Copyright (C) 2013-2020 Hamish McIntyre-Bhatty
@@ -19,12 +19,6 @@
 This file is used to start the test suites for DDRescue-GUI.
 """
 
-#Do future imports to prepare to support python 3.
-#Use unicode strings rather than ASCII strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 #Import modules.
 import unittest
@@ -39,7 +33,7 @@ if sys.version_info[0] == 3:
     unicode = str #pylint: disable=redefined-builtin,invalid-name
 
 #Global vars.
-VERSION = "2.1.0"
+VERSION = "2.1.1"
 
 def usage():
     """Outputs usage information"""
@@ -65,7 +59,7 @@ if __name__ == "__main__":
     except getopt.GetoptError as err:
         #Invalid option. Show the help message and then exit.
         #Show the error.
-        print(unicode(err))
+        print(str(err))
         usage()
         sys.exit(2)
 
@@ -155,5 +149,5 @@ if __name__ == "__main__":
 
     for module in TEST_SUITES:
         print("\n\n---------------------------- Tests for "
-              + unicode(module)+" ----------------------------\n\n")
+              + str(module)+" ----------------------------\n\n")
         unittest.TextTestRunner(verbosity=2).run(unittest.TestLoader().loadTestsFromModule(module))

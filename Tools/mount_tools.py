@@ -25,29 +25,13 @@
 This is the destination file mount tools module in the tools package for DDRescue-GUI.
 """
 
-#Do future imports to prepare to support python 3.
-#Use unicode strings rather than ASCII strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import os
-import sys
 import plistlib
 import json
 import logging
 import wx
 
 from . import core as CoreTools
-
-#Make unicode an alias for str in Python 3.
-if sys.version_info[0] == 3:
-    unicode = str #pylint: disable=redefined-builtin,invalid-name
-    str = bytes #pylint: disable=redefined-builtin,invalid-name
-
-    #Plist hack for Python 3.
-    plistlib.readPlistFromString = plistlib.loads #pylint: disable=no-member
 
 #Determine if running on Linux or Mac.
 if "wxGTK" in wx.PlatformInfo:
@@ -388,7 +372,7 @@ class Linux:
 
         except ValueError as error:
             logger.error("Linux.get_volumes_std_device(): Failed to run lsblk. Error:"
-                         +unicode(error))
+                         +str(error))
 
             dlg = wx.MessageDialog(None, "Failed to gather information about the output file."
                                    "This could indicate a bug in the GUI, or a problem "
@@ -475,8 +459,8 @@ class Linux:
             counter = 0
 
             while counter < 100:
-                if not os.path.exists("/dev/loop"+unicode(counter)):
-                    pv_device = "/dev/loop"+unicode(counter)
+                if not os.path.exists("/dev/loop"+str(counter)):
+                    pv_device = "/dev/loop"+str(counter)
                     break
 
                 counter += 1
@@ -849,9 +833,9 @@ class Mac:
 
         for line in hdiutil_imageinfo_output.split("\n"):
             if "nx_kernel_mount" not in line:
-                temp += line                
+                temp += line
 
-        hdiutil_imageinfo_output = plistlib.readPlistFromString(temp.encode())
+        hdiutil_imageinfo_output = plistlib.loads(temp.encode())
 
         #Get the block size of the image.
         blocksize = hdiutil_imageinfo_output["partitions"]["block-size"]
@@ -862,7 +846,7 @@ class Mac:
         choices = []
 
         for partition in output:
-            size = unicode((partition["partition-length"] * blocksize) // 1000000)+" MB"
+            size = str((partition["partition-length"] * blocksize) // 1000000)+" MB"
 
             if not cdimage:
                 #Skip non-partition things and any "partitions" that don't have numbers.
@@ -884,7 +868,7 @@ class Mac:
                 #Ignore partition size for CD images.
                 size = "N/A"
 
-            choices.append("Partition "+unicode(partition["partition-number"])
+            choices.append("Partition "+str(partition["partition-number"])
                            + ", with size "+size)
 
         return choices
@@ -909,9 +893,9 @@ class Mac:
 
         for line in hdiutil_imageinfo_output.split("\n"):
             if "nx_kernel_mount" not in line:
-                temp += line                
+                temp += line
 
-        hdiutil_imageinfo_output = plistlib.readPlistFromString(temp.encode())
+        hdiutil_imageinfo_output = plistlib.loads(temp.encode())
 
         #Get the block size of the image.
         blocksize = hdiutil_imageinfo_output["partitions"]["block-size"]
@@ -932,8 +916,8 @@ class Mac:
                 partition["partition-number"] = partno
                 partno += 1
 
-            choices.append("Partition "+unicode(partition["partition-number"])
-                           + ", with size "+unicode((partition["partition-length"] \
+            choices.append("Partition "+str(partition["partition-number"])
+                           + ", with size "+str((partition["partition-length"] \
                                                      * blocksize) // 1000000)
                            +" MB")
 
@@ -1072,7 +1056,7 @@ class Mac:
         (retval, mount_output) = \
         Mac.run_hdiutil("attach '"+output_file+"' -readonly -nomount -plist")
 
-        mount_output = plistlib.readPlistFromString(mount_output.encode())
+        mount_output = plistlib.loads(mount_output.encode())
 
         #Handle it if the mount attempt failed.
         if retval != 0:
@@ -1232,7 +1216,7 @@ class Mac:
         """
 
         #Parse the plist (Property List).
-        hdiutil_output = plistlib.readPlistFromString(output.encode())
+        hdiutil_output = plistlib.loads(output.encode())
 
         #Find the disk and get the mountpoint.
         try:

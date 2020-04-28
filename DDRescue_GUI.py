@@ -30,13 +30,6 @@
 This is the main script that you use to start DDRescue-GUI.
 """
 
-#Do future imports to support python 2.
-#Use unicode strings rather than ASCII strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 #Import other modules
 from distutils.version import LooseVersion
 
@@ -58,39 +51,19 @@ import wx
 import wx.lib.stattext
 import wx.lib.statbmp
 
-#Compatibility with wxPython 4.
-if int(wx.version()[0]) >= 4:
-    import wx.adv
-    from wx.adv import SplashScreen as wxSplashScreen
-    from wx.adv import Animation as wxAnimation
-    from wx.adv import AnimationCtrl as wxAnimationCtrl
-    from wx.adv import AboutDialogInfo as wxAboutDialogInfo
-    from wx.adv import AboutBox as wxAboutBox
-
-else:
-    import wx.animate
-    from wx import SplashScreen as wxSplashScreen
-    from wx.animate import Animation as wxAnimation
-    from wx.animate import AnimationCtrl as wxAnimationCtrl
-    from wx import AboutDialogInfo as wxAboutDialogInfo
-    from wx import AboutBox as wxAboutBox
-
-#Make unicode an alias for str in Python 3.
-if sys.version_info[0] == 3:
-    #Disable cos necessary to keep supporting python 2.
-    unicode = str #pylint: disable=redefined-builtin,invalid-name
-
-    #Plist hack for Python 3.
-    plistlib.readPlistFromString = plistlib.loads #pylint: disable=no-member
+from wx.adv import SplashScreen as wxSplashScreen
+from wx.adv import Animation as wxAnimation
+from wx.adv import AnimationCtrl as wxAnimationCtrl
+from wx.adv import AboutDialogInfo as wxAboutDialogInfo
+from wx.adv import AboutBox as wxAboutBox
 
 #Define global variables.
-VERSION = "2.1.0"
-RELEASE_DATE = "27/4/2020"
-RELEASE_TYPE = "Stable"
+VERSION = "2.1.1"
+RELEASE_DATE = "28/4/2020"
+RELEASE_TYPE = "Development"
 
 session_ending = False
 DDRESCUE_VERSION = "1.25" #Default to latest version.
-CLASSIC_WXPYTHON = int(wx.version()[0]) < 4
 APPICON = None
 SETTINGS = {}
 DISKINFO = {}
@@ -156,7 +129,7 @@ if __name__ == "__main__":
     except getopt.GetoptError as err:
         #Invalid option. Show the help message and then exit.
         #Show the error.
-        print(unicode(err))
+        print(str(err))
         usage()
         sys.exit(2)
 
@@ -187,11 +160,11 @@ if __name__ == "__main__":
     LOG_SUFFIX = 1
 
     while True:
-        if os.path.isfile("/tmp/ddrescue-gui.log"+"."+unicode(LOG_SUFFIX)):
+        if os.path.isfile("/tmp/ddrescue-gui.log"+"."+str(LOG_SUFFIX)):
             LOG_SUFFIX += 1
             continue
 
-        logging.basicConfig(filename="/tmp/ddrescue-gui.log"+"."+unicode(LOG_SUFFIX),
+        logging.basicConfig(filename="/tmp/ddrescue-gui.log"+"."+str(LOG_SUFFIX),
                             format='%(asctime)s - %(name)s - %(levelname)s: %(message)s',
                             datefmt='%d/%m/%Y %I:%M:%S %p')
 
@@ -268,7 +241,7 @@ class GetDiskInformation(threading.Thread):
 
         except (SyntaxError, ValueError, TypeError) as error:
             #If this fails for some reason, just return an empty dictionary.
-            logger.error("GetDiskInformation().get_info(): Error: "+unicode(error))
+            logger.error("GetDiskInformation().get_info(): Error: "+str(error))
             return {}
 
 #End Disk Information Handler thread.
@@ -320,15 +293,9 @@ class ShowSplash(wxSplashScreen): #pylint: disable=too-few-public-methods,no-mem
 
         self.already_exited = False
 
-        #Display the splash screen.
-        if CLASSIC_WXPYTHON:
-            wxSplashScreen.__init__(self, splash, wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT,
-                                    2500, parent)
-
-        else:
-            wxSplashScreen.__init__(self, splash,
-                                    wx.adv.SPLASH_CENTRE_ON_SCREEN | wx.adv.SPLASH_TIMEOUT,
-                                    2500, parent)
+        wxSplashScreen.__init__(self, splash,
+                                wx.adv.SPLASH_CENTRE_ON_SCREEN | wx.adv.SPLASH_TIMEOUT,
+                                2500, parent)
 
         self.Bind(wx.EVT_CLOSE, self.on_exit)
 
@@ -637,7 +604,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         print("DDRescue-GUI Version "+VERSION+" Starting up...")
         logger.info("DDRescue-GUI Version "+VERSION+" Starting up...")
         logger.info("Release date: "+RELEASE_DATE)
-        logger.info("Running on Python version: "+unicode(sys.version_info)+"...")
+        logger.info("Running on Python version: "+str(sys.version_info)+"...")
         logger.info("Running on wxPython version: "+wx.version()+"...")
         logger.info("Checking for ddrescue...")
 
@@ -886,13 +853,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         img1 = wx.Image(RESOURCEPATH+"/images/ArrowDown.png", wx.BITMAP_TYPE_PNG)
         img2 = wx.Image(RESOURCEPATH+"/images/ArrowRight.png", wx.BITMAP_TYPE_PNG)
 
-        if CLASSIC_WXPYTHON:
-            self.down_arrow_image = wx.BitmapFromImage(img1)
-            self.right_arrow_image = wx.BitmapFromImage(img2)
-
-        else:
-            self.down_arrow_image = wx.Bitmap(img1)
-            self.right_arrow_image = wx.Bitmap(img2)
+        self.down_arrow_image = wx.Bitmap(img1)
+        self.right_arrow_image = wx.Bitmap(img2)
 
         self.arrow1 = wx.lib.statbmp.GenStaticBitmap(self.panel, -1, self.down_arrow_image)
         self.arrow2 = wx.lib.statbmp.GenStaticBitmap(self.panel, -1, self.down_arrow_image)
@@ -980,10 +942,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #arrow2 is horizontal when starting, so hide self.output_box.
         self.info_sizer.Detach(self.output_box)
         self.output_box.Hide()
-
-        #Insert some empty space. (Fixes a GUI bug in classic wxPython).
-        if CLASSIC_WXPYTHON:
-            self.info_sizer.Add((1, 1), 1, wx.EXPAND)
 
         #Make the progress sizer.
         self.progress_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1115,9 +1073,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Force the width and height of the list_ctrl to be the right size,
         #as the sizer won't shrink it on wxpython > 2.8.12.1.
         #NB: Not needed on wxPython 4:
-        if not CLASSIC_WXPYTHON:
-            if event is not None:
-                event.Skip()
+        if event is not None:
+            event.Skip()
+
         #Get the width and height of the frame.
         width = self.GetClientSize()[0]
 
@@ -1798,7 +1756,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         infotext = ""
         update_recommended = False
 
-        updateinfo = plistlib.readPlistFromString(updateinfo.encode())
+        updateinfo = plistlib.loads(updateinfo.encode())
 
         #Determine the latest version for our kind of release.
         if RELEASE_TYPE == "Stable":
@@ -2041,10 +1999,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             width = self.list_ctrl.GetClientSize()[0]
 
             #First column.
-            #Compatibility with wxpython < 4.
-            if CLASSIC_WXPYTHON:
-                self.list_ctrl.InsertItem = self.list_ctrl.InsertStringItem
-
             self.list_ctrl.InsertItem(0, label="Recovered Data")
             self.list_ctrl.InsertItem(1, label="Unreadable Data")
             self.list_ctrl.InsertItem(2, label="Current Read Rate")
@@ -2056,10 +2010,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             self.list_ctrl.SetColumnWidth(0, 150)
 
             #Second column.
-            #Compatibility with wxpython < 4.
-            if CLASSIC_WXPYTHON:
-                self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
-
             self.list_ctrl.SetItem(0, 1, label="Unknown")
             self.list_ctrl.SetItem(1, 1, label="Unknown")
             self.list_ctrl.SetItem(2, 1, label="Unknown")
@@ -2096,11 +2046,11 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                 BackendThread(self)
 
             except Exception:
-                logger.critical("Unexpected error \n\n"+unicode(traceback.format_exc())
+                logger.critical("Unexpected error \n\n"+str(traceback.format_exc())
                                 + "\n\n while recovering data. Warning user and exiting.")
 
                 CoreTools.emergency_exit("There was an unexpected error:\n\n"
-                                         + unicode(traceback.format_exc())
+                                         + str(traceback.format_exc())
                                          + "\n\nWhile recovering data!")
 
         else:
@@ -2124,7 +2074,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             _range (int).               The range to set the progress bar to use.
         """
 
-        logger.debug("MainWindow().set_progress_bar_range(): Setting range "+unicode(_range)
+        logger.debug("MainWindow().set_progress_bar_range(): Setting range "+str(_range)
                      + " for self.progress_bar...")
 
         self.progress_bar.SetRange(_range)
@@ -2156,10 +2106,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         Args:
             recovered_data (string).    The amount of data recovered so far.
         """
-        #Compatibility with wxpython < 4.
-        if CLASSIC_WXPYTHON:
-            self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
-
         self.list_ctrl.SetItem(0, 1, label=recovered_data)
 
     def update_error_size(self, error_size):
@@ -2169,10 +2115,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         Args:
             error_size (string).    The amount of unreadable data so far.
         """
-        #Compatibility with wxpython < 4.
-        if CLASSIC_WXPYTHON:
-            self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
-
         self.list_ctrl.SetItem(1, 1, label=error_size)
 
     def update_current_read_rate(self, current_read_rate):
@@ -2182,10 +2124,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         Args:
             current_rate_rate (string).     The current read rate.
         """
-        #Compatibility with wxpython < 4.
-        if CLASSIC_WXPYTHON:
-            self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
-
         self.list_ctrl.SetItem(2, 1, label=current_read_rate)
 
     def update_average_read_rate(self, average_read_rate):
@@ -2195,10 +2133,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         Args:
             average_read_rate (string).     The average read rate.
         """
-        #Compatibility with wxpython < 4.
-        if CLASSIC_WXPYTHON:
-            self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
-
         self.list_ctrl.SetItem(3, 1, label=average_read_rate)
 
     def update_num_errors(self, num_errors):
@@ -2208,10 +2142,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         Args:
             num_errors (string).        The number of read errors so far.
         """
-        #Compatibility with wxpython < 4.
-        if CLASSIC_WXPYTHON:
-            self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
-
         self.list_ctrl.SetItem(4, 1, label=num_errors)
 
     def update_input_pos(self, input_pos):
@@ -2222,10 +2152,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             input_pos (string).         The current position in the input file
                                         or device.
         """
-        #Compatibility with wxpython < 4.
-        if CLASSIC_WXPYTHON:
-            self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
-
         self.list_ctrl.SetItem(5, 1, label=input_pos)
 
     def update_output_pos(self, output_pos):
@@ -2236,10 +2162,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             output_pos (string).        The current position in the output file
                                         or device.
         """
-        #Compatibility with wxpython < 4.
-        if CLASSIC_WXPYTHON:
-            self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
-
         self.list_ctrl.SetItem(6, 1, label=output_pos)
 
     def update_time_since_last_read(self, last_read):
@@ -2251,10 +2173,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                     ddrescue successfully read any data from
                                     the input file.
         """
-        #Compatibility with wxpython < 4.
-        if CLASSIC_WXPYTHON:
-            self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
-
         self.list_ctrl.SetItem(7, 1, label=last_read)
 
     def update_status_bar(self, messeage):
@@ -2279,7 +2197,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                             file or disk.
         """
         self.progress_bar.SetValue(recovered_data)
-        self.SetTitle(unicode(int(recovered_data * 100 // disk_capacity))+"%" + " - DDRescue-GUI")
+        self.SetTitle(str(int(recovered_data * 100 // disk_capacity))+"%" + " - DDRescue-GUI")
 
     def on_abort(self):
         """
@@ -2419,14 +2337,14 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         elif result == "BadReturnCode":
             logger.error("MainWindow().on_recovery_ended(): ddrescue exited with nonzero exit "
-                         "status "+unicode(return_code)+"! Perhaps the output file/disk is full?")
+                         "status "+str(return_code)+"! Perhaps the output file/disk is full?")
 
             #Notify the user.
             CoreTools.send_notification("Recovery Error! ddrescue exited with exit status "
-                                        + unicode(return_code)+"!")
+                                        + str(return_code)+"!")
 
             dlg = wx.MessageDialog(self.panel, "ddrescue exited with nonzero exit status "
-                                   + unicode(return_code)+"! Perhaps the output file/disk is "
+                                   + str(return_code)+"! Perhaps the output file/disk is "
                                    "full? Please check all of your settings, and try again. "
                                    "Here is ddrescue's output, which may tell you what went "
                                    "wrong:\n\n"+self.output_box.GetValue(),
@@ -2575,7 +2493,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             #FIXME check this works.
             self.on_abort()
             logging.shutdown()
-            os.remove("/tmp/ddrescue-gui.log"+"."+unicode(LOG_SUFFIX))
+            os.remove("/tmp/ddrescue-gui.log"+"."+str(LOG_SUFFIX))
             self.Destroy()
 
         #Check if DDRescue-GUI is recovering data.
@@ -2645,7 +2563,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                         else:
                             #Copy it to the specified path.
                             if CoreTools.start_process("cp /tmp/ddrescue-gui.log"+"."
-                                                       + unicode(LOG_SUFFIX)+" "+_file) == 0:
+                                                       + str(LOG_SUFFIX)+" "+_file) == 0:
 
                                 dlg = wx.MessageDialog(self.panel, "Done! DDRescue-GUI will now "
                                                        "exit", "DDRescue-GUI - Information",
@@ -2686,7 +2604,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                 dlg.Destroy()
 
             #Delete the log file.
-            os.remove("/tmp/ddrescue-gui.log"+"."+unicode(LOG_SUFFIX))
+            os.remove("/tmp/ddrescue-gui.log"+"."+str(LOG_SUFFIX))
 
             self.Destroy()
 
@@ -2888,17 +2806,9 @@ class DiskInfoWindow(wx.Frame): #pylint: disable=too-many-ancestors
 
             for heading in headings:
                 if column == 0:
-                    #Compatibility with wxpython < 4.
-                    if CLASSIC_WXPYTHON:
-                        self.list_ctrl.InsertItem = self.list_ctrl.InsertStringItem
-
                     self.list_ctrl.InsertItem(number, label=DISKINFO[disk][heading])
 
                 else:
-                    #Compatibility with wxpython < 4.
-                    if CLASSIC_WXPYTHON:
-                        self.list_ctrl.SetItem = self.list_ctrl.SetStringItem
-
                     self.list_ctrl.SetItem(number, column,
                                            label=DISKINFO[disk][heading])
 
@@ -3162,7 +3072,7 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         """
 
         logger.debug("SettingsWindow().set_soft_run(): Do soft run: "
-                     + unicode(self.no_split_check_box.GetValue())
+                     + str(self.no_split_check_box.GetValue())
                      + ". Setting up SettingsWindow accordingly...")
 
         if self.no_split_check_box.IsChecked():
@@ -3233,7 +3143,7 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
             SETTINGS["DirectAccess"] = ""
 
         logger.info("SettingsWindow().save_options(): Use Direct Disk Access: "
-                    + unicode(bool(SETTINGS["DirectAccess"]))+".")
+                    + str(bool(SETTINGS["DirectAccess"]))+".")
 
         #Overwrite output Disk setting.
         if self.overwrite_output_file_check_box.IsChecked():
@@ -3243,7 +3153,7 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
             SETTINGS["OverwriteOutputFile"] = ""
 
         logger.info("SettingsWindow().save_options(): Overwriting output file: "
-                    +unicode(bool(SETTINGS["OverwriteOutputFile"]))+".")
+                    +str(bool(SETTINGS["OverwriteOutputFile"]))+".")
 
         #Disk Size setting (OS X only).
         if LINUX is False:
@@ -3269,7 +3179,7 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
             SETTINGS["Reverse"] = ""
 
         logger.info("SettingsWindow().save_options(): Reverse direction of read operations: "
-                    + unicode(bool(SETTINGS["Reverse"]))+".")
+                    + str(bool(SETTINGS["Reverse"]))+".")
 
         #Preallocate (preallocate space in the output file) setting.
         if self.preallocate_check_box.IsChecked():
@@ -3279,7 +3189,7 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
             SETTINGS["Preallocate"] = ""
 
         logger.info("SettingsWindow().save_options(): Preallocate disk space: "
-                    + unicode(bool(SETTINGS["Preallocate"]))+".")
+                    + str(bool(SETTINGS["Preallocate"]))+".")
 
         #NoSplit (Don't split failed blocks) option.
         if self.no_split_check_box.IsChecked():
@@ -3289,7 +3199,7 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
             SETTINGS["NoSplit"] = ""
 
         logger.info("SettingsWindow().save_options(): Split failed blocks: "
-                    + unicode(not bool(SETTINGS["NoSplit"]))+".")
+                    + str(not bool(SETTINGS["NoSplit"]))+".")
 
         #ChoiceBoxes:
         #Retry bad sectors option.
@@ -3302,7 +3212,7 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
             SETTINGS["BadSectorRetries"] = "-r -1"
 
         else:
-            SETTINGS["BadSectorRetries"] = "-r "+unicode(bad_sector_retries_selection)
+            SETTINGS["BadSectorRetries"] = "-r "+str(bad_sector_retries_selection)
 
         logger.info("SettingsWindow().save_options(): Retrying bad sectors "
                     + SETTINGS["BadSectorRetries"][3:]+" times.")
@@ -3694,7 +3604,7 @@ class ElapsedTimeThread(threading.Thread):
                 unit = " days"
 
             #Update the text.
-            wx.CallAfter(self.parent.update_time_elapsed, "Time Elapsed: "+unicode(run_time)+unit)
+            wx.CallAfter(self.parent.update_time_elapsed, "Time Elapsed: "+str(run_time)+unit)
 
             #Wait for a second.
             time.sleep(1)
@@ -3856,7 +3766,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 
         elif tmp_return_code != 0:
             logger.error("MainBackendThread(): ddrescue exited with exit status "
-                         + unicode(cmd.returncode)+"! Something has gone wrong. Telling "
+                         + str(cmd.returncode)+"! Something has gone wrong. Telling "
                          "MainWindow and exiting...")
 
             tmp_result = "BadReturnCode"
@@ -3868,8 +3778,8 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
             tmp_result = "Success"
 
         try:
-            tmp_disk_capacity = unicode(self.disk_capacity)+" "+self.disk_capacity_unit
-            tmp_recovered_data = unicode(int(self.recovered_data))+" "+self.recovered_data_unit
+            tmp_disk_capacity = str(self.disk_capacity)+" "+self.disk_capacity_unit
+            tmp_recovered_data = str(int(self.recovered_data))+" "+self.recovered_data_unit
 
         except Exception:
             logger.error("MainBackendThread(): Unexpected error while trying to process recovery "
@@ -3917,7 +3827,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 
             wx.CallAfter(self.parent.update_input_pos, self.input_pos)
             wx.CallAfter(self.parent.update_num_errors, self.num_errors)
-            wx.CallAfter(self.parent.update_average_read_rate, unicode(self.average_read_rate)
+            wx.CallAfter(self.parent.update_average_read_rate, str(self.average_read_rate)
                          + " "+self.average_read_rate_unit)
 
         elif split_line[0] == "opos:":
@@ -3928,7 +3838,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                 (self.output_pos, self.average_read_rate, self.average_read_rate_unit) = \
                 self.get_outputpos_average_read_rate(split_line) #pylint: disable=no-member
 
-                wx.CallAfter(self.parent.update_average_read_rate, unicode(self.average_read_rate)
+                wx.CallAfter(self.parent.update_average_read_rate, str(self.average_read_rate)
                              + " "+self.average_read_rate_unit)
 
             else:
@@ -3976,7 +3886,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 
                 self.recovered_data = round(self.recovered_data, 3)
 
-                wx.CallAfter(self.parent.update_recovered_data, unicode(self.recovered_data)
+                wx.CallAfter(self.parent.update_recovered_data, str(self.recovered_data)
                              + " "+self.recovered_data_unit)
 
                 wx.CallAfter(self.parent.update_num_errors, self.num_errors)
@@ -4031,7 +3941,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                     wx.CallAfter(self.parent.update_time_remaining, self.time_remaining)
 
                 wx.CallAfter(self.parent.update_error_size, self.error_size)
-                wx.CallAfter(self.parent.update_recovered_data, unicode(self.recovered_data)
+                wx.CallAfter(self.parent.update_recovered_data, str(self.recovered_data)
                              + " "+self.recovered_data_unit)
 
                 wx.CallAfter(self.parent.update_progress, self.recovered_data, self.disk_capacity)

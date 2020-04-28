@@ -20,13 +20,6 @@ Used to set up the GUI to use the correct version of tools for
 the user's version of ddrescue.
 """
 
-#Do future imports to prepare to support python 3.
-#Use unicode strings rather than ASCII strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 #Import modules.
 import types
 import sys
@@ -38,10 +31,6 @@ from . import one_point_eighteen
 from . import one_point_twenty
 from . import one_point_twenty_one
 from . import one_point_twenty_two
-
-#Make unicode an alias for str in Python 3.
-if sys.version_info[0] == 3:
-    unicode = str #pylint: disable=redefined-builtin,invalid-name
 
 #Get a list of functions in all of our ddrescue tools modules.
 FUNCTIONS = []
@@ -59,8 +48,8 @@ def setup_for_ddrescue_version(ddrescue_version):
     ddrescue.
 
     Args:
-        ddrescue_version (unicode):             The version of ddrescue installed
-                                                on the system. eg "1.25".
+        ddrescue_version (str):             The version of ddrescue installed
+                                            on the system. eg "1.25".
 
     Returns:
         list.                       A list of all the functions that are designed

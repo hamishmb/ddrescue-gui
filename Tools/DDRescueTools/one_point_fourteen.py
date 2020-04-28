@@ -19,13 +19,6 @@
 Tools for ddrescue v1.14 or newer.
 """
 
-#Do future imports to prepare to support python 3.
-#Use unicode strings rather than ASCII strings, as they fix potential problems.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import sys
 import os
 
@@ -36,10 +29,6 @@ sys.path.insert(0, os.path.abspath('..'))
 
 #Import tools.
 from Tools import core as CoreTools #pylint: disable=import-error
-
-#Make unicode an alias for str in Python 3.
-if sys.version_info[0] == 3:
-    unicode = str #pylint: disable=redefined-builtin,invalid-name
 
 @decorators.define_versions
 def get_inputpos_numerrors_averagereadrate(split_line): #pylint: disable=invalid-name
@@ -114,16 +103,16 @@ def get_time_remaining(average_read_rate, average_read_rate_unit, disk_capacity,
         #Convert between Seconds, Minutes, Hours, and Days to make the value as
         #understandable as possible.
         if result <= 60:
-            return unicode(int(round(result)))+" seconds"
+            return str(int(round(result)))+" seconds"
 
         elif result >= 60 and result <= 3600:
-            return unicode(round(result/60, 1))+" minutes"
+            return str(round(result/60, 1))+" minutes"
 
         elif result > 3600 and result <= 86400:
-            return unicode(round(result/3600, 2))+" hours"
+            return str(round(result/3600, 2))+" hours"
 
         elif result > 86400:
-            return unicode(round(result/86400, 2))+" days"
+            return str(round(result/86400, 2))+" days"
 
     except ZeroDivisionError:
         pass
