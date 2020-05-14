@@ -681,6 +681,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Check for updates.
         wx.CallLater(10000, self.check_for_updates, starting_up=True)
 
+        #Uncomment to show inspection tool for debugging.
+        #wx.CallLater(5000, self.show_inspection_tool)
+
         logger.info("MainWindow().__init__(): Ready. Waiting for events...")
 
     def set_vars(self):
@@ -1050,6 +1053,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.Bind(wx.EVT_QUERY_END_SESSION, self.on_session_end)
         self.Bind(wx.EVT_MENU, self.on_exit, self.menu_exit)
         self.Bind(wx.EVT_CLOSE, self.on_exit)
+
+    def show_inspection_tool(self):
+        import wx.lib.inspection
+        wx.lib.inspection.InspectionTool().Show()
 
     def focus_on_control_button(self, event=None): #pylint: disable=unused-argument
         """
@@ -3964,8 +3971,4 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 #End Backend thread
 if __name__ == "__main__":
     APP = MyApp(False)
-
-    #import wx.lib.inspection
-    #wx.lib.inspection.InspectionTool().Show()
-
     APP.MainLoop()
