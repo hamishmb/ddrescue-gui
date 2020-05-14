@@ -183,12 +183,12 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-ancestors,too-many-instanc
         button_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to the button sizer.
-        button_sizer.Add(self.auth_button, 1, wx.LEFT|wx.ALIGN_CENTER|wx.EXPAND, 10)
+        button_sizer.Add(self.auth_button, 1, wx.LEFT|wx.EXPAND, 10)
 
         #Add items to the main sizer.
-        main_sizer.Add(top_sizer, 0, wx.ALL|wx.ALIGN_CENTER|wx.EXPAND, 10)
-        main_sizer.Add(password_sizer, 0, wx.BOTTOM|wx.LEFT|wx.RIGHT|wx.ALIGN_CENTER|wx.EXPAND, 10)
-        main_sizer.Add(button_sizer, 1, wx.BOTTOM|wx.LEFT|wx.RIGHT|wx.ALIGN_CENTER|wx.EXPAND, 10)
+        main_sizer.Add(top_sizer, 0, wx.ALL|wx.EXPAND, 10)
+        main_sizer.Add(password_sizer, 0, wx.BOTTOM|wx.LEFT|wx.RIGHT|wx.EXPAND, 10)
+        main_sizer.Add(button_sizer, 1, wx.BOTTOM|wx.LEFT|wx.RIGHT|wx.EXPAND, 10)
 
         #Get the sizer set up for the frame.
         self.panel.SetSizer(main_sizer)

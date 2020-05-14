@@ -902,9 +902,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         button_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to the button sizer.
-        button_sizer.Add(self.settings_button, 1, wx.RIGHT|wx.ALIGN_CENTER|wx.EXPAND, 10)
-        button_sizer.Add(self.update_disk_info_button, 1, wx.ALIGN_CENTER|wx.EXPAND, 10)
-        button_sizer.Add(self.show_disk_info_button, 1, wx.LEFT|wx.ALIGN_CENTER|wx.EXPAND, 10)
+        button_sizer.Add(self.settings_button, 1, wx.RIGHT|wx.EXPAND, 10)
+        button_sizer.Add(self.update_disk_info_button, 1, wx.EXPAND, 10)
+        button_sizer.Add(self.show_disk_info_button, 1, wx.LEFT|wx.EXPAND, 10)
 
         #Make the throbber sizer.
         throbber_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -917,16 +917,16 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         throbber_sizer.Add(self.throbber, 0, wx.LEFT|wx.RIGHT|wx.ALIGN_CENTER
                            |wx.ALIGN_CENTER_VERTICAL|wx.FIXED_MINSIZE, 10)
 
-        throbber_sizer.Add(self.arrow2, 0, wx.RIGHT|wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, 10)
+        throbber_sizer.Add(self.arrow2, 0, wx.RIGHT|wx.ALIGN_CENTER_VERTICAL, 10)
         throbber_sizer.Add(self.terminal_output_text, 1,
-                           wx.RIGHT|wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL, 10)
+                           wx.RIGHT|wx.ALIGN_CENTER_VERTICAL, 10)
 
         #Make the info sizer.
         self.info_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to the info sizer.
-        self.info_sizer.Add(self.list_ctrl, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER|wx.EXPAND, 22)
-        self.info_sizer.Add(self.output_box, 1, wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER|wx.EXPAND, 22)
+        self.info_sizer.Add(self.list_ctrl, 1, wx.RIGHT|wx.LEFT|wx.EXPAND, 22)
+        self.info_sizer.Add(self.output_box, 1, wx.RIGHT|wx.LEFT|wx.EXPAND, 22)
 
         #Make the info text sizer.
         info_text_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -947,20 +947,20 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.progress_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add items to the progress sizer.
-        self.progress_sizer.Add(self.progress_bar, 1, wx.ALL|wx.ALIGN_CENTER, 10)
-        self.progress_sizer.Add(self.control_button, 0, wx.ALL|wx.ALIGN_RIGHT, 10)
+        self.progress_sizer.Add(self.progress_bar, 1, wx.ALL|wx.EXPAND, 10)
+        self.progress_sizer.Add(self.control_button, 0, wx.ALL, 10)
 
         #Add items to the main sizer.
         self.main_sizer.Add(self.title_text, 0, wx.TOP|wx.ALIGN_CENTER, 10)
         self.main_sizer.Add(wx.StaticLine(self.panel), 0, wx.ALL|wx.EXPAND, 10)
-        self.main_sizer.Add(file_choices_sizer, 0, wx.ALL|wx.ALIGN_CENTER|wx.EXPAND, 10)
+        self.main_sizer.Add(file_choices_sizer, 0, wx.ALL|wx.EXPAND, 10)
         self.main_sizer.Add(wx.StaticLine(self.panel), 0, wx.ALL|wx.EXPAND, 10)
-        self.main_sizer.Add(button_sizer, 0, wx.ALL|wx.ALIGN_CENTER|wx.EXPAND, 10)
+        self.main_sizer.Add(button_sizer, 0, wx.ALL|wx.EXPAND, 10)
         self.main_sizer.Add(wx.StaticLine(self.panel), 0, wx.TOP|wx.EXPAND, 10)
-        self.main_sizer.Add(throbber_sizer, 0, wx.ALL|wx.ALIGN_CENTER|wx.EXPAND, 5)
-        self.main_sizer.Add(self.info_sizer, 1, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER|wx.EXPAND, 10)
-        self.main_sizer.Add(info_text_sizer, 0, wx.ALL|wx.ALIGN_CENTER|wx.EXPAND, 10)
-        self.main_sizer.Add(self.progress_sizer, 0, wx.TOP|wx.BOTTOM|wx.ALIGN_CENTER|wx.EXPAND, 10)
+        self.main_sizer.Add(throbber_sizer, 0, wx.ALL|wx.EXPAND, 5)
+        self.main_sizer.Add(self.info_sizer, 1, wx.TOP|wx.BOTTOM|wx.EXPAND, 10)
+        self.main_sizer.Add(info_text_sizer, 0, wx.ALL|wx.EXPAND, 10)
+        self.main_sizer.Add(self.progress_sizer, 0, wx.TOP|wx.BOTTOM|wx.EXPAND, 10)
 
         #Get the sizer set up for the frame.
         self.panel.SetSizer(self.main_sizer)
@@ -1123,7 +1123,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                 self.info_sizer.Clear()
 
             self.info_sizer.Insert(0, self.list_ctrl, 1,
-                                   wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER|wx.EXPAND, 22)
+                                   wx.RIGHT|wx.LEFT|wx.EXPAND, 22)
 
             self.list_ctrl.Show()
             self.SetClientSize(wx.Size(width, 600))
@@ -1159,13 +1159,13 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             #arrow2 is now vertical, so show self.output_box.
             if self.list_ctrl.IsShown():
                 self.info_sizer.Insert(1, self.output_box, 1,
-                                       wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER|wx.EXPAND, 22)
+                                       wx.RIGHT|wx.LEFT|wx.EXPAND, 22)
 
             else:
                 #Remove the empty space.
                 self.info_sizer.Clear()
                 self.info_sizer.Insert(0, self.output_box, 1,
-                                       wx.RIGHT|wx.LEFT|wx.ALIGN_CENTER|wx.EXPAND, 22)
+                                       wx.RIGHT|wx.LEFT|wx.EXPAND, 22)
 
             self.output_box.Show()
             self.SetClientSize(wx.Size(width, 600))
@@ -2693,11 +2693,11 @@ class DiskInfoWindow(wx.Frame): #pylint: disable=too-many-ancestors
         bottom_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         #Add each object to the bottom sizer.
-        bottom_sizer.Add(self.refresh_button, 0, wx.LEFT|wx.RIGHT|wx.ALIGN_LEFT, 10)
+        bottom_sizer.Add(self.refresh_button, 0, wx.LEFT|wx.RIGHT, 10)
         bottom_sizer.Add((20, 20), 1)
         bottom_sizer.Add(self.throbber, 0, wx.ALIGN_CENTER|wx.FIXED_MINSIZE)
         bottom_sizer.Add((20, 20), 1)
-        bottom_sizer.Add(self.okay_button, 0, wx.LEFT|wx.RIGHT|wx.ALIGN_RIGHT, 10)
+        bottom_sizer.Add(self.okay_button, 0, wx.LEFT|wx.RIGHT, 10)
 
         #Make a boxsizer.
         main_sizer = wx.BoxSizer(wx.VERTICAL)
