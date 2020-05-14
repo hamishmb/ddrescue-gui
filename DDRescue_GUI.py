@@ -3964,4 +3964,8 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 #End Backend thread
 if __name__ == "__main__":
     APP = MyApp(False)
+
+    #import wx.lib.inspection
+    #wx.lib.inspection.InspectionTool().Show()
+
     APP.MainLoop()
