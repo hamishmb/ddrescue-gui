@@ -1376,6 +1376,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             #Get the file.
             user_selection = file_dialog.GetPath()
 
+            file_dialog.Destroy()
+
             #Handle it according to cases depending on its _type.
             if _type in ["Output", "Map"]:
                 if _type == "Output":
@@ -1913,6 +1915,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         #Get the file.
         SETTINGS["InputFile"] = SETTINGS["OutputFile"] = file_dialog.GetPath()
+
+        file_dialog.Destroy()
 
         logger.info("MainWindow().on_mount(): Got file "+SETTINGS["InputFile"]
                     + ". Opening FinishedWindow...")
@@ -3277,19 +3281,26 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         else:
             function = getdevinfo.macos.get_block_size
 
-        SETTINGS["InputFileBlockSize"] = function(SETTINGS["InputFile"])
+        if not CYGWIN:
+            SETTINGS["InputFileBlockSize"] = function(SETTINGS["InputFile"])
 
-        if SETTINGS["InputFileBlockSize"] is not None:
-            logger.info("SettingsWindow().save_options(): BlockSize of input file: "
-                        + SETTINGS["InputFileBlockSize"]+" (bytes).")
+            if SETTINGS["InputFileBlockSize"] is not None:
+                logger.info("SettingsWindow().save_options(): BlockSize of input file: "
+                            + SETTINGS["InputFileBlockSize"]+" (bytes).")
 
-            SETTINGS["InputFileBlockSize"] = "-b "+SETTINGS["InputFileBlockSize"]
+                SETTINGS["InputFileBlockSize"] = "-b "+SETTINGS["InputFileBlockSize"]
+
+            else:
+                #Input file is standard file, don't set blocksize, notify user.
+                SETTINGS["InputFileBlockSize"] = ""
+                logger.info("SettingsWindow().save_options(): Input file is a standard file, "
+                            "and therefore has no blocksize.")
 
         else:
-            #Input file is standard file, don't set blocksize, notify user.
+            #Getting the block size is not supported on Cygwin.
             SETTINGS["InputFileBlockSize"] = ""
-            logger.info("SettingsWindow().save_options(): Input file is a standard file, "
-                        "and therefore has no blocksize.")
+            logger.info("SettingsWindow().save_options(): Input file block sizes, "
+                        "are not supported on Cygwin.")
 
         #Finally, exit
         logger.info("SettingsWindow().save_options(): Finished saving options. "
