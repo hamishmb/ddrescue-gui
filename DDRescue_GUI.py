@@ -1896,6 +1896,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                    "DDRescue-GUI - Error!", wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
+            return
 
         #Ask the user for the file to mount.
         logger.info("MainWindow().on_mount(): Asking user for file/device to mount...")
@@ -3516,6 +3517,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
                                    "DDRescue-GUI - Error!", wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
+            return
 
         if self.mount_button.GetLabel() == "Mount Image/Disk":
             #Change some stuff if it worked.
