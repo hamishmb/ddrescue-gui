@@ -3684,7 +3684,10 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                         SETTINGS["ClusterSize"], SETTINGS["InputFileBlockSize"],
                         SETTINGS["InputFile"], SETTINGS["OutputFile"], SETTINGS["MapFile"]]
 
-        if LINUX:
+        if CYGWIN:
+            exec_list = ["ddrescue", "-v"]
+
+        elif LINUX:
             exec_list = ["pkexec", RESOURCEPATH+"/Tools/helpers/runasroot_linux_ddrescue.sh",
                          "ddrescue", "-v"]
 
