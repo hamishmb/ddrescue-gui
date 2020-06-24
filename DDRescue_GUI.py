@@ -1638,7 +1638,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """
         logger.debug("MainWindow().show_userguide(): Opening browser...")
 
-        if LINUX:
+        if CYGWIN:
+            cmd = "explorer"
+
+        elif LINUX:
             cmd = "xdg-open"
 
         else:
@@ -1886,6 +1889,14 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         When the user asks to mount a file, handle this and show FinishedWindow in order to carry
         out the request.
         """
+        #Not yet supported on Cygwin.
+        if CYGWIN:
+            dlg = wx.MessageDialog(self.panel, "Mounting devices is not yet supported on Windows. "
+                                   + "Please use Microsoft's tools to do this for you instead",
+                                   "DDRescue-GUI - Error!", wx.OK | wx.ICON_ERROR)
+            dlg.ShowModal()
+            dlg.Destroy()
+
         #Ask the user for the file to mount.
         logger.info("MainWindow().on_mount(): Asking user for file/device to mount...")
 
@@ -3498,6 +3509,14 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         Triggered when mount button is pressed, used to initiate mounting the
         output file/device.
         """
+        #Not yet supported on Cygwin.
+        if CYGWIN:
+            dlg = wx.MessageDialog(self.panel, "Mounting devices is not yet supported on Windows. "
+                                   + "Please use Microsoft's tools to do this for you instead",
+                                   "DDRescue-GUI - Error!", wx.OK | wx.ICON_ERROR)
+            dlg.ShowModal()
+            dlg.Destroy()
+
         if self.mount_button.GetLabel() == "Mount Image/Disk":
             #Change some stuff if it worked.
             if MountingTools.Core.mount_output_file():
