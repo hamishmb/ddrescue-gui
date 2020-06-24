@@ -101,6 +101,9 @@ if "wxGTK" in wx.PlatformInfo:
     #Check if we're running on Parted Magic.
     PARTED_MAGIC = ("PartedMagic" in os.uname()[1])
 
+    #Check if we're running on Cygwin.
+    CYGWIN = ("CYGWIN" in os.uname()[0])
+
 elif "wxMac" in wx.PlatformInfo:
     try:
         #Set the resource path from an environment variable,
@@ -229,6 +232,10 @@ class GetDiskInformation(threading.Thread):
                 If successful:         The disk information.
                 If unsuccessful:       An empty dictionary.
         """
+
+        #Disabled on Cygwin until GetDevInfo supports it.
+        if CYGWIN:
+            return {}
 
         output = CoreTools.start_process(cmd=sys.executable+" "+RESOURCEPATH
                                          +"/Tools/run_getdevinfo.py",

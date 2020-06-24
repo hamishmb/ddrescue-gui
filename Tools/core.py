@@ -43,6 +43,9 @@ if "wxGTK" in wx.PlatformInfo:
     #Check if we're running on Parted Magic.
     PARTED_MAGIC = (os.uname()[1] == "PartedMagic")
 
+    #Check if we're running on Cygwin.
+    CYGWIN = ("CYGWIN" in os.uname()[0])
+
 elif "wxMac" in wx.PlatformInfo:
     try:
         #Set the resource path from an environment variable,
@@ -343,6 +346,11 @@ def get_helper(cmd):
         string.                 "pkexec" + <the helper script needed>
                                 + the command(s) to run.
     """
+
+    #Permissions don't work this way in Cygwin.
+    if CYGWIN:
+        return ""
+
     helper = "/usr/share/ddrescue-gui/Tools/helpers/runasroot_linux.sh"
 
     if "run_getdevinfo.py" in cmd:
