@@ -39,6 +39,7 @@ import logging
 import time
 import subprocess
 import os
+import signal
 import sys
 import plistlib
 import traceback
@@ -64,6 +65,7 @@ RELEASE_TYPE = "Development"
 
 session_ending = False
 DDRESCUE_VERSION = "1.25" #Default to latest version.
+DDRESCUE_CMD = None
 APPICON = None
 SETTINGS = {}
 DISKINFO = {}
@@ -2237,9 +2239,12 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Ask ddrescue to exit.
         logger.info("MainWindow().on_abort(): Attempting to stop ddrescue...")
 
-        if LINUX:
+        if LINUX and not CYGWIN:
             CoreTools.start_process("killall -s INT ddrescue",
                                     privileged=True)
+
+        elif CYGWIN:
+            DDRESCUE_CMD.send_signal(signal.SIGINT)
 
         else:
             CoreTools.start_process("killall -INT ddrescue",
@@ -2938,9 +2943,16 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         Create all CheckBoxes for SettingsWindow, and set their default states (all unchecked)
         """
 
-        self.direct_disk_access_check_box = wx.CheckBox(self.panel, -1, "Use Direct Disk Access "
-                                                        "(Recommended, but untick if recovering "
-                                                        "from a file)")
+        if not CYGWIN:
+            self.direct_disk_access_check_box = wx.CheckBox(self.panel, -1, "Use Direct Disk "
+                                                            "Access (Recommended, but untick "
+                                                            "if recovering from a file)")
+
+        else:
+            self.direct_disk_access_check_box = wx.CheckBox(self.panel, -1, "Use Direct Disk "
+                                                            "Access (Not available on Cygwin)")
+
+            self.direct_disk_access_check_box.Disable()
 
         self.overwrite_output_file_check_box = wx.CheckBox(self.panel, -1, "Overwrite output "
                                                            "file/disk (Enable if recovering to "
@@ -3047,6 +3059,11 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         #Checkboxes:
         #Direct disk access setting.
         self.direct_disk_access_check_box.SetValue(SETTINGS["DirectAccess"] == "-d")
+
+        #Override if on cygwin.
+        if CYGWIN:
+            self.direct_disk_access_check_box.SetValue(False)
+            self.direct_disk_access_check_box.Disable()
 
         #Overwrite output disk setting.
         self.overwrite_output_file_check_box.SetValue(SETTINGS["OverwriteOutputFile"] == "-f")
@@ -3757,6 +3774,10 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
         cmd = subprocess.Popen(exec_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         line = ""
         char = " " #Set this so the while loop executes at least once.
+
+        #Store reference to Popen object so we can abort on Cygwin. 
+        global DDRESCUE_CMD
+        DDRESCUE_CMD = cmd
 
         #Give ddrescue plenty of time to start.
         time.sleep(2)
