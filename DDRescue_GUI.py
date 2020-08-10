@@ -120,8 +120,11 @@ elif "wxMac" in wx.PlatformInfo:
     PARTED_MAGIC = False
 
 #Import platform-specific modules
-if LINUX:
+if LINUX and not CYGWIN:
     import getdevinfo.linux #pylint: disable=wrong-import-position
+
+elif CYGWIN:
+    import getdevinfo.cygwin #pylint: disable=wrong-import-position
 
 else:
     import getdevinfo.macos #pylint: disable=wrong-import-position
