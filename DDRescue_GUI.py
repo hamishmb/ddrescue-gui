@@ -235,10 +235,6 @@ class GetDiskInformation(threading.Thread):
                 If unsuccessful:       An empty dictionary.
         """
 
-        #Disabled on Cygwin until GetDevInfo supports it.
-        if CYGWIN:
-            return {}
-
         output = CoreTools.start_process(cmd=sys.executable+" "+RESOURCEPATH
                                          +"/Tools/run_getdevinfo.py",
                                          return_output=True,
@@ -3292,32 +3288,28 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         #BlockSize detection.
         logger.info("SettingsWindow().save_options(): Determining blocksize of input file...")
 
-        if LINUX:
+        if LINUX and not CYGWIN:
             function = getdevinfo.linux.get_block_size
+
+        elif CYGWIN:
+            function = getdevinfo.cygwin.get_block_size
 
         else:
             function = getdevinfo.macos.get_block_size
 
-        if not CYGWIN:
-            SETTINGS["InputFileBlockSize"] = function(SETTINGS["InputFile"])
+        SETTINGS["InputFileBlockSize"] = function(SETTINGS["InputFile"])
 
-            if SETTINGS["InputFileBlockSize"] is not None:
-                logger.info("SettingsWindow().save_options(): BlockSize of input file: "
-                            + SETTINGS["InputFileBlockSize"]+" (bytes).")
+        if SETTINGS["InputFileBlockSize"] is not None:
+            logger.info("SettingsWindow().save_options(): BlockSize of input file: "
+                        + SETTINGS["InputFileBlockSize"]+" (bytes).")
 
-                SETTINGS["InputFileBlockSize"] = "-b "+SETTINGS["InputFileBlockSize"]
-
-            else:
-                #Input file is standard file, don't set blocksize, notify user.
-                SETTINGS["InputFileBlockSize"] = ""
-                logger.info("SettingsWindow().save_options(): Input file is a standard file, "
-                            "and therefore has no blocksize.")
+            SETTINGS["InputFileBlockSize"] = "-b "+SETTINGS["InputFileBlockSize"]
 
         else:
-            #Getting the block size is not supported on Cygwin.
+            #Input file is standard file, don't set blocksize, notify user.
             SETTINGS["InputFileBlockSize"] = ""
-            logger.info("SettingsWindow().save_options(): Input file block sizes, "
-                        "are not supported on Cygwin.")
+            logger.info("SettingsWindow().save_options(): Input file is a standard file, "
+                        "and therefore has no blocksize.")
 
         #Finally, exit
         logger.info("SettingsWindow().save_options(): Finished saving options. "
