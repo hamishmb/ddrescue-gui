@@ -893,7 +893,7 @@ class Mac:
 
         for line in hdiutil_imageinfo_output.split("\n"):
             if "nx_kernel_mount" not in line:
-                temp += lineg
+                temp += line
 
         hdiutil_imageinfo_output = plistlib.loads(temp.encode())
 
