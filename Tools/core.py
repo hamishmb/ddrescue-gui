@@ -796,7 +796,7 @@ def is_mounted(partition, mount_point=None):
         #LINUX fix: Accept any mountpoint when called with just one argument.
         for line in mount_info.split("\n"):
             if line and line.split(" on ")[0] == partition \
-                or line.split(" on ")[1] == partition \
+                or line.split(" ")[2] == partition \
                 or line.split(" on ")[1].split(" type ")[0] == partition:
 
                 disk_is_mounted = True
