@@ -60,7 +60,7 @@ from wx.adv import AboutBox as wxAboutBox
 
 #Define global variables.
 VERSION = "2.1.1"
-RELEASE_DATE = "28/4/2020"
+RELEASE_DATE = "18/8/2020"
 RELEASE_TYPE = "Development"
 
 session_ending = False
@@ -117,6 +117,7 @@ elif "wxMac" in wx.PlatformInfo:
         RESOURCEPATH = "."
 
     LINUX = False
+    CYGWIN = False
     PARTED_MAGIC = False
 
 #Import platform-specific modules

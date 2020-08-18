@@ -57,6 +57,7 @@ elif "wxMac" in wx.PlatformInfo:
         RESOURCEPATH = "."
 
     LINUX = False
+    CYGWIN = False
     PARTED_MAGIC = False
 
 AUTH_DIALOG_OPEN = False
