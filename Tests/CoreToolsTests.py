@@ -43,6 +43,9 @@ if "wxGTK" in wx.PlatformInfo:
     #Check if we're running on Parted Magic.
     PARTED_MAGIC = (os.uname()[1] == "PartedMagic")
 
+    #Check if we're running on Cygwin.
+    CYGWIN = ("CYGWIN" in os.uname()[0])
+
 elif "wxMac" in wx.PlatformInfo:
     LINUX = False
     PARTED_MAGIC = False
@@ -165,6 +168,7 @@ class TestIsMounted(unittest.TestCase):
         del self.app
         del self.path
 
+    @unittest.skipUnless(not CYGWIN, "Mounting not yet supported on Cygwin")
     def test_is_mounted1(self):
         """Test #1: Check if it's detected when a disk is mounted."""
         #If not mounted, mount it
@@ -173,6 +177,7 @@ class TestIsMounted(unittest.TestCase):
 
         self.assertTrue(CoreTools.is_mounted(self.path))
 
+    @unittest.skipUnless(not CYGWIN, "Mounting not yet supported on Cygwin")
     def test_is_mounted2(self):
         """Test #2: Check if it's detected when a disk isn't mounted."""
         #Unmount it.
@@ -214,6 +219,7 @@ class TestGetMountPoint(unittest.TestCase):
         del self.app
         del self.path
 
+    @unittest.skipUnless(not CYGWIN, "Mounting not yet supported on Cygwin")
     def test_get_mount_point1(self):
         """Test #1: Get mount point of a mounted disk."""
         #Mount disk if not mounted.
@@ -224,6 +230,7 @@ class TestGetMountPoint(unittest.TestCase):
         self.assertEqual(CoreTools.get_mount_point(self.path),
                          Functions.get_mount_point(self.path))
 
+    @unittest.skipUnless(not CYGWIN, "Mounting not yet supported on Cygwin")
     def test_get_mount_point2(self):
         """Test #2: Get mount point of an unmounted disk."""
         #Unmount disk.
@@ -278,6 +285,7 @@ class TestMountDisk(unittest.TestCase):
 
             os.rmdir("/tmp/ddrescueguimtpt")
 
+    @unittest.skipUnless(not CYGWIN, "Mounting not yet supported on Cygwin")
     def test_mount_disk1(self):
         """Test #1: Mounting a disk that is already mounted."""
         Functions.mount_disk(self.path, self.mount_point)
@@ -287,6 +295,7 @@ class TestMountDisk(unittest.TestCase):
 
         Functions.unmount_disk(self.path)
 
+    @unittest.skipUnless(not CYGWIN, "Mounting not yet supported on Cygwin")
     def test_mount_disk2(self):
         """Test #2: Mounting a disk that isn't already mounted."""
         #Unmount disk.
@@ -296,6 +305,7 @@ class TestMountDisk(unittest.TestCase):
 
         Functions.unmount_disk(self.path)
 
+    @unittest.skipUnless(not CYGWIN, "Mounting not yet supported on Cygwin")
     def test_mount_partition3(self):
         """Test #3: Mounting a disk where there is another disk in the way."""
         #Get another device path from the user to test against.
@@ -329,6 +339,7 @@ class TestMountDisk(unittest.TestCase):
         #Clean up.
         del self.path2
 
+    @unittest.skipUnless(not CYGWIN, "Mounting not yet supported on Cygwin")
     def test_mount_partition4(self):
         """Test #4: Mounting a disk in the subdir of the usual mount point (sanity check)."""
         #Unmount partition.

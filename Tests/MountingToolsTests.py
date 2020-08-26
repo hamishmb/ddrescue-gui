@@ -39,6 +39,9 @@ if "wxGTK" in wx.PlatformInfo:
     #Check if we're running on Parted Magic.
     PARTED_MAGIC = (os.uname()[1] == "PartedMagic")
 
+    #Check if we're running on Cygwin.
+    CYGWIN = ("CYGWIN" in os.uname()[0])
+
 elif "wxMac" in wx.PlatformInfo:
     LINUX = False
     PARTED_MAGIC = False
