@@ -60,8 +60,8 @@ from wx.adv import AboutBox as wxAboutBox
 
 #Define global variables.
 VERSION = "2.1.1"
-RELEASE_DATE = "18/8/2020"
-RELEASE_TYPE = "Development"
+RELEASE_DATE = "26/8/2020"
+RELEASE_TYPE = "Stable"
 
 session_ending = False
 DDRESCUE_VERSION = "1.25" #Default to latest version.
