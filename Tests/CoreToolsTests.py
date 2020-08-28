@@ -48,6 +48,7 @@ if "wxGTK" in wx.PlatformInfo:
 
 elif "wxMac" in wx.PlatformInfo:
     LINUX = False
+    CYGWIN = False
     PARTED_MAGIC = False
 
 #Set up autocomplete vars.
