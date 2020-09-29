@@ -3955,7 +3955,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                              + " "+self.recovered_data_unit)
 
                 wx.CallAfter(self.parent.update_num_errors, self.num_errors)
-                wx.CallAfter(self.parent.update_progress, self.recovered_data, self.disk_capacity)
+                wx.CallAfter(self.parent.update_progress, int(self.recovered_data), self.disk_capacity)
 
             except AttributeError:
                 pass
