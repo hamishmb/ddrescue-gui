@@ -1675,7 +1675,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         aboutbox.WebSite = ("http://www.hamishmb.com", "My Website")
         aboutbox.Developers = ["Hamish McIntyre-Bhatty", "Minnie McIntyre-Bhatty (GUI Design)"]
         aboutbox.Artists = ["Bhuna https://www.instagram.com/bhuna42/",
-                            "Holly McIntyre-Bhatty (Old Artwork)",
                             "Hamish McIntyre-Bhatty (Throbber designs)"]
 
         aboutbox.License = "DDRescue-GUI is free software: you can redistribute it and/or " \
