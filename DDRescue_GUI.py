@@ -977,6 +977,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Get the sizer set up for the frame.
         self.panel.SetSizer(self.main_sizer)
         self.main_sizer.SetMinSize(wx.Size(1056, 360))
+        self.main_sizer.Fit(self)
         self.main_sizer.SetSizeHints(self)
 
     def create_menus(self):
@@ -2744,6 +2745,7 @@ class DiskInfoWindow(wx.Frame): #pylint: disable=too-many-ancestors
         #Get the sizer set up for the frame.
         self.panel.SetSizer(main_sizer)
         main_sizer.SetMinSize(wx.Size(780, 310))
+        main_sizer.Fit(self)
         main_sizer.SetSizeHints(self)
 
     def bind_events(self):
@@ -3038,6 +3040,7 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         #Get the main sizer set up for the frame.
         self.panel.SetSizer(main_sizer)
         main_sizer.SetMinSize(wx.Size(569, 479))
+        main_sizer.Fit(self)
         main_sizer.SetSizeHints(self)
 
     def bind_events(self):
@@ -3389,6 +3392,7 @@ class PrivPolWindow(wx.Frame): #pylint: disable=too-many-ancestors
         #Get the sizer set up for the frame.
         self.panel.SetSizer(main_sizer)
         main_sizer.SetMinSize(wx.Size(400, 310))
+        main_sizer.Fit(self)
         main_sizer.SetSizeHints(self)
 
     def bind_events(self):
@@ -3515,6 +3519,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         #Get the sizer set up for the frame.
         self.panel.SetSizer(main_sizer)
         main_sizer.SetMinSize(wx.Size(350, 120))
+        main_sizer.Fit(self)
         main_sizer.SetSizeHints(self)
 
     def restart(self, event=None): #pylint: disable=unused-argument
