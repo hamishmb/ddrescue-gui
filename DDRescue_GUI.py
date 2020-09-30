@@ -106,6 +106,10 @@ if "wxGTK" in wx.PlatformInfo:
     #Check if we're running on Cygwin.
     CYGWIN = ("CYGWIN" in os.uname()[0])
 
+    if CYGWIN and not os.path.isdir(RESOURCEPATH):
+        #Running in bundle.
+        RESOURCEPATH = "."
+
 elif "wxMac" in wx.PlatformInfo:
     try:
         #Set the resource path from an environment variable,
