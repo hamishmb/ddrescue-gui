@@ -1696,18 +1696,25 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                            "and is \nbundled with the macOS version of DDRescue-GUI.\n\n" \
                            "Terminal-notifier is released under the MIT license (compatible " \
                            "with the GPL),\nmay be redistributed with GPL software, and is also\n" \
-                           "bundled with the macOS version of DDRescue-GUI.\n\n" \
-                           "Python and wxPython are also bundled with the macOS version of\n" \
-                           "DDRescue-GUI.\n\n" \
+                           "bundled with the macOS and Windows versions of DDRescue-GUI.\n\n" \
+                           "Python and wxPython are also bundled with the macOS and Windows\n" \
+                           "versions of DDRescue-GUI.\n\n" \
+                           "Various different parts of the Cygwin project are bundled with\n" \
+                           "the Windows version of DDRescue-GUI.\n\n" \
+                           "The VcXsrv X Server is also bundled with the Windows version\n" \
+                           "of DDRescue-GUI.\n\n" \
                            "Please note: I am NOT\nthe author of GNU ddrescue," \
-                           "terminal-notifier, Python, or wxPython.\n\nFor more " \
+                           "terminal-notifier, Cygwin, VcXsrv,\nPython, or wxPython.\n\nFor more " \
                            "information on GNU ddrescue, and\nfor the source code, visit\n" \
                            "http://www.gnu.org/software/ddrescue/ddrescue.html\n\nFor more " \
                            "information on terminal-notifier, and\nfor the source code, visit\n" \
                            "https://github.com/julienXX/terminal-notifier.\n\nFor more " \
-                           "information on wxPython, and for the source code,\n visit " \
-                           "https://wxpython.org\n\nFor more information on Python,\nand for" \
-                           "the source code, visit https://www.python.org"
+                           "information on Cygwin and for the source code,\nvisit " \
+                           "http://www.cygwin.org\n\nFor more information on VcXsrv and " \
+                           "for the\nsource code, visit https://sourceforge.net/projects/vcxsrv/" \
+                           "\n\nFor more information on wxPython, and for the source code,\n" \
+                           "visit https://wxpython.org\n\nFor more information on Python,\nand " \
+                           "for the source code, visit https://www.python.org"
 
         #Show the about box
         wxAboutBox(aboutbox)
