@@ -19,7 +19,7 @@ OPTIONS = {'arch': 'x86_64',
            'includes': 'wx,wx.animate,wx.lib.stattext,wx.lib.statbmp,threading,getopt,logging,'
                        + 'time,subprocess,re,os,sys,plistlib,BeautifulSoup,traceback,'
                        + 'unittest,getdevinfo,ast',
-           'packages': 'Tools,Tests,wx'}
+           'packages': 'Tools,Tests'}
 
 if __name__ == "__main__":
     setup(
