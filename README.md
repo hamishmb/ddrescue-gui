@@ -10,6 +10,8 @@ Description of Package
 ======================
 A simple GUI frontend to make GNU ddrescue easier to use.
 
+[![pipeline status](https://gitlab.com/hamishmb/ddrescue-gui/badges/master/pipeline.svg)](https://gitlab.com/hamishmb/ddrescue-gui/-/commits/master)
+
 Distribution Packages
 =====================
 
@@ -26,17 +28,13 @@ Running The Tests
 
 As of v2.1.0, these no longer have to be run as the superuser.
 
-The process for running these is the same on both Linux and macOS. It can be done on both Python 2 and Python 3.
+The process for running these is the same on Linux, macOS, and Cygwin.
 
 Without Coverage Reporting
 --------------------------
 Run:
 
-"sudo python3 ./tests.py"
-
-or:
-
-"sudo python2 ./tests.py"
+"python3 ./tests.py"
 
 With Coverage Reporting
 -----------------------
@@ -44,18 +42,10 @@ Make sure you have installed Coverage.py using pip or your package manager.
 
 Run:
 
-"sudo python3 -m coverage run --rcfile=./.coveragerc ./tests.py"
-
-or:
-
-"sudo python2 -m coverage run --rcfile=./.coveragerc ./tests.py"
+"python3 -m coverage run --rcfile=./.coveragerc ./tests.py"
 
 To run the tests. Then run:
 
-"sudo python3 -m coverage html"
-
-or:
-
-"sudo python2 -m coverage html"
+"python3 -m coverage html"
 
 To see the report.
