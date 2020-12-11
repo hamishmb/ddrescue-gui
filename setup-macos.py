@@ -13,7 +13,7 @@ APP = ['./DDRescue_GUI.py']
 DATA_FILES = ['./LICENSE', './Tests.py', './ddrescue', './Tools', './images', './other']
 
 OPTIONS = {'arch': 'x86_64',
-           'argv_emulation': True,
+           'argv_emulation': False,
            'no_strip': True,
            'iconfile': './images/Logo.icns',
            'includes': 'wx,wx.animate,wx.lib.stattext,wx.lib.statbmp,threading,getopt,logging,'
