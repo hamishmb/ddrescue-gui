@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Unit tests for DDRescue-GUI
 # This file is part of DDRescue-GUI.
-# Copyright (C) 2013-2020 Hamish McIntyre-Bhatty
+# Copyright (C) 2013-2022 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
 # at your option, any later version.
@@ -47,7 +47,7 @@ def usage():
     print("       -a, --all:                    Run all the tests. The default.\n")
     print("       -t, --tests:                  Ignored.")
     print("DDRescue-GUI "+VERSION+" is released under the GNU GPL VERSION 3")
-    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2020")
+    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2022")
 
 if __name__ == "__main__":
     #Check all cmdline options are valid.

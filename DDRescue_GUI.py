@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # DDRescue-GUI Main Script
 # This file is part of DDRescue-GUI.
-# Copyright (C) 2013-2020 Hamish McIntyre-Bhatty
+# Copyright (C) 2013-2022 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
 # at your option, any later version.
@@ -60,7 +60,7 @@ from wx.adv import AboutBox as wxAboutBox
 
 #Define global variables.
 VERSION = "2.1.2"
-RELEASE_DATE = "29/9/2020"
+RELEASE_DATE = "21/4/2022"
 RELEASE_TYPE = "Development"
 
 session_ending = False
@@ -92,7 +92,7 @@ def usage():
     print("                                     are encountered, and the user needs help\n")
     print("       -t, --tests                   Run all unit tests.")
     print("DDRescue-GUI "+VERSION+" is released under the GNU GPL Version 3")
-    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2020")
+    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2022")
 
 #Determine if running on Linux or Mac.
 if "wxGTK" in wx.PlatformInfo:
@@ -1670,7 +1670,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         aboutbox.SetIcon(APPICON)
         aboutbox.Name = "DDRescue-GUI"
         aboutbox.Version = VERSION
-        aboutbox.Copyright = "(C) 2013-2020 Hamish McIntyre-Bhatty"
+        aboutbox.Copyright = "(C) 2013-2022 Hamish McIntyre-Bhatty"
         aboutbox.Description = "GUI frontend for GNU ddrescue\n\nPython version " \
                                + sys.version.split()[0] \
                                + "\nwxPython version " + wx.version() \
@@ -4025,7 +4025,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                 wx.CallAfter(self.parent.update_recovered_data, str(self.recovered_data)
                              + " "+self.recovered_data_unit)
 
-                wx.CallAfter(self.parent.update_progress, self.recovered_data, self.disk_capacity)
+                wx.CallAfter(self.parent.update_progress, int(self.recovered_data), self.disk_capacity)
 
             wx.CallAfter(self.parent.update_current_read_rate, self.current_read_rate)
 
