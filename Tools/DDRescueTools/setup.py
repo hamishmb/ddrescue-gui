@@ -49,7 +49,7 @@ def setup_for_ddrescue_version(ddrescue_version):
 
     Args:
         ddrescue_version (str):             The version of ddrescue installed
-                                            on the system. eg "1.25".
+                                            on the system. eg "1.26".
 
     Returns:
         list.                       A list of all the functions that are designed
@@ -64,9 +64,9 @@ def setup_for_ddrescue_version(ddrescue_version):
         #Too old.
         best_version = "1.14"
 
-    elif minor_version > 25:
+    elif minor_version > 26:
         #Too new.
-        best_version = "1.25"
+        best_version = "1.26"
 
     else:
         #Supported version.

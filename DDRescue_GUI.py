@@ -64,7 +64,7 @@ RELEASE_DATE = "21/4/2022"
 RELEASE_TYPE = "Development"
 
 session_ending = False
-DDRESCUE_VERSION = "1.25" #Default to latest version.
+DDRESCUE_VERSION = "1.26" #Default to latest version.
 DDRESCUE_CMD = None
 APPICON = None
 SETTINGS = {}
@@ -3883,7 +3883,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
         split_line = line.split()
 
         if split_line[0] == "About":
-            #All versions of ddrescue (1.14 - 1.25).
+            #All versions of ddrescue (1.14 - 1.26).
 
             #Initial status.
             logger.info("MainBackendThread().Processline(): Got Initial Status. "
@@ -3912,10 +3912,10 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                          + " "+self.average_read_rate_unit)
 
         elif split_line[0] == "opos:":
-            #Versions 1.14 - 1.20 & 1.21 - 1.25.
+            #Versions 1.14 - 1.20 & 1.21 - 1.26.
 
             if int(SETTINGS["DDRescueVersion"].split(".")[1]) >= 21:
-                #Get average read rate (ddrescue 1.21 - 1.25).
+                #Get average read rate (ddrescue 1.21 - 1.26).
                 (self.output_pos, self.average_read_rate, self.average_read_rate_unit) = \
                 self.get_outputpos_average_read_rate(split_line) #pylint: disable=no-member
 
@@ -3938,21 +3938,21 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
             wx.CallAfter(self.parent.update_output_pos, self.output_pos)
 
         elif split_line[0] == "non-tried:":
-            #Unreadable data (ddrescue 1.21 - 1.25).
+            #Unreadable data (ddrescue 1.21 - 1.26).
 
             #pylint: disable=no-member
             self.error_size = self.get_unreadable_data(split_line)
 
             wx.CallAfter(self.parent.update_error_size, self.error_size)
 
-        elif split_line[0] in ("time", "percent"): #Time since last read (ddrescue v1.20 - 1.25).
+        elif split_line[0] in ("time", "percent"): #Time since last read (ddrescue v1.20 - 1.26).
             #pylint: disable=no-member
             self.time_since_last_read = self.get_time_since_last_read(split_line)
 
             wx.CallAfter(self.parent.update_time_since_last_read, self.time_since_last_read)
 
         elif split_line[0] == "rescued:" and int(SETTINGS["DDRescueVersion"].split(".")[1]) >= 21:
-            #Recovered data and number of errors (ddrescue 1.21 - 1.25).
+            #Recovered data and number of errors (ddrescue 1.21 - 1.26).
 
             #Don't crash if we're reading the initial status from the logfile.
             try:
@@ -3977,7 +3977,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                 pass
 
         elif ("rescued:" in line and split_line[0] not in ("rescued:", "pct")) or "ipos:" in line:
-            #Versions 1.14 - 1.20 & 1.21 - 1.25
+            #Versions 1.14 - 1.20 & 1.21 - 1.26
 
             if int(SETTINGS["DDRescueVersion"].split(".")[1]) >= 21:
                 status, info = line.split("ipos:")
