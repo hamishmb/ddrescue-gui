@@ -144,7 +144,13 @@ if __name__ == "__main__":
         #Show the error.
         print(str(err))
         usage()
-        sys.exit(2)
+
+        #Ignore weird -psn_0_xxxx arguments when run under OS X (may only affect older versions).
+        if "-psn" not in sys.argv[1]:
+            sys.exit(2)
+
+        else:
+            OPTS = []
 
     #Determine the option(s) given, and change the level of logging based on cmdline options.
     LOGGER_LEVEL = logging.DEBUG
