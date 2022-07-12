@@ -734,21 +734,18 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Set the wildcards and make it easy for the user to find his/her home directory
         #(helps make DDRescue-GUI more user friendly).
         if LINUX:
-            self.input_wildcard = "(S)ATA HDDs/USB Drives|sd*|Optical Drives|sr*|Floppy Drives|" \
-                                 "fd*|IMG Disk Image (*.img)|*.img|" \
-                                 "ISO (CD/DVD) Disk Image (*.iso)|*.iso|All Files/Disks (*)|*"
+            self.input_wildcard = "All Files/Disks (*)|*|IMG Disk Image (*.img)|*.img|" \
+                                 "ISO (CD/DVD) Disk Image (*.iso)|*.iso"
 
             self.output_wildcard = "IMG Disk Image (*.img)|*.img|" \
-                                  "ISO (CD/DVD) Disk Image (*.iso)|*.iso|(S)ATA HDDs/USB Drives|" \
-                                  "sd*|Floppy Drives|fd*|All Files/Disks (*)|*"
+                                  "ISO (CD/DVD) Disk Image (*.iso)|*.iso|All Files/Disks (*)|*"
 
         else:
-            self.input_wildcard = "Disk Drives|disk*|IMG Disk Image (*.img)|*.img|" \
-                                 "DMG Disk Image (*.dmg)|*.dmg|ISO (CD/DVD) Disk Image (*.iso)|" \
-                                 "*.iso|All Files/Disks (*)|*"
+            self.input_wildcard = "All Files/Disks (*)|*|IMG Disk Image (*.img)|*.img|" \
+                                 "ISO (CD/DVD) Disk Image (*.iso)|*.iso"
 
-            self.output_wildcard = "IMG Disk Image (*.img)|*.img|DMG Disk Image (*.dmg)|*.dmg|" \
-                                  "ISO (CD/DVD) Disk Image (*.iso)|*.iso"
+            self.output_wildcard = "IMG Disk Image (*.img)|*.img|" \
+                                  "ISO (CD/DVD) Disk Image (*.iso)|*.iso|All Files/Disks (*)|*"
 
         self.user_homedir = os.environ['HOME']
 
