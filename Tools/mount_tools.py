@@ -1255,11 +1255,11 @@ class Mac:
         #Handle this common error - image in use.
         if "Resource temporarily unavailable" in output or retval != 0:
             logger.warning("Mac.run_hdiutil(): Attempting to fix hdiutil resource error...")
-            #Fix by detaching all disks - certain disks eg system disk will fail, but it should fix
-            #our problem. On OS X >= 10.11 can check for "(disk image)", but cos we support 10.9 &
+            #Fix by detaching all disks - certain disks eg system disk will fail, but it should 
+            #fix our problem. On OS X >= 10.11 can check for "(disk image)", but cos we support
             #10.10, we have to just detach all possible disks and ignore failures.
 
-            #TODO Consider dropping support for macOS 10.9 and 10.10 to improve reliability.
+            #TODO Consider dropping support for macOS 10.10 to improve reliability.
             #Or could detect version and behave differently on newer versions.
             #This bug doesn't seem to be a big deal anyway.
             for line in CoreTools.start_process(cmd="diskutil list",
