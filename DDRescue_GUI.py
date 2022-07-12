@@ -1615,11 +1615,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         Get the input file/Disk by calling self.file_choice_handler.
         """
         logger.debug("MainWindow().SelectInputFile(): Calling File Choice Handler...")
-        default_dir = "/dev"
 
         self.file_choice_handler(_type="Input",
                                  user_selection=self.input_choice_box.GetStringSelection(),
-                                 default_dir=default_dir, wildcard=self.input_wildcard,
+                                 default_dir=self.user_homedir, wildcard=self.input_wildcard,
                                  style=wx.FD_OPEN)
 
     def set_output_file(self, event=None): #pylint: disable=unused-argument
@@ -1920,7 +1919,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         logger.info("MainWindow().on_mount(): Asking user for file/device to mount...")
 
         file_dialog = wx.FileDialog(self.panel, "Select Device/File...",
-                                    defaultDir="/home", wildcard=self.input_wildcard,
+                                    defaultDir=self.user_homedir, wildcard=self.input_wildcard,
                                     style=wx.FD_OPEN)
 
         #Gracefully handle it if the user closed the dialog without selecting a file.
