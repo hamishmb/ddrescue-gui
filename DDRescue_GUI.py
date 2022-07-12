@@ -3484,7 +3484,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         """
         Create all buttons for FinishedWindow.
         """
-        self.restart_button = wx.Button(self.panel, -1, "Reset")
+        self.restart_button = wx.Button(self.panel, -1, "Restart")
         self.mount_button = wx.Button(self.panel, -1, "Mount Image/Disk")
         self.browse_button = wx.Button(self.panel, -1, "Open File Viewer")
         self.quit_button = wx.Button(self.panel, -1, "Quit")
