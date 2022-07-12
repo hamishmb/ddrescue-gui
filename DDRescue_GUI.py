@@ -3766,10 +3766,13 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                     #(continue to next iteration of loop w/o adding).
                     continue
 
-                #Remove InputFile and switch it with a string that uses /dev/rdisk (raw disk)
+                #Remove InputFile and OutputFile and use /dev/rdisk* (raw disk)
                 #instead of /dev/disk.
                 options_list.pop(10)
                 options_list.insert(10, "/dev/r" + SETTINGS["InputFile"].split("/dev/")[1])
+
+                options_list.pop(11)
+                options_list.insert(11, "/dev/r" + SETTINGS["OutputFile"].split("/dev/")[1])
 
             elif option != "":
                 exec_list.append(option)
