@@ -732,7 +732,7 @@ def send_notification(msg):
         start_process(cmd=RESOURCEPATH
                       +"""/other/terminal-notifier.app/Contents/MacOS/terminal-notifier """ \
                       +"""-title "DDRescue-GUI" -message \""""+msg+"""\" """ \
-                      +"""-sender org.pythonmac.unspecified.DDRescue-GUI """ \
+                      +"""-sender org.hamishmb.ddrescue-gui """ \
                       +"""-group \"DDRescue-GUI\"""",
                       return_output=False)
 
