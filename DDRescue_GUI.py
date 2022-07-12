@@ -202,14 +202,17 @@ if __name__ == "__main__":
     MountingTools.SETTINGS = SETTINGS
 
     #Log which OS we're running on (helpful for debugging).
-    if LINUX:
-        logger.debug("Detected LINUX...")
+    if LINUX and not CYGWIN:
+        logger.info("Detected Linux...")
 
         if PARTED_MAGIC:
-            logger.debug("Detected Parted Magic...")
+            logger.info("Detected Parted Magic...")
+
+    elif CYGWIN:
+        logger.info("Detected Cygwin...")
 
     else:
-        logger.debug("Detected Mac OS X...")
+        logger.info("Detected macOS...")
 
 #Begin Disk Information Handler thread.
 class GetDiskInformation(threading.Thread):
