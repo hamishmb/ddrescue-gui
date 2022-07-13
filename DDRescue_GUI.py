@@ -2233,7 +2233,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
     def update_progress(self, recovered_data, disk_capacity):
         """
-        Update the progress bar and the title.
+        Update the progress bar and the title. Do nothing if disk capacity is unknown.
 
         Args:
             recovered_data (int).           The amount of data currently recovered
@@ -2242,8 +2242,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             disk_capacity (int).            The capacity (or size) of the input
                                             file or disk.
         """
-        self.progress_bar.SetValue(recovered_data)
-        self.SetTitle(str(int(recovered_data * 100 // disk_capacity))+"%" + " - DDRescue-GUI")
+
+        if disk_capacity != 0:
+            self.progress_bar.SetValue(recovered_data)
+            self.SetTitle(str(int(recovered_data * 100 // disk_capacity))+"%" + " - DDRescue-GUI")
 
     def on_abort(self):
         """
@@ -3893,6 +3895,9 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 
             #pylint: disable=no-member
             self.disk_capacity, self.disk_capacity_unit = self.get_initial_status(split_line)
+
+            if "unknown" in self.disk_capacity:
+                self.disk_capacity = 0
 
             wx.CallAfter(self.parent.set_progress_bar_range, self.disk_capacity)
 
