@@ -531,7 +531,12 @@ class CustomTextCtrl(wx.TextCtrl): #pylint: disable=too-many-ancestors
 
         #Go up one line.
         #Get our column and line numbers.
-        column, line = wx.TextCtrl.PositionToXY(self, self.GetInsertionPoint())
+        #Note: On Linux, this is apparently returning True as the first element in the tuple
+        #- not defined in the documentation.
+        xy = self.PositionToXY(self.GetInsertionPoint())
+
+        column = xy[-2]
+        line = xy[-1]
 
         #We go up one line, but stay in the same column, so find the integer position of the new
         #insertion point.
