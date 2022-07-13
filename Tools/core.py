@@ -903,6 +903,7 @@ def mount_disk(partition, mount_point, options=""):
     elif mount_point in mount_info:
         #Something else is in the way. Unmount that partition, and continue.
         logger.warning("mount_disk(): Unmounting filesystem in the way at "+mount_point+"...")
+
         if unmount_disk(mount_point) != 0:
             logger.error("mount_disk(): Couldn't unmount "+mount_point
                          +", preventing the mounting of "+partition+"! Skipping mount attempt.")

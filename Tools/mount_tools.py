@@ -1021,14 +1021,14 @@ class Mac:
             choices.sort()
 
             #Ask the user which partition to mount.
-            logger.debug("mount_output_file(): Asking user which partition to mount...")
+            logger.debug("Mac.mount_device(): Asking user which partition to mount...")
             dlg = wx.SingleChoiceDialog(None, "Please select which partition you wish "
                                         "to mount.", "DDRescue-GUI - Select a Partition", choices)
 
             #Respond to the user's action.
             if dlg.ShowModal() != wx.ID_OK:
                 Core.output_file_mountpoint = None
-                logger.debug("mount_output_file(): User cancelled operation. "
+                logger.debug("Mac.mount_device(): User cancelled operation. "
                              "Cleaning up...")
 
                 return False
@@ -1163,7 +1163,6 @@ class Mac:
                 False - Failed
         """
 
-        #TODO handle APFS. Done now?
         #Always detach the image's device file.
         #FIXME will error out if it was never attached.
         logger.debug("Mac.unmount_output_file(): Detaching the device that "

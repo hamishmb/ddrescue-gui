@@ -31,7 +31,7 @@ This is the main script that you use to start DDRescue-GUI.
 """
 
 #Import other modules
-from distutils.version import LooseVersion
+from packaging.version import Version
 
 import threading
 import getopt
@@ -624,13 +624,15 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.SetClientSize(wx.Size(956, 360))
 
         print("DDRescue-GUI Version "+VERSION+" Starting up...")
-        logger.info("DDRescue-GUI Version "+VERSION+" Starting up...")
-        logger.info("Release date: "+RELEASE_DATE)
-        logger.info("Running on Python version: "+str(sys.version_info)+"...")
-        logger.info("Running on wxPython version: "+wx.version()+"...")
-        logger.info("Checking for ddrescue...")
+        logger.info("MainWindow().__init__(): DDRescue-GUI Version "+VERSION+" Starting up...")
+        logger.info("MainWindow().__init__(): Release date: "+RELEASE_DATE)
+        logger.info("MainWindow().__init__(): Running on Python version: " \
+                    + str(sys.version_info)+"...")
 
-        logger.info("Determining ddrescue version...")
+        logger.info("MainWindow().__init__(): Running on wxPython version: "+wx.version()+"...")
+        logger.info("MainWindow().__init__(): Checking for ddrescue...")
+
+        logger.info("MainWindow().__init__(): Determining ddrescue version...")
         global DDRESCUE_VERSION
         DDRESCUE_VERSION = CoreTools.determine_ddrescue_version()
 
@@ -1325,16 +1327,19 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         key = _type+"File"
 
         if _type == "Input":
+            logger.info("MainWindow().file_choice_handler(): Displaying input file choice...")
             choice_box = self.input_choice_box
             paths = self.custom_input_paths
             others = ["OutputFile", "MapFile"]
 
         elif _type == "Output":
+            logger.info("MainWindow().file_choice_handler(): Displaying output file choice...")
             choice_box = self.output_choice_box
             paths = self.custom_output_paths
             others = ["InputFile", "MapFile"]
 
         else:
+            logger.info("MainWindow().file_choice_handler(): Displaying map file choice...")
             choice_box = self.map_choice_box
             paths = self.custom_map_paths
             others = ["InputFile", "OutputFile"]
@@ -1617,7 +1622,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """
         Get the input file/Disk by calling self.file_choice_handler.
         """
-        logger.debug("MainWindow().SelectInputFile(): Calling File Choice Handler...")
+        logger.debug("MainWindow().set_input_file(): Calling File Choice Handler...")
 
         self.file_choice_handler(_type="Input",
                                  user_selection=self.input_choice_box.GetStringSelection(),
@@ -1628,7 +1633,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """
         Get the output file/Disk by calling self.file_choice_handler.
         """
-        logger.debug("MainWindow().SelectInputFile(): Calling File Choice Handler...")
+        logger.debug("MainWindow().set_output_file(): Calling File Choice Handler...")
 
         self.file_choice_handler(_type="Output",
                                  user_selection=self.output_choice_box.GetStringSelection(),
@@ -1640,7 +1645,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         Get the map file position/name by calling self.file_choice_handler.
         """
 
-        logger.debug("MainWindow().SelectMapFile(): Calling File Choice Handler...")
+        logger.debug("MainWindow().set_map_file(): Calling File Choice Handler...")
         self.file_choice_handler(_type="Map",
                                  user_selection=self.map_choice_box.GetStringSelection(),
                                  default_dir=self.user_homedir, wildcard="Map Files (*.log)|*.log",
@@ -1807,7 +1812,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                         updateinfo["CurrentDevVersion"]]
 
         #Order the list so the last entry has the latest version number.
-        versions = sorted(versions, key=LooseVersion)
+        versions = sorted(versions, key=Version)
 
         #Compare the versions.
         if versions[-1] == VERSION and RELEASE_TYPE == "Stable":
@@ -1956,9 +1961,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             logger.error("MainWindow().on_start(): The settings haven't been checked properly! "
                          "Aborting recovery...")
 
-            dlg = wx.MessageDialog(self.panel, "Please check the settings before starting the "
-                                   "recovery.", "DDRescue-GUI - Warning",
-                                   wx.OK | wx.ICON_EXCLAMATION)
+            dlg = wx.MessageDialog(self.panel, "Please open the settings window and check "
+                                   "the settings before starting the recovery.",
+                                   "DDRescue-GUI - Warning", wx.OK | wx.ICON_EXCLAMATION)
 
             dlg.ShowModal()
             dlg.Destroy()
@@ -1981,8 +1986,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                         wx.GetApp().Yield()
                         retval = CoreTools.unmount_disk(disk)
 
-                    logger.info("MainWindow().on_start(): "+disk+" is a file (or not in collected "
-                                "disk info), ignoring it...")
+                    logger.debug("MainWindow().on_start(): "+disk+" is not mounted...")
                     continue
 
                 if CoreTools.is_mounted(disk) or not CoreTools.is_partition(disk, DISKINFO):
@@ -2094,7 +2098,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                 BackendThread(self)
 
             except Exception:
-                logger.critical("Unexpected error \n\n"+str(traceback.format_exc())
+                logger.critical("MainWindow().on_start(): Unexpected error \n\n"+str(traceback.format_exc())
                                 + "\n\n while recovering data. Warning user and exiting.")
 
                 CoreTools.emergency_exit("There was an unexpected error:\n\n"
@@ -2541,7 +2545,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Check if the session is ending.
         if session_ending:
             #Stop the backend thread, delete the log file and exit ASAP.
-            #FIXME check this works.
+            #FIXME does not work on Linux.
             self.on_abort()
             logging.shutdown()
             os.remove("/tmp/ddrescue-gui.log"+"."+str(LOG_SUFFIX))
@@ -2794,7 +2798,7 @@ class DiskInfoWindow(wx.Frame): #pylint: disable=too-many-ancestors
         Call the thread to get Disk info, disable the refresh button, and start
         the throbber
         """
-        logger.info("DiskInfoWindow().UpdateDevInfo(): Generating new Disk info...")
+        logger.info("DiskInfoWindow().get_diskinfo(): Generating new Disk info...")
         self.refresh_button.Disable()
         self.throbber.Play()
         GetDiskInformation(self)
@@ -2813,11 +2817,11 @@ class DiskInfoWindow(wx.Frame): #pylint: disable=too-many-ancestors
         DISKINFO.update(info)
 
         #Update the list control.
-        logger.debug("DiskInfoWindow().UpdateDevInfo(): Calling self.update_list_ctrl()...")
+        logger.debug("DiskInfoWindow().receive_diskinfo(): Calling self.update_list_ctrl()...")
         self.update_list_ctrl()
 
         #Send update signal to mainwindow.
-        logger.debug("DiskInfoWindow().UpdateDevInfo(): Calling "
+        logger.debug("DiskInfoWindow().receive_diskinfo(): Calling "
                      "self.parent.update_file_choices()...")
 
         wx.CallAfter(self.parent.update_file_choices)
