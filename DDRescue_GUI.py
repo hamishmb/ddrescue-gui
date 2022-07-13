@@ -51,7 +51,6 @@ import getdevinfo
 import wx
 import wx.lib.stattext
 import wx.lib.statbmp
-#import wx.lib.inspection
 
 from wx.adv import SplashScreen as wxSplashScreen
 from wx.adv import Animation as wxAnimation
@@ -63,6 +62,9 @@ from wx.adv import AboutBox as wxAboutBox
 VERSION = "2.2.0"
 RELEASE_DATE = "13/7/2022"
 RELEASE_TYPE = "Development"
+
+if RELEASE_TYPE == "Development":
+    import wx.lib.inspection
 
 SESSION_ENDING = False
 DDRESCUE_VERSION = "1.26" #Default to latest version.
@@ -706,9 +708,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Check for updates.
         wx.CallLater(10000, self.check_for_updates, starting_up=True)
 
-        #Uncomment to show inspection tool for debugging.
-        #wx.CallLater(5000, self.show_inspection_tool)
-
         logger.info("MainWindow().__init__(): Ready. Waiting for events...")
 
     def set_vars(self):
@@ -1005,6 +1004,13 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         self.menu_settings = edit_menu.Append(wx.ID_ANY, "&Settings", "Recovery Settings")
         self.menu_mount = edit_menu.Append(wx.ID_ANY, "&Mount Disk", "Mount a file/device")
+
+        self.menu_inspector = None
+
+        if RELEASE_TYPE == "Development":
+            self.menu_inspector = edit_menu.Append(wx.ID_ANY, "&Open Inspector",
+                                                   "Open the wxPython Inspection Tool")
+
         self.menu_disk_info = view_menu.Append(wx.ID_ANY, "&Disk Information",
                                                "Information about all detected Disks")
 
@@ -1040,6 +1046,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.Bind(wx.EVT_MENU, self.check_for_updates, self.menu_updates)
         self.Bind(wx.EVT_MENU, self.show_settings, self.menu_settings)
         self.Bind(wx.EVT_MENU, self.on_mount, self.menu_mount)
+
+        if RELEASE_TYPE == "Development":
+            self.Bind(wx.EVT_MENU, self.show_inspector, self.menu_inspector)
+
         self.Bind(wx.EVT_MENU, self.show_userguide, self.menu_docs)
         self.Bind(wx.EVT_MENU, self.on_about, self.menu_about)
         self.Bind(wx.EVT_MENU, self.show_dev_info, self.menu_disk_info)
@@ -1075,7 +1085,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.Bind(wx.EVT_MENU, self.on_exit, self.menu_exit)
         self.Bind(wx.EVT_CLOSE, self.on_exit)
 
-    def show_inspection_tool(self):
+    def show_inspector(self, event):
         """
         Shows the wxPython inspection tool.
         """
