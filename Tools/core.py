@@ -224,23 +224,23 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-ancestors,too-many-instanc
 
         #Check the password is right.
         password = self.password_field.GetLineText(0)
-        cmd = subprocess.Popen("LC_ALL=C sudo -S echo 'Authentication Succeeded'",
-                               stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE, shell=True)
+        with subprocess.Popen("LC_ALL=C sudo -S echo 'Authentication Succeeded'",
+                              stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE, shell=True) as cmd:
 
-        #Send the password to sudo through stdin,
-        #to avoid showing the user's password in the system/activity monitor.
-        cmd.stdin.write(password.encode()+b"\n")
-        cmd.stdin.close()
+            #Send the password to sudo through stdin,
+            #to avoid showing the user's password in the system/activity monitor.
+            cmd.stdin.write(password.encode()+b"\n")
+            cmd.stdin.close()
 
-        self.throbber.SetAnimation(self.busy)
-        self.throbber.Play()
+            self.throbber.SetAnimation(self.busy)
+            self.throbber.Play()
 
-        while cmd.poll() is None:
-            #wx.GetApp().Yield()
-            time.sleep(0.04)
+            while cmd.poll() is None:
+                #wx.GetApp().Yield()
+                time.sleep(0.04)
 
-        output = cmd.stdout.read().decode("utf-8")
+            output = cmd.stdout.read().decode("utf-8")
 
         if "Authentication Succeeded" in output:
             #Set the password field colour to green and disable the cancel button.
@@ -293,18 +293,18 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-ancestors,too-many-instanc
         """
 
         #Check the password is right.
-        cmd = subprocess.Popen("LC_ALL=C sudo -S echo 'Authentication Succeeded'",
-                               stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE, shell=True)
+        with subprocess.Popen("LC_ALL=C sudo -S echo 'Authentication Succeeded'",
+                              stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE, shell=True) as cmd:
 
-        #Send the password to sudo through stdin,
-        #to avoid showing the user's password in the system/activity monitor.
-        cmd.stdin.close()
+            #Send the password to sudo through stdin,
+            #to avoid showing the user's password in the system/activity monitor.
+            cmd.stdin.close()
 
-        while cmd.poll() is None:
-            time.sleep(0.04)
+            while cmd.poll() is None:
+                time.sleep(0.04)
 
-        output = cmd.stdout.read().decode("utf-8")
+            output = cmd.stdout.read().decode("utf-8")
 
         return "Authentication Succeeded" in output
 
@@ -458,21 +458,21 @@ def start_process(cmd, return_output=False, privileged=False):
 
     logger.debug("start_process(): Starting process: "+' '.join(cmd))
 
-    runcmd = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                              stderr=subprocess.STDOUT, env=environ,
-                              shell=False)
+    with subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                          stderr=subprocess.STDOUT, env=environ,
+                          shell=False) as runcmd:
 
-    #Save the output, and runcmd.returncode,
-    #as they tend to reset fairly quickly. Handle unicode properly.
-    output = read(runcmd)
+        #Save the output, and runcmd.returncode,
+        #as they tend to reset fairly quickly. Handle unicode properly.
+        output = read(runcmd)
 
-    retval = int(runcmd.returncode)
+        retval = int(runcmd.returncode)
 
     #Log this info in a debug message.
     logger.debug("start_process(): Process: "+' '.join(cmd)+": Return Value: "
                  +str(retval)+", output: \"\n\n"+'\n'.join(output)+"\"\n")
 
-    if privileged and (retval == 126 or retval == 127):
+    if privileged and retval in (126, 127):
         #Try again, auth dismissed / bad password 3 times.
         #A lot of recursion is allowed (~1000 times), so this shouldn't be a problem.
         logger.debug("start_process(): Bad auth or dismissed by user. Trying again...")
@@ -482,9 +482,8 @@ def start_process(cmd, return_output=False, privileged=False):
         #Return the return code back to whichever function ran this process, so it handles errors.
         return retval
 
-    else:
-        #Return the return code, as well as the output.
-        return retval, '\n'.join(output)
+    #Return the return code, as well as the output.
+    return retval, '\n'.join(output)
 
 def read(cmd, testing=False):
     """
@@ -848,7 +847,7 @@ def get_mount_point(partition):
                 mount_point = split_line[2]
                 break
 
-    if mount_point != None:
+    if mount_point is not None:
         logger.info("get_mount_point(): Found it! mount_point is "+mount_point+"...")
 
     else:
@@ -900,7 +899,7 @@ def mount_disk(partition, mount_point, options=""):
                      +mount_point+". Continuing...")
         return 0
 
-    elif mount_point in mount_info:
+    if mount_point in mount_info:
         #Something else is in the way. Unmount that partition, and continue.
         logger.warning("mount_disk(): Unmounting filesystem in the way at "+mount_point+"...")
 
@@ -1045,12 +1044,11 @@ def emergency_exit(msg):
             log_file = dialog.GetPath()
             break
 
-        else:
-            #Warn the user.
-            dialog = wx.MessageDialog(None, "Please enter a file name.",
+        #Warn the user.
+        dialog = wx.MessageDialog(None, "Please enter a file name.",
                                       "DDRescue-GUI - Emergency Exit!", wx.OK | wx.ICON_ERROR)
-            dialog.ShowModal()
-            dialog.Destroy()
+        dialog.ShowModal()
+        dialog.Destroy()
 
     start_process("mv -v /tmp/ddrescue-gui.log"+"."+str(LOG_SUFFIX)+" "+log_file)
 

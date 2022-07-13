@@ -408,7 +408,7 @@ class Linux:
         #Get the info related to this partition.
         for device in lsblk_output["blockdevices"]:
             #Ignore other devices.
-            if device["name"] != target_device and "/dev/"+device["name"] != target_device:
+            if target_device not in (device["name"], "/dev/"+device["name"]):
                 continue
 
             #Add all the partitions to the choices list.
@@ -734,8 +734,8 @@ class Mac:
     def reset(cls):
         """
         Resets the state of this class to defaults.
+        No action needed, just here to retain compatibility.
         """
-        pass
 
     @classmethod
     def determine_output_file_type(cls, output_file): #pylint: disable=invalid-name
@@ -1096,17 +1096,16 @@ class Mac:
                 #Check if the partition we want is mountable
                 if partition["potentially-mountable"] and _type == "Partition":
                     success = Mac.mount_partition(disk)
-                    break
 
                 #If this is an APFS container and we haven't reached the last
                 #disk yet, keep going.
-                elif Core.output_file_types[-1] == "APFSContainer" \
+                if Core.output_file_types[-1] == "APFSContainer" \
                     and disks.index(partition) != (len(disks) - 1):
 
                     continue
 
                 #Handle APFS containers.
-                elif _type == "APFSContainer":
+                if _type == "APFSContainer":
                     Core.output_file_types.append("APFSContainer")
                     Core.output_file_devicenames.append(disk)
 
@@ -1249,7 +1248,7 @@ class Mac:
         #Handle this common error - image in use.
         if "Resource temporarily unavailable" in output or retval != 0:
             logger.warning("Mac.run_hdiutil(): Attempting to fix hdiutil resource error...")
-            #Fix by detaching all disks - certain disks eg system disk will fail, but it should 
+            #Fix by detaching all disks - certain disks eg system disk will fail, but it should
             #fix our problem. On OS X >= 10.11 can check for "(disk image)", but cos we support
             #10.10, we have to just detach all possible disks and ignore failures.
 

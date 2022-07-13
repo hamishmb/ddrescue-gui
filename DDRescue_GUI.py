@@ -51,6 +51,7 @@ import getdevinfo
 import wx
 import wx.lib.stattext
 import wx.lib.statbmp
+#import wx.lib.inspection
 
 from wx.adv import SplashScreen as wxSplashScreen
 from wx.adv import Animation as wxAnimation
@@ -63,7 +64,7 @@ VERSION = "2.1.2"
 RELEASE_DATE = "21/4/2022"
 RELEASE_TYPE = "Development"
 
-session_ending = False
+SESSION_ENDING = False
 DDRESCUE_VERSION = "1.26" #Default to latest version.
 DDRESCUE_CMD = None
 APPICON = None
@@ -242,7 +243,7 @@ class GetDiskInformation(threading.Thread):
         #Use a module I've written to collect data about connected Disks, and return it.
         wx.CallAfter(self.parent.receive_diskinfo, self.get_info())
 
-    def get_info(self): #pylint: disable=no-self-use
+    def get_info(self):
         """
         Get disk information as a privileged user.
 
@@ -274,7 +275,7 @@ class MyApp(wx.App):
     This is how the application is started.
     """
 
-    def OnInit(self): #pylint: disable=invalid-name, no-self-use
+    def OnInit(self): #pylint: disable=invalid-name
         """
         Used to show the splash screen, which then starts the rest of the
         application.
@@ -488,7 +489,7 @@ class CustomTextCtrl(wx.TextCtrl): #pylint: disable=too-many-ancestors
                 last_new_line = newline
                 break
 
-            elif newline < insertion_point:
+            if newline < insertion_point:
                 pass
 
             else:
@@ -567,7 +568,7 @@ class CustomTextCtrl(wx.TextCtrl): #pylint: disable=too-many-ancestors
 
             counter += 1
 
-        if newline_numbers != []:
+        if newline_numbers:
             last_newline = newline_numbers[-1]
 
         else:
@@ -695,12 +696,12 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #This is a bit ugly, but it works. Yay for Stack Overflow.
         #stackoverflow.com/questions/10901067/getting-a-window-to-the-top-in-wxpython-for-mac
         if not LINUX:
-            subprocess.Popen(['osascript', '-e', '''\
+            subprocess.run(['osascript', '-e', f'''\
                               tell application "System Events"
                               set procName to name of first process whose unix id is %s
                               end tell
                               tell application procName to activate
-                              ''' % os.getpid()])
+                              {os.getpid()}'''], check=False)
 
         #Check for updates.
         wx.CallLater(10000, self.check_for_updates, starting_up=True)
@@ -714,8 +715,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """
         Set some essential variables
         """
-        global SETTINGS
-
         #DDRescue version.
         SETTINGS["DDRescueVersion"] = DDRESCUE_VERSION
 
@@ -755,8 +754,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.user_homedir = os.environ['HOME']
 
         #Define these to make pylint happy and prevent possible errors later.
-        self.recovered_data = None
-        self.disk_capacity = None
+        self.recovered_data = "0 Bytes"
+        self.disk_capacity = "0 Bytes"
         self.aborted_recovery = None
         self.runtime_secs = None
 
@@ -1077,7 +1076,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.Bind(wx.EVT_CLOSE, self.on_exit)
 
     def show_inspection_tool(self):
-        import wx.lib.inspection
+        """
+        Shows the wxPython inspection tool.
+        """
+
         wx.lib.inspection.InspectionTool().Show()
 
     def focus_on_control_button(self, event=None): #pylint: disable=unused-argument
@@ -1233,7 +1235,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         the choiceboxes for input and output file selection.
         """
         logger.info("MainWindow().receive_diskinfo(): Getting new Disk information...")
-        global DISKINFO
         DISKINFO.clear()
         DISKINFO.update(info)
 
@@ -1353,7 +1354,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             return
 
         #Handle having no map file.
-        elif user_selection == "None (not recommended)":
+        if user_selection == "None (not recommended)":
             dialog = wx.MessageDialog(self.panel, "You have not chosen to use a map file. "
                                       "If you do not use one, you will have to start from "
                                       "scratch in the event of a power outage, or if "
@@ -1440,8 +1441,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                 #Set the selection using the unique key in the paths dictionary.
                 unique_key = None
 
-                for _key in paths:
-                    if paths[_key] == user_selection:
+                for _key, value in paths.items():
+                    if value == user_selection:
                         unique_key = _key
                         break
 
@@ -1520,8 +1521,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                 #Set the selection using the unique key in the paths dictionary.
                 unique_key = None
 
-                for _key in paths:
-                    if paths[_key] == user_selection:
+                for _key, value in paths.items():
+                    if value == user_selection:
                         unique_key = _key
                         break
 
@@ -1650,7 +1651,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                  default_dir=self.user_homedir, wildcard="Map Files (*.log)|*.log",
                                  style=wx.FD_SAVE)
 
-    def show_userguide(self, event=None): #pylint: disable=unused-argument,no-self-use
+    def show_userguide(self, event=None): #pylint: disable=unused-argument
         """
         Open a web browser and show the user guide.
         """
@@ -1665,11 +1666,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         else:
             cmd = "open"
 
-        subprocess.Popen(cmd
-                         + " https://www.hamishmb.com/html/Docs/ddrescue-gui.php",
-                         shell=True)
+        subprocess.run([cmd, "https://www.hamishmb.com/support/ddrescue-gui.php"],
+                       check=False)
 
-    def on_about(self, event=None): #pylint: disable=unused-argument, no-self-use
+    def on_about(self, event=None): #pylint: disable=unused-argument
         """
         Show the about box.
         """
@@ -1943,9 +1943,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         logger.info("MainWindow().on_mount(): Got file "+SETTINGS["InputFile"]
                     + ". Opening FinishedWindow...")
 
-        self.recovered_data = "0 Bytes"
-        self.disk_capacity = "0 Bytes"
-
         FinishedWindow(self, self.disk_capacity, self.recovered_data).Show()
 
     def on_start(self): #pylint: disable=too-many-statements
@@ -2040,8 +2037,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                         self.update_status_bar("Ready.")
                         return
 
-                    else:
-                        logger.info("MainWindow().on_start(): Success...")
+                    logger.info("MainWindow().on_start(): Success...")
 
                 else:
                     logger.info("MainWindow().on_start(): "+disk+" is not mounted...")
@@ -2097,7 +2093,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                 BackendThread(self)
 
             except Exception:
-                logger.critical("MainWindow().on_start(): Unexpected error \n\n"+str(traceback.format_exc())
+                logger.critical("MainWindow().on_start(): Unexpected error \n\n"
+                                + str(traceback.format_exc())
                                 + "\n\n while recovering data. Warning user and exiting.")
 
                 CoreTools.emergency_exit("There was an unexpected error:\n\n"
@@ -2274,7 +2271,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Disable control button.
         self.control_button.Disable()
 
-        if not session_ending:
+        if not SESSION_ENDING:
             #Notify user with throbber.
             self.throbber.Play()
 
@@ -2339,7 +2336,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """
 
         #Return immediately if session is ending.
-        if session_ending:
+        if SESSION_ENDING:
             return
 
         self.disk_capacity = disk_capacity #pylint: disable=attribute-defined-outside-init
@@ -2519,8 +2516,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             logging.critical("MainWindow().on_session_end(): Cannot veto system shutdown / "
                              "logoff! Cleaning up...")
 
-            global session_ending #pylint: disable=global-statement
-            session_ending = True
+            global SESSION_ENDING #pylint: disable=global-statement
+            SESSION_ENDING = True
             self.on_exit()
 
     def on_exit(self, event=None, just_finished_recovery=False): #pylint: disable=too-many-branches,unused-argument,line-too-long
@@ -2541,7 +2538,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         logger.info("MainWindow().on_exit(): Preparing to exit...")
 
         #Check if the session is ending.
-        if session_ending:
+        if SESSION_ENDING:
             #Stop the backend thread, delete the log file and exit ASAP.
             self.on_abort()
             logging.shutdown()
@@ -2625,16 +2622,15 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                 dlg.Destroy()
                                 break
 
-                            else:
-                                dlg = wx.MessageDialog(self.panel, "DDRescue-GUI does not have "
-                                                       + "permission to write to that file or "
-                                                       + "directory! Please select a new file "
-                                                       + "and try again.",
-                                                       "DDRescue-GUI - Information",
-                                                       wx.OK | wx.ICON_INFORMATION)
+                            dlg = wx.MessageDialog(self.panel, "DDRescue-GUI does not have "
+                                                   + "permission to write to that file or "
+                                                   + "directory! Please select a new file "
+                                                   + "and try again.",
+                                                   "DDRescue-GUI - Information",
+                                                   wx.OK | wx.ICON_INFORMATION)
 
-                                dlg.ShowModal()
-                                dlg.Destroy()
+                            dlg.ShowModal()
+                            dlg.Destroy()
 
 
                     else:
@@ -2809,7 +2805,6 @@ class DiskInfoWindow(wx.Frame): #pylint: disable=too-many-ancestors
             info (dict).            The new disk information.
         """
 
-        global DISKINFO
         DISKINFO.clear()
         DISKINFO.update(info)
 
@@ -3604,12 +3599,12 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
                     +MountingTools.Core.output_file_mountpoint+"...")
 
         if LINUX:
-            subprocess.Popen("xdg-open "+MountingTools.Core.output_file_mountpoint,
-                             shell=True)
+            subprocess.run(["xdg-open", MountingTools.Core.output_file_mountpoint],
+                           check=False)
 
         else:
-            subprocess.Popen("open "+MountingTools.Core.output_file_mountpoint,
-                             shell=True)
+            subprocess.run(["open", MountingTools.Core.output_file_mountpoint],
+                           check=False)
 
     def on_exit(self, event=None): #pylint: disable=unused-argument
         """
@@ -3794,7 +3789,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
         line = ""
         char = " " #Set this so the while loop executes at least once.
 
-        #Store reference to Popen object so we can abort on Cygwin. 
+        #Store reference to Popen object so we can abort on Cygwin.
         global DDRESCUE_CMD
         DDRESCUE_CMD = cmd
 
@@ -3978,7 +3973,8 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                              + " "+self.recovered_data_unit)
 
                 wx.CallAfter(self.parent.update_num_errors, self.num_errors)
-                wx.CallAfter(self.parent.update_progress, int(self.recovered_data), self.disk_capacity)
+                wx.CallAfter(self.parent.update_progress, int(self.recovered_data),
+                             self.disk_capacity)
 
             except AttributeError:
                 pass
@@ -4032,7 +4028,8 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                 wx.CallAfter(self.parent.update_recovered_data, str(self.recovered_data)
                              + " "+self.recovered_data_unit)
 
-                wx.CallAfter(self.parent.update_progress, int(self.recovered_data), self.disk_capacity)
+                wx.CallAfter(self.parent.update_progress, int(self.recovered_data),
+                             self.disk_capacity)
 
             wx.CallAfter(self.parent.update_current_read_rate, self.current_read_rate)
 
