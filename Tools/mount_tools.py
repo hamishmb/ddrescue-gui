@@ -263,7 +263,6 @@ class Linux:
 
         output = output.split(":")
 
-        #FIXME will break if output file path has spaces in the name.
         #We want field 6 - the partition table type.
         try:
             #The type will be "loop" if this is a partition.
@@ -425,7 +424,7 @@ class Linux:
         return choices
 
     @classmethod
-    def get_volumes_luks(cls, output_file): #TODO
+    def get_volumes_luks(cls, output_file):
         """
         Gets a list of volumes on the given output file or device name.
         This method expects the given file or device to be a LUKS device.
@@ -574,7 +573,6 @@ class Linux:
                 False - Failure
         """
 
-        #TODO Warnings for LVM disks: make sure there are no duplicates before mounting.
         #Create a nice list of volumes for the user to pick from.
         choices = []
 
@@ -648,7 +646,6 @@ class Linux:
                 device_to_mount = "/dev/"+selected_partition
 
         elif Core.output_file_types[-1] == "LUKS":
-            #TODO
             pass
 
         elif Core.output_file_types[-1] == "LVM":
@@ -667,7 +664,6 @@ class Linux:
             Linux.mount_device(device_to_mount)
 
         elif Core.output_file_types[-1] == "Device" and "LUKS" in full_selection:
-            #TODO LUKS.
             pass
 
         else:
@@ -680,7 +676,7 @@ class Linux:
         return True
 
     @classmethod
-    def unmount_output_file(cls, output_file): #TODO handle LUKS
+    def unmount_output_file(cls, output_file):
         """
         Unmounts the output file or device. Handles partitions, devices, LVM and LUKS disks.
 
@@ -968,7 +964,7 @@ class Mac:
         return True
 
     @classmethod
-    def mount_device(cls, output_file): #TODO error handling
+    def mount_device(cls, output_file):
         """
         Mount the given device or file. This is expected to be a standard device or other
         container of volumes (eg an APFS container).
@@ -1164,7 +1160,6 @@ class Mac:
         """
 
         #Always detach the image's device file.
-        #FIXME will error out if it was never attached.
         logger.debug("Mac.unmount_output_file(): Detaching the device that "
                      "represents the image...")
 

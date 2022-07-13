@@ -943,7 +943,6 @@ def unmount_disk(disk):
             Anything else -         Error, return value from unmount command.
     """
 
-    #TODO Check if works with mount points too, and document if so.
     logger.debug("unmount_disk(): Checking if "+disk+" is mounted...")
 
     #Check if it is mounted.

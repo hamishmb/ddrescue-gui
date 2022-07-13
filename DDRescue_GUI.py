@@ -1322,7 +1322,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """
 
         #pylint: disable=too-many-arguments
-        #TODO Refactor, too long.
         #Setup.
         key = _type+"File"
 
@@ -2501,7 +2500,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """
         Attempt to veto e.g. a shutdown/logout event if recovering data.
         """
-        #FIXME This does not seem to work on Linux. What about macOS?
         #Check if we can veto the shutdown.
         logging.warning("MainWindow().on_session_end(): Attempting to veto system shutdown / "
                         "logoff...")
@@ -2517,7 +2515,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             dlg.Destroy()
 
         else:
-            #Set on_session_end to True, call on_exit. TODO clean up better if eg doing a recovery.
+            #Set on_session_end to True, call on_exit.
             logging.critical("MainWindow().on_session_end(): Cannot veto system shutdown / "
                              "logoff! Cleaning up...")
 
@@ -2545,7 +2543,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Check if the session is ending.
         if session_ending:
             #Stop the backend thread, delete the log file and exit ASAP.
-            #FIXME does not work on Linux.
             self.on_abort()
             logging.shutdown()
             os.remove("/tmp/ddrescue-gui.log"+"."+str(LOG_SUFFIX))
@@ -3232,7 +3229,6 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
                 logger.info("SettingsWindow().save_options(): Using disk size: "
                             +SETTINGS["DiskSize"]+".")
 
-            #TODO determine disk size in bytes if not in disk info. Not sure how yet.
             #Otherwise, it isn't needed.
             else:
                 SETTINGS["DiskSize"] = ""
@@ -3732,7 +3728,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
         threading.Thread.__init__(self)
         self.start()
 
-    def run(self): #TODO refactor me.
+    def run(self):
         """
         Main body of the thread, started with self.start().
         """
@@ -3821,8 +3817,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 
                     except Exception:
                         #Handle unexpected errors. Can happen once in normal operation on
-                        #ddrescue v1.22+. TODO make smarter, don't fill log with these.
-                        #TODO suppress 1st error if on new versions.
+                        #ddrescue v1.22+.
                         logger.warning("MainBackendThread(): Unexpected error parsing ddrescue's "
                                        "output! Can happen once on newer versions of ddrescue "
                                        "(1.22+) in normal operation. Are you running a "
