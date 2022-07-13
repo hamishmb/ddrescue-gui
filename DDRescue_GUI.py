@@ -1923,7 +1923,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                    + "\n\nAre you sure you want to continue?"
 
         return "You are about to recover data from:\n\n"+input_text+"\n\nto:\n\n"+output_text \
-               + "\n\nThis operation will overwrite all data on the destination drive.\n" \
+               + "\n\nThis operation will overwrite all data on the destination device.\n" \
                + "Are you sure you want to continue?"
 
     def on_control_button(self, event=None): #pylint: disable=unused-argument
