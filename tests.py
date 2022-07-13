@@ -147,6 +147,19 @@ if __name__ == "__main__":
     MountingToolsTests.MountingTools = MountingTools
     MountingToolsTests.Tools = Tools
 
+    #Remove the temporary mount point.
+    try:
+        if os.path.isdir("/tmp/ddrescueguimtpt"):
+            if os.path.isdir("/tmp/ddrescueguimtpt/subdir"):
+                os.rmdir("/tmp/ddrescueguimtpt/subdir")
+
+            os.rmdir("/tmp/ddrescueguimtpt")
+
+    except Exception as e:
+        print("Couldn't remove the temporary mount point!")
+        print("Error: "+str(e))
+        sys.exit(1)
+
     for module in TEST_SUITES:
         print("\n\n---------------------------- Tests for "
               + str(module)+" ----------------------------\n\n")
