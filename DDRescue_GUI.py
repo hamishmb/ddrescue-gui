@@ -1799,6 +1799,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         updateinfo = plistlib.loads(updateinfo.encode())
 
+        #Fix issue introduced by switching to packaging.version.
+        updateinfo["CurrentStableVersion"] = updateinfo["CurrentStableVersion"].replace("~", ".")
+        updateinfo["CurrentDevVersion"] = updateinfo["CurrentDevVersion"].replace("~", ".")
+
         #Determine the latest version for our kind of release.
         if RELEASE_TYPE == "Stable":
             #Compare your stable version to the current stable version.
@@ -1814,11 +1818,11 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         versions = sorted(versions, key=Version)
 
         #Compare the versions.
-        if versions[-1] == VERSION and RELEASE_TYPE == "Stable":
+        if versions[-1] == VERSION.replace("~", ".") and RELEASE_TYPE == "Stable":
             #We have the latest stable version.
             infotext += "You are running the latest version of DDRescue-GUI.\n"
 
-        elif versions[-1] == VERSION and RELEASE_TYPE == "Development":
+        elif versions[-1] == VERSION.replace("~", ".") and RELEASE_TYPE == "Development":
             #We have the latest dev version.
             infotext += "You are running the latest development version of DDRescue-GUI.\n"
 
@@ -1854,7 +1858,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             infotext += updateinfo["CurrentStableVersion"]+".\n"
 
         #Note if the release date doesn't match for the latest stable build.
-        if (RELEASE_TYPE == "Stable" and VERSION == updateinfo["CurrentStableVersion"]
+        if (RELEASE_TYPE == "Stable" and VERSION.replace("~", ".") == updateinfo["CurrentStableVersion"]
                 and RELEASE_DATE != updateinfo["CurrentStableReleaseDate"]):
 
             infotext += "\nYour release date doesn't match that of the current stable version.\n"
