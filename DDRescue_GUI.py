@@ -1857,13 +1857,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             infotext += "You should update to the latest stable version "
             infotext += updateinfo["CurrentStableVersion"]+".\n"
 
-        #Note if the release date doesn't match for the latest stable build.
-        if (RELEASE_TYPE == "Stable" and VERSION.replace("~", ".") == updateinfo["CurrentStableVersion"]
-                and RELEASE_DATE != updateinfo["CurrentStableReleaseDate"]):
-
-            infotext += "\nYour release date doesn't match that of the current stable version.\n"
-            infotext += "Are you running a git build?"
-
         #Send a notification about the update status.
         if update_recommended:
             logger.warning("MainWindow().check_for_updates(): Update is recommended. "
