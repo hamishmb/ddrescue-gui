@@ -60,8 +60,8 @@ from wx.adv import AboutDialogInfo as wxAboutDialogInfo
 from wx.adv import AboutBox as wxAboutBox
 
 #Define global variables.
-VERSION = "2.1.2"
-RELEASE_DATE = "21/4/2022"
+VERSION = "2.2.0"
+RELEASE_DATE = "13/7/2022"
 RELEASE_TYPE = "Development"
 
 SESSION_ENDING = False
