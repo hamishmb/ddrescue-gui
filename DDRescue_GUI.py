@@ -531,7 +531,7 @@ class CustomTextCtrl(wx.TextCtrl): #pylint: disable=too-many-ancestors
 
         #Go up one line.
         #Get our column and line numbers.
-        column, line = self.PositionToXY(self.GetInsertionPoint())
+        column, line = wx.TextCtrl.PositionToXY(self, self.GetInsertionPoint())
 
         #We go up one line, but stay in the same column, so find the integer position of the new
         #insertion point.
@@ -3705,7 +3705,7 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
         self.old_status = ""
         self.got_initial_status = False
         self.input_pos = "0 B"
-        self.disk_capacity = "An unknown amount of"
+        self.disk_capacity = 0
         self.disk_capacity_unit = "B"
         self.recovered_data = 0
         self.recovered_data_unit = "B"
