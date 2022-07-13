@@ -298,7 +298,6 @@ class Linux:
         if output_file_type == "unknown":
             choices = ["Partition (single file system or CD/DVD image)",
                        "Device (multiple partitions)",
-                       "LUKS (encrypted storage) Container",
                        "LVM Container"]
 
             dlg = wx.SingleChoiceDialog(wx.GetApp().TopWindow.panel,
