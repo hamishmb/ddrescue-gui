@@ -353,11 +353,10 @@ class ShowSplash(wxSplashScreen): #pylint: disable=too-few-public-methods,no-mem
 #Begin Custom wx.TextCtrl Class.
 class CustomTextCtrl(wx.TextCtrl): #pylint: disable=too-many-ancestors
     """
-    A custom wx.TextCtrl that provides features that are broken on Linux and macOS.
+    A custom wx.TextCtrl that provides features that are broken on Linux and Cygwin.
 
     Features:
-        A version of PositionToXY() that works on macOS.
-        A version of XYToPosition() that works on macOS and fixes a bug on Linux.
+        A version of XYToPosition() that fixes a bug on Linux and Cygwin.
         carriage_return(): Handles carriage returns correctly.
         up_one_line(): Moves insertion point up one line.
 
@@ -452,67 +451,10 @@ class CustomTextCtrl(wx.TextCtrl): #pylint: disable=too-many-ancestors
         elif char_number in uols:
             self.up_one_line()
 
-    def PositionToXY(self, insertion_point): #pylint: disable=invalid-name,arguments-differ
-        """
-        A custom version of wx.TextCtrl.PositionToXY() that works on OS X
-        (the built-in one isn't implemented on OS X).
-
-        Args:
-            insertion_point (int).          The insertion point we want to get
-                                            the row and column numbers for.
-
-        Returns:
-            tuple(int, int).
-
-                1st element:        The column.
-                2nd element:        The row.
-
-        .. note::
-            The stock version of this method is still not implemented on OS X
-            on wxPython 4 (it returns random numbers).
-        """
-
-        #Count the number and position of newline characters.
-        text = self.GetRange(0, insertion_point)
-
-        newlines = [0] #Count the start of the text as a newline.
-        counter = 0
-        for char in text:
-            counter += 1
-
-            if char == "\n":
-                newlines.append(counter)
-
-        #Find the last newline before our insertion point.
-        for newline in newlines:
-            if newlines.index(newline)+1 == len(newlines) or newline == insertion_point:
-                #This is the last newline in the text, or the newline at our insertion point,
-                #and is therefore the one we want.
-                last_new_line = newline
-                break
-
-            if newline < insertion_point:
-                pass
-
-            else:
-                #When this is triggered, the previous newline (last iteration of the loop)
-                #is the one we want.
-                index = newlines.index(newline)
-                last_new_line = newlines[index-1]
-                break
-
-        #Figure out what column we're in (how many chars after the last newline).
-        column = insertion_point - last_new_line
-
-        #Figure out which line we're on (the number of the last newline).
-        row = newlines.index(last_new_line)
-
-        return column, row
-
     def XYToPosition(self, column, row): #pylint: disable=invalid-name,arguments-differ
         """
-        A custom version of wx.TextCtrl.XYToPosition() that works on OS X
-        (the built-in one isn't implemented on OS X).
+        A custom version of wx.TextCtrl.XYToPosition() that fixes a bug on
+        Linux and Cygwin.
 
         Args:
             column (int).               The column we want to get the integer
@@ -525,11 +467,8 @@ class CustomTextCtrl(wx.TextCtrl): #pylint: disable=too-many-ancestors
             int.                        The position.
 
         .. note::
-            This is also helpful for Linux because the built-in one has a quirk:
+            This is required on Linux/Cygwin because the built-in one has a quirk:
             when you're at the end of the text, it always returns -1.
-
-        .. note::
-            As of wxPython 4, this is still not implemented on macOS.
         """
 
         #Count the number and position of newline characters.
