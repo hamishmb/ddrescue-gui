@@ -1895,6 +1895,40 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                              wx.OK | wx.ICON_INFORMATION | wx.STAY_ON_TOP,
                              pos=wx.DefaultPosition).ShowModal()
 
+    def get_confirm_text(self):
+        """
+        Generate recovery confirmation text to make doubly sure the right devices are selected.
+        This can be logged and put in a message dialog.
+
+        Returns:
+            String. The confirmation text.
+        """
+
+        output_is_device = False
+        input_text = SETTINGS["InputFile"]
+
+        if SETTINGS["InputFile"] in DISKINFO:
+            input_text = SETTINGS["InputFile"]+" ("+DISKINFO[SETTINGS["InputFile"]]["Vendor"] \
+                         + " "+DISKINFO[SETTINGS["InputFile"]]["Product"] \
+                         + ", Size: "+DISKINFO[SETTINGS["InputFile"]]["Capacity"]+")"
+
+        output_text = SETTINGS["OutputFile"]
+
+        if SETTINGS["OutputFile"] in DISKINFO:
+            output_is_device = True
+
+            output_text = SETTINGS["OutputFile"]+" ("+DISKINFO[SETTINGS["OutputFile"]]["Vendor"] \
+                         + " "+DISKINFO[SETTINGS["OutputFile"]]["Product"] \
+                         + ", Size: "+DISKINFO[SETTINGS["OutputFile"]]["Capacity"]+")"
+
+        if not output_is_device:
+            return "You are about to recover data from:\n\n"+input_text+"\n\nto:\n\n"+output_text \
+                   + "\n\nAre you sure you want to continue?"
+
+        return "You are about to recover data from:\n\n"+input_text+"\n\nto:\n\n"+output_text \
+               + "\n\nThis operation will overwrite all data on the destination drive.\n" \
+               + "Are you sure you want to continue?"
+
     def on_control_button(self, event=None): #pylint: disable=unused-argument
         """
         Handle events from the control button, as its purpose changes during and after recovery.
@@ -1964,8 +1998,26 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             dlg.ShowModal()
             dlg.Destroy()
             self.update_status_bar("Ready.")
+            return
 
-        elif None not in [SETTINGS["InputFile"], SETTINGS["MapFile"], SETTINGS["OutputFile"]]:
+        #Generate confirmation messagebox text.
+        confirm_text = self.get_confirm_text()
+
+        logger.info("MainWindow().on_start(): Asking user to confirm operation: "+confirm_text)
+
+        dlg = wx.MessageDialog(self.panel, confirm_text, "DDRescue-GUI - Warning",
+                               wx.YES_NO | wx.ICON_EXCLAMATION)
+
+        if dlg.ShowModal() == wx.ID_NO:
+            logger.info("MainWindow().on_start(): Operation cancelled by user.")
+            dlg.Destroy()
+            self.update_status_bar("Ready.")
+            return
+
+        dlg.Destroy()
+        logger.info("MainWindow().on_start(): Operation confirmed by user.")
+
+        if None not in [SETTINGS["InputFile"], SETTINGS["MapFile"], SETTINGS["OutputFile"]]:
             #Attempt to unmount input/output Disks now, if needed.
             logger.info("MainWindow().on_start(): Unmounting input and output files if needed...")
 
