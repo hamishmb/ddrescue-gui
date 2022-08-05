@@ -3494,8 +3494,14 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         """
         Create all text for FinishedWindow.
         """
-        self.stats_text = wx.StaticText(self.panel, -1, "Successfully recovered "
-                                        + self.recovered_data+" out of "+self.disk_capacity+".")
+        if self.disk_capacity != 0:
+            self.stats_text = wx.StaticText(self.panel, -1, "Successfully recovered "
+                                            + self.recovered_data+" out of "
+                                            + self.disk_capacity+".")
+
+        else:
+            self.stats_text = wx.StaticText(self.panel, -1, "Successfully recovered "
+                                            + self.recovered_data+" (input disk size unknown).")
 
         self.top_text = wx.StaticText(self.panel, -1, "Your recovered data is at:")
         self.path_text = wx.StaticText(self.panel, -1, SETTINGS["OutputFile"])
@@ -3903,6 +3909,9 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 
             if "unknown" in self.disk_capacity:
                 self.disk_capacity = 0
+
+            #XXX
+            self.disk_capacity = 0
 
             wx.CallAfter(self.parent.set_progress_bar_range, self.disk_capacity)
 
