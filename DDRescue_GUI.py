@@ -1643,7 +1643,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                + sys.version.split()[0] \
                                + "\nwxPython version " + wx.version() \
                                + "\nGNU ddrescue version " + SETTINGS["DDRescueVersion"] \
-                               + "\nGetDevInfo version " + getdevinfo.getdevinfo.VERSION
+                               + "\nGetDevInfo version " + GETDEVINFO_VERSION
 
         aboutbox.WebSite = ("http://www.hamishmb.com", "My Website")
         aboutbox.Developers = ["Hamish McIntyre-Bhatty", "Minnie McIntyre-Bhatty (GUI Design)"]

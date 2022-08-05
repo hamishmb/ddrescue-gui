@@ -27,6 +27,7 @@ This is the destination file mount tools module in the tools package for DDRescu
 
 import os
 import plistlib
+import magic
 import json
 import logging
 import wx
@@ -265,6 +266,8 @@ class Linux:
 
         #We want field 6 - the partition table type.
         try:
+            print(output[5])
+
             #The type will be "loop" if this is a partition.
             if output[5] == "loop":
                 output_file_type = "Partition"
@@ -274,6 +277,11 @@ class Linux:
                                "aix", "atari"):
 
                 output_file_type = "Device"
+
+            #If the type is unknown, this might be an ISO file (which we treat as partitions).
+            elif output[5] == "unknown":
+                if "ISO 9660 CD-ROM filesystem data" in magic.from_file(output_file):
+                    output_file_type = "Partition"
 
         except IndexError:
             pass
