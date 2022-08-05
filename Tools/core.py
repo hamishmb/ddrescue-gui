@@ -25,6 +25,8 @@ This is the tools package for DDRescue-GUI.
 """
 
 #Import other modules.
+from packaging.version import Version
+
 import os
 import sys
 import subprocess
