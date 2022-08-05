@@ -68,6 +68,7 @@ if RELEASE_TYPE == "Development":
 
 SESSION_ENDING = False
 DDRESCUE_VERSION = "1.26" #Default to latest version.
+GETDEVINFO_VERSION = "0.0" #Default to a definitely-unsupported version.
 DDRESCUE_CMD = None
 APPICON = None
 SETTINGS = {}
@@ -583,6 +584,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         global DDRESCUE_VERSION
         DDRESCUE_VERSION = CoreTools.determine_ddrescue_version()
 
+        logger.info("MainWindow().__init__(): Determining GetDevInfo version...")
+        global GETDEVINFO_VERSION
+        GETDEVINFO_VERSION = CoreTools.determine_getdevinfo_version()
+
         #Set the frame's icon.
         global APPICON
         APPICON = wx.Icon(RESOURCEPATH+"/images/Logo.png", wx.BITMAP_TYPE_PNG)
@@ -704,7 +709,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
     def define_vars(self):
         """
-        Defines some variables used elsewhere in this class/instance
+        Defines some variables used elsewhere in this class/instance.
         """
         #Define these here to prevent adding checks to see if they're defined later.
         #This way, we don't lose these after a reset either.
@@ -2347,8 +2352,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         if SESSION_ENDING:
             return
 
-        self.disk_capacity = disk_capacity
-        self.recovered_data = recovered_data
+        self.disk_capacity = disk_capacity #pylint: disable=attribute-defined-outside-init
+        self.recovered_data = recovered_data #pylint: disable=attribute-defined-outside-init
 
         #Stop the throbber.
         self.throbber.Stop()

@@ -34,6 +34,8 @@ import logging
 import time
 import wx
 
+import getdevinfo
+
 #Determine if running on Linux or Mac.
 if "wxGTK" in wx.PlatformInfo:
     #Set the resource path to /usr/share/ddrescue-gui/
@@ -581,7 +583,7 @@ def find_ddrescue():
 def determine_ddrescue_version():
     """
     Used to determine the version of ddrescue installed on the system,
-    or (for macOS) bundled with the GUI.
+    or (for macOS and Windows) bundled with the GUI.
 
     Handles -pre and -rc versions too, by stripping that information
     from the version string and warning the user (not doing so would
@@ -630,7 +632,7 @@ def determine_ddrescue_version():
         dlg = wx.MessageDialog(None, "You are using an unsupported version of ddrescue! "
                                "You are strongly advised to upgrade "
                                "DDRescue-GUI if there is an update available. "
-                               "You can use this GUI anyway, but you may find "
+                               "You can continue anyway, but you may find "
                                "there are formatting or other issues when "
                                "performing your recovery.",
                                'DDRescue-GUI - Unsupported ddrescue version!',
@@ -655,6 +657,52 @@ def determine_ddrescue_version():
         dlg.Destroy()
 
     return ddrescue_version
+
+def determine_getdevinfo_version():
+    """
+    Used to determine the version of getdevinfo installed on the system,
+    or (for macOS and Windows) bundled with the GUI.
+
+    Returns:
+        string.         The getdevinfo version present on the system.
+    """
+
+    getdevinfo_version = getdevinfo.getdevinfo.VERSION
+
+    logger.info("GetDevInfo version "+getdevinfo_version+"...")
+
+    #Make sure we're using GetDevInfo 2.0.0 or newer.
+    #NOTE: 2.0.0 required since DDRescue-GUI 2.2.0.
+    version_okay = False
+    versions = [getdevinfo_version, "2.0.0"]
+
+    try:
+        #Order the list so the last entry has the latest version number.
+        versions = sorted(versions, key=Version)
+
+    except Exception:
+        #Assume the version isn't good enough.
+        versions = ["0.0"]
+
+    #Compare the versions.
+    if versions[0] == "2.0.0":
+        #The oldest version in the list is new enough - we're fine.
+        version_okay = True
+
+    if not version_okay:
+        logger.warning("Unsupported getdevinfo version "+getdevinfo_version+"! "
+                       "Please upgrade GetDevInfo if possible.")
+
+        dlg = wx.MessageDialog(None, "You are using an unsupported version of GetDevInfo! "
+                               "Please upgrade GetDevInfo now to prevent serious issues. "
+                               "You can continue anyway, but this is not advisable, "
+                               "and I will not provide support for this configuration.",
+                               'DDRescue-GUI - Unsupported GetDevInfo version!',
+                               wx.OK | wx.ICON_ERROR)
+        dlg.ShowModal()
+        dlg.Destroy()
+
+    return getdevinfo_version
 
 def create_unique_key(dictionary, data, length):
     """
