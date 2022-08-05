@@ -2344,8 +2344,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         if SESSION_ENDING:
             return
 
-        self.disk_capacity = disk_capacity #pylint: disable=attribute-defined-outside-init
-        self.recovered_data = recovered_data #pylint: disable=attribute-defined-outside-init
+        self.disk_capacity = disk_capacity
+        self.recovered_data = recovered_data
 
         #Stop the throbber.
         self.throbber.Stop()
@@ -3456,6 +3456,15 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         self.disk_capacity = disk_capacity
         self.recovered_data = recovered_data
 
+        #If we don't know what unit to use, just use M (MB) by default, instead of Bytes.
+        if self.disk_capacity == "0 B":
+            recovered_data_num = float(self.recovered_data.split(" ")[0])
+            recovered_data_unit = self.recovered_data.split(" ")[1]
+
+            recovered_data_num, recovered_data_unit =  CoreTools.change_units(recovered_data_num, recovered_data_unit, "M")
+
+            self.recovered_data = str(int(recovered_data_num))+" "+recovered_data_unit
+
         self.output_file_type = None
         self.output_file_mount_point = None
         self.output_file_device_name = None
@@ -3494,7 +3503,7 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         """
         Create all text for FinishedWindow.
         """
-        if self.disk_capacity != 0:
+        if self.disk_capacity != "0 B":
             self.stats_text = wx.StaticText(self.panel, -1, "Successfully recovered "
                                             + self.recovered_data+" out of "
                                             + self.disk_capacity+".")
@@ -3880,8 +3889,8 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                          "information to on_recovery_ended()! Continuing anyway. Are you "
                          "running a newer/older version of ddrescue than we support?")
 
-            tmp_disk_capacity = "Unknown Size"
-            tmp_recovered_data = "Unknown Size"
+            tmp_disk_capacity = "0 B"
+            tmp_recovered_data = "0 B"
 
         wx.CallAfter(self.parent.on_recovery_ended, disk_capacity=tmp_disk_capacity,
                      recovered_data=tmp_recovered_data, result=tmp_result,
