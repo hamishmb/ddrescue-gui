@@ -2252,6 +2252,9 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             self.progress_bar.SetValue(recovered_data)
             self.SetTitle(str(int(recovered_data * 100 // disk_capacity))+"%" + " - DDRescue-GUI")
 
+        else:
+            self.progress_bar.Pulse()
+
     def on_abort(self):
         """
         Abort the recovery.
@@ -2352,6 +2355,11 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         #Set time remaining to 0s (sometimes doesn't happen).
         self.update_time_remaining("0 seconds")
+
+        #Set progressbar to full if capacity unknown.
+        if self.disk_capacity == "0 B":
+            self.progress_bar.SetRange(100)
+            self.progress_bar.SetValue(100)
 
         #Handle any errors.
         if self.aborted_recovery:
@@ -3918,9 +3926,6 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 
             if "unknown" in self.disk_capacity:
                 self.disk_capacity = 0
-
-            #XXX
-            self.disk_capacity = 0
 
             wx.CallAfter(self.parent.set_progress_bar_range, self.disk_capacity)
 
