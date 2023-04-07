@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # DDRescue Tools for ddrescue v1.18 (or newer) in the Tools Package for DDRescue-GUI
 # This file is part of DDRescue-GUI.
-# Copyright (C) 2013-2022 Hamish McIntyre-Bhatty
+# Copyright (C) 2013-2023 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
 # at your option, any later version.
