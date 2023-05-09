@@ -121,7 +121,7 @@ elif "wxMac" in wx.PlatformInfo:
         RESOURCEPATH = os.environ['RESOURCEPATH']
 
     except KeyError:
-        #Use '.' as the rescource path instead as a fallback.
+        #Use '.' as the resource path instead as a fallback.
         RESOURCEPATH = "."
 
     LINUX = False
