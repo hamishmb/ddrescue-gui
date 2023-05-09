@@ -1556,6 +1556,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                     #Call Layout() on self.panel() to ensure it displays properly.
                     self.panel.Layout()
 
+                    dialog.Destroy()
+
                     return
 
                 dialog.Destroy()
