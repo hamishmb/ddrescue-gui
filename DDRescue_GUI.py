@@ -1838,7 +1838,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                 infotext += "provides an update to this program."
 
         else:
-            logger.warning("MainWindow().check_for_updates(): No update required."
+            logger.info ("MainWindow().check_for_updates(): No update found. "
                            "Sending notification...")
 
             CoreTools.send_notification("Up to date")
