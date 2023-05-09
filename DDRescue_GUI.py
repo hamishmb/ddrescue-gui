@@ -60,7 +60,7 @@ from wx.adv import AboutBox as wxAboutBox
 
 #Define global variables.
 VERSION = "2.2.0"
-RELEASE_DATE = "13/7/2022"
+RELEASE_DATE = "9/5/2023"
 RELEASE_TYPE = "Development"
 
 if RELEASE_TYPE == "Development":
@@ -1755,6 +1755,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         #Process the update info.
         infotext = ""
         update_recommended = False
+        versions = []
 
         updateinfo = plistlib.loads(updateinfo.encode())
 
@@ -3826,6 +3827,9 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
         global DDRESCUE_CMD
         DDRESCUE_CMD = cmd
 
+        #Used to ignore a typical exception the first time it occurs with ddrescue 1.22+
+        exception_triggered_122 = False
+
         #Give ddrescue plenty of time to start.
         time.sleep(2)
 
@@ -3845,11 +3849,16 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
 
                     except Exception:
                         #Handle unexpected errors. Can happen once in normal operation on
-                        #ddrescue v1.22+.
-                        logger.warning("MainBackendThread(): Unexpected error parsing ddrescue's "
-                                       "output! Can happen once on newer versions of ddrescue "
-                                       "(1.22+) in normal operation. Are you running a "
-                                       "newer/older version of ddrescue than we support?")
+                        #ddrescue v1.22+, so we will ignore the first error.
+                        if not exception_triggered_122 and \
+                            int(SETTINGS["DDRescueVersion"].split(".")[1]) >= 22:
+
+                            exception_triggered_122 = True
+
+                        else:
+                            logger.warning("MainBackendThread(): Unexpected error parsing "
+                                           "ddrescue's output! Are you running a newer/older "
+                                           "version of ddrescue than we support?")
 
                 #The ¬ is being used to denote where the output box should go up
                 #one line before continuing to write. A bit like a carriage return
