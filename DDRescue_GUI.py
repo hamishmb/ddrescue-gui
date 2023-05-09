@@ -1834,20 +1834,14 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             infotext += "\nDetails of the new release:\n\n"
             infotext += updateinfo["CurrentStableVersionDetails"]
 
-            #Note for pmagic users.
-            if PARTED_MAGIC:
-                infotext += "\nThere is probably a newer version of Parted Magic that "
-                infotext += "provides an update to this program."
-
         else:
             logger.info ("MainWindow().check_for_updates(): No update found. "
                            "Sending notification...")
 
             CoreTools.send_notification("Up to date")
 
-        #If asked by the user, or if there's an update and we aren't on pmagic,
-        #show the update status.
-        if not starting_up or (update_recommended and not PARTED_MAGIC):
+        #If asked by the user, or if there's an update, show the update status.
+        if not starting_up or update_recommended:
             logger.debug("MainWindow().check_for_updates(): Showing the user the update info...")
 
             wx.MessageDialog(self.panel, infotext, "DDRescue-GUI - Update Status",
