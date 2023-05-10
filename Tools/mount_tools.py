@@ -27,9 +27,9 @@ This is the destination file mount tools module in the tools package for DDRescu
 
 import os
 import plistlib
-import magic
 import json
 import logging
+import magic
 import wx
 
 from . import core as CoreTools
