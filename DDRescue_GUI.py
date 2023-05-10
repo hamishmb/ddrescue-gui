@@ -1827,8 +1827,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             CoreTools.send_notification("Updates are available")
 
             #Add info about where to download updates.
-            infotext += "\nThe latest version of DDRescue-GUI can be downloaded from:\n"
-            infotext += "https://www.hamishmb.com/html/downloads.php?program_name=ddrescue-gui\n"
+            infotext += "\nThe latest version of DDRescue-GUI can be purchased from:\n"
+            infotext += "https://www.hamishmb.com/ddrescue-gui/\n"
 
             #Add info about new release.
             infotext += "\nDetails of the new release:\n\n"
