@@ -376,10 +376,10 @@ class Linux:
                          +str(error))
 
             dlg = wx.MessageDialog(None, "Failed to gather information about the output file."
-                                   "This could indicate a bug in the GUI, or a problem "
-                                   "with your recovered image. It's possible the data you "
-                                   "recovered is partially corrupted, and you need to use "
-                                   "another tool to extract meaningful data from it.",
+                                   "This could indicate a problem with your recovered image. "
+                                   "It's possible the data you recovered is partially corrupted, "
+                                   "and you need to use another tool to extract meaningful data "
+                                   "from it.",
                                    "DDRescue-GUI - Error", style=wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
@@ -578,10 +578,10 @@ class Linux:
                          "to mount!")
 
             dlg = wx.MessageDialog(None, "Couldn't find any partitions to mount! "
-                                   "This could indicate a bug in the GUI, or a problem "
-                                   "with your recovered image. It's possible the data you "
-                                   "recovered is partially corrupted, and you need to use "
-                                   "another tool to extract meaningful data from it.",
+                                   "This could indicate a problem with your recovered image. "
+                                   "It's possible the data you recovered is partially corrupted, "
+                                   "and you need to use another tool to extract meaningful data "
+                                   "from it.",
                                    "DDRescue-GUI - Error", style=wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
@@ -876,7 +876,6 @@ class Mac:
 
         for partition in output:
             #Skip non-partition things and any "partitions" that don't have numbers.
-            #CD images work differently, and we must ignore this rule.
             if "partition-number" not in partition and "APFS" not in partition["partition-hint"]:
                 continue
 
@@ -968,17 +967,13 @@ class Mac:
 
         #Check that this list isn't empty.
         if not choices:
-            logger.error("Mac.mount_device(): Couldn't find any partitions "
-                         "to mount! This could indicate a bug in the GUI, or a problem "
-                         "with your recovered image. It's possible that the data you "
-                         "recovered is partially corrupted, and you need to use "
-                         "another tool to extract meaningful data from it.")
+            logger.error("Mac.mount_device(): Couldn't find any partitions to mount!")
 
             dlg = wx.MessageDialog(None, "Couldn't find any partitions to mount! "
-                                   "This could indicate a bug in the GUI, or a problem "
-                                   "with your recovered image. It's possible the data you "
-                                   "recovered is partially corrupted, and you need to use "
-                                   "another tool to extract meaningful data from it.",
+                                   "This could indicate a problem with your recovered image. "
+                                   "It's possible the data you recovered is partially corrupted, "
+                                   "and you need to use another tool to extract meaningful data "
+                                   "from it.",
                                    "DDRescue-GUI - Error", style=wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
