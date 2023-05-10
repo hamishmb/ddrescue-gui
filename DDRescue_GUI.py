@@ -3772,17 +3772,19 @@ class BackendThread(threading.Thread): #pylint: disable=too-many-instance-attrib
                 #If we're recovering from a file, don't enable direct disk access (it won't work).
                 if SETTINGS["InputFile"][0:5] != "/dev/":
                     #Make sure "-d" isn't added to the exec_list if this is a file we're reading
-                    #from. It doesn't work on macOS.
+                    #from. It doesn't work on macOS, we have to use /dev/rdisk* instead.
                     #(continue to next iteration of loop w/o adding).
                     continue
 
-                #Remove InputFile and OutputFile and use /dev/rdisk* (raw disk)
+                #Remove InputFile and use /dev/rdisk* (raw disk)
                 #instead of /dev/disk.
                 options_list.pop(10)
                 options_list.insert(10, "/dev/r" + SETTINGS["InputFile"].split("/dev/")[1])
 
-                options_list.pop(11)
-                options_list.insert(11, "/dev/r" + SETTINGS["OutputFile"].split("/dev/")[1])
+                #Use rdisk for output file too if applicable.
+                if SETTINGS["OutputFile"][0:5] == "/dev/":
+                    options_list.pop(11)
+                    options_list.insert(11, "/dev/r" + SETTINGS["OutputFile"].split("/dev/")[1])
 
             elif option != "":
                 exec_list.append(option)
