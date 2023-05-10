@@ -946,26 +946,35 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         file_menu = wx.Menu()
         edit_menu = wx.Menu()
         view_menu = wx.Menu()
+        tools_menu = wx.Menu()
         help_menu = wx.Menu()
 
         #Add Menu Items.
+        #File menu.
         self.menu_exit = file_menu.Append(wx.ID_EXIT, "&Quit", "Close DDRescue-GUI")
 
+        #Edit menu.
         self.menu_settings = edit_menu.Append(wx.ID_ANY, "&Settings", "Recovery Settings")
         self.menu_mount = edit_menu.Append(wx.ID_ANY, "&Mount Disk", "Mount a file/device")
 
-        self.menu_inspector = None
-
-        if RELEASE_TYPE == "Development":
-            self.menu_inspector = edit_menu.Append(wx.ID_ANY, "&Open Inspector",
-                                                   "Open the wxPython Inspection Tool")
-
+        #View menu.
         self.menu_disk_info = view_menu.Append(wx.ID_ANY, "&Disk Information",
                                                "Information about all detected Disks")
 
         self.menu_privacy_policy = view_menu.Append(wx.ID_ANY, "&Privacy Policy",
                                                     "View DDRescue-GUI's privacy policy")
 
+        #Tools menu.
+        self.menu_save_log = tools_menu.Append(wx.ID_ANY, "&Save debug log",
+                                               "Save DDRescue-GUI's debug log")
+
+        self.menu_inspector = None
+
+        if RELEASE_TYPE == "Development":
+            self.menu_inspector = tools_menu.Append(wx.ID_ANY, "&Open Inspector",
+                                                   "Open the wxPython Inspection Tool")
+
+        #Help menu.
         self.menu_docs = help_menu.Append(wx.ID_ANY, "&User Guide",
                                           "View DDRescue-GUI's User Guide")
 
@@ -982,6 +991,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.menu_bar.Append(file_menu, "&File")
         self.menu_bar.Append(edit_menu, "&Edit")
         self.menu_bar.Append(view_menu, "&View")
+        self.menu_bar.Append(tools_menu, "&Tools")
         self.menu_bar.Append(help_menu, "&Help")
 
         #Adding the menu_bar to the Frame content.
@@ -995,6 +1005,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.Bind(wx.EVT_MENU, self.check_for_updates, self.menu_updates)
         self.Bind(wx.EVT_MENU, self.show_settings, self.menu_settings)
         self.Bind(wx.EVT_MENU, self.on_mount, self.menu_mount)
+        self.Bind(wx.EVT_MENU, self.save_debug_log, self.menu_save_log)
 
         if RELEASE_TYPE == "Development":
             self.Bind(wx.EVT_MENU, self.show_inspector, self.menu_inspector)
@@ -2535,13 +2546,64 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             SESSION_ENDING = True
             self.on_exit()
 
-    def on_exit(self, event=None, just_finished_recovery=False): #pylint: disable=too-many-branches,unused-argument,line-too-long
+    def save_debug_log(self, event=None): #pylint: disable=unused-argument
+        """
+        Save DDRescue-GUI's debug log.
+        """
+
+        #Trap pogram in loop in case same log file as Recovery map file is picked
+        #for destination.
+        while True:
+            #Ask the user where to save it.
+            dlg = wx.FileDialog(self.panel, "Save log file to...",
+                                defaultDir=self.user_homedir,
+                                wildcard="Log Files (*.log)|*.log",
+                                style=wx.FD_SAVE)
+
+            answer = dlg.ShowModal()
+            _file = dlg.GetPath()
+            dlg.Destroy()
+
+            if answer == wx.ID_OK:
+                if _file == SETTINGS["MapFile"]:
+                    dlg = wx.MessageDialog(self.panel, "Error! Your chosen file is the "
+                                           "same as the recovery map file! This log file "
+                                           "contains only debugging information for "
+                                           "DDRescue-GUI, and you must not overwrite "
+                                           "the recovery map file with this file. Please "
+                                           "select a new destination file.",
+                                           "DDRescue-GUI - Error", wx.OK | wx.ICON_ERROR)
+
+                    dlg.ShowModal()
+                    dlg.Destroy()
+
+                else:
+                    #Copy it to the specified path.
+                    if CoreTools.start_process("cp /tmp/ddrescue-gui.log"+"."
+                                               + str(LOG_SUFFIX)+" "+_file) == 0:
+                        break
+
+                    dlg = wx.MessageDialog(self.panel, "DDRescue-GUI does not have "
+                                           + "permission to write to that file or "
+                                           + "directory! Please select a new file "
+                                           + "and try again.",
+                                           "DDRescue-GUI - Information",
+                                           wx.OK | wx.ICON_INFORMATION)
+
+                    dlg.ShowModal()
+                    dlg.Destroy()
+
+
+            else:
+                break
+
+    def on_exit(self, event=None, just_finished_recovery=False): #pylint: disable=unused-argument
         """
         Exit DDRescue-GUI, if certain conditions are met (for example we
         aren't in the middle of a recovery). Also offer to save the log
         file for debugging / error-reporting purposes.
 
-        Kwargs:
+        Args:
             just_finished_recovery (bool).
                 True -                  Display FinishedWindow if user cancels
                                         the exit attempt.
@@ -2585,86 +2647,6 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
             #Shutdown the logger.
             logging.shutdown()
-
-            #Prompt user to save the log file.
-            dlg = wx.MessageDialog(self.panel, "Do you want to keep DDRescue-GUI's log file? For "
-                                   "privacy reasons, DDRescue-GUI will delete its log file when "
-                                   "closing. If you want to save it, which is helpful for "
-                                   "debugging if something went wrong, click yes, and otherwise "
-                                   "click no.", "DDRescue-GUI - Question",
-                                   style=wx.YES_NO | wx.ICON_QUESTION)
-
-            answer = dlg.ShowModal()
-            dlg.Destroy()
-
-            if answer == wx.ID_YES:
-                #Trap pogram in loop in case same log file as Recovery map file is picked
-                #for destination.
-                while True:
-                    #Ask the user where to save it.
-                    dlg = wx.FileDialog(self.panel, "Save log file to...",
-                                        defaultDir=self.user_homedir,
-                                        wildcard="Log Files (*.log)|*.log",
-                                        style=wx.FD_SAVE)
-
-                    answer = dlg.ShowModal()
-                    _file = dlg.GetPath()
-                    dlg.Destroy()
-
-                    if answer == wx.ID_OK:
-                        if _file == SETTINGS["MapFile"]:
-                            dlg = wx.MessageDialog(self.panel, "Error! Your chosen file is the "
-                                                   "same as the recovery map file! This log file "
-                                                   "contains only debugging information for "
-                                                   "DDRescue-GUI, and you must not overwrite "
-                                                   "the recovery map file with this file. Please "
-                                                   "select a new destination file.",
-                                                   "DDRescue-GUI - Error", wx.OK | wx.ICON_ERROR)
-
-                            dlg.ShowModal()
-                            dlg.Destroy()
-
-                        else:
-                            #Copy it to the specified path.
-                            if CoreTools.start_process("cp /tmp/ddrescue-gui.log"+"."
-                                                       + str(LOG_SUFFIX)+" "+_file) == 0:
-
-                                dlg = wx.MessageDialog(self.panel, "Done! DDRescue-GUI will now "
-                                                       "exit", "DDRescue-GUI - Information",
-                                                       wx.OK | wx.ICON_INFORMATION)
-
-                                dlg.ShowModal()
-                                dlg.Destroy()
-                                break
-
-                            dlg = wx.MessageDialog(self.panel, "DDRescue-GUI does not have "
-                                                   + "permission to write to that file or "
-                                                   + "directory! Please select a new file "
-                                                   + "and try again.",
-                                                   "DDRescue-GUI - Information",
-                                                   wx.OK | wx.ICON_INFORMATION)
-
-                            dlg.ShowModal()
-                            dlg.Destroy()
-
-
-                    else:
-                        dlg = wx.MessageDialog(self.panel, "Okay, DDRescue-GUI will now exit "
-                                               "without saving the log file.",
-                                               "DDRescue-GUI - Information",
-                                               wx.OK | wx.ICON_INFORMATION)
-
-                        dlg.ShowModal()
-                        dlg.Destroy()
-                        break
-
-            else:
-                dlg = wx.MessageDialog(self.panel, "Okay, DDRescue-GUI will now exit without "
-                                       "saving the log file.", "DDRescue-GUI - Information",
-                                       wx.OK | wx.ICON_INFORMATION)
-
-                dlg.ShowModal()
-                dlg.Destroy()
 
             #Delete the log file.
             os.remove("/tmp/ddrescue-gui.log"+"."+str(LOG_SUFFIX))
