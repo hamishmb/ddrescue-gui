@@ -234,7 +234,7 @@ class Linux:
             tuple(string, bool).
 
                 1st element:                The type of the output file. "Partition",
-                                            "Device", "LUKS", or "LVM".
+                                            "Device", or "LVM".
 
                 2nd element:                True - success, False - failed.
         """
@@ -269,8 +269,6 @@ class Linux:
 
         #We want field 6 - the partition table type.
         try:
-            print(output[5])
-
             #The type will be "loop" if this is a partition.
             if output[5] == "loop":
                 output_file_type = "Partition"
@@ -289,15 +287,9 @@ class Linux:
         except IndexError:
             pass
 
-        #--------------- DETECTING LUKS AND LVM CONTAINERS ---------------
-        #Check if this is a LUKS or LVM container if parted didn't help.
+        #--------------- DETECTING LVM CONTAINERS ---------------
+        #Check if this is a LVM container if parted didn't help.
         if output_file_type == "unknown":
-            #Check for LUKS.
-            if CoreTools.start_process(cmd="cryptsetup isLuks '"+output_file+"'",
-                                       privileged=True) == 0:
-
-                output_file_type = "LUKS"
-
             #Check for LVM.
             output = CoreTools.start_process(cmd="file -s '"+output_file+"'",
                                              return_output=True, privileged=True)[1]
@@ -307,8 +299,8 @@ class Linux:
 
         #Ask the user if we don't know what type the input file is.
         if output_file_type == "unknown":
-            choices = ["Partition (single file system or CD/DVD image)",
-                       "Device (multiple partitions)",
+            choices = ["Partition (single volume or CD/DVD image)",
+                       "Device (multiple partitions, choose if in doubt)",
                        "LVM Container"]
 
             dlg = wx.SingleChoiceDialog(wx.GetApp().TopWindow.panel,
@@ -434,21 +426,6 @@ class Linux:
         return choices
 
     @classmethod
-    def get_volumes_luks(cls, output_file):
-        """
-        Gets a list of volumes on the given output file or device name.
-        This method expects the given file or device to be a LUKS device.
-
-        Args:
-            output_file (str):          The output file or device to get volumes for.
-
-        Returns.
-            list. The volumes that were found in human-readable form.
-        """
-
-        return []
-
-    @classmethod
     def get_volumes_lvm(cls, output_file):
         """
         Gets a list of volumes on the given output file or device name.
@@ -467,16 +444,13 @@ class Linux:
         if "/dev/" not in output_file:
             counter = 0
 
-            while counter < 100:
+            #Practically speaking, there is no limit to how many loop devices there can be.
+            while pv_device is None:
                 if not os.path.exists("/dev/loop"+str(counter)):
                     pv_device = "/dev/loop"+str(counter)
                     break
 
                 counter += 1
-
-            if pv_device is None:
-                logger.error("Linux.get_volumes_lvm(): No free loop devices!")
-                return []
 
             retval = CoreTools.start_process(cmd="losetup "+pv_device+" '"+output_file+"'",
                                              privileged=True)
@@ -572,7 +546,7 @@ class Linux:
     def mount_device(cls, output_file):
         """
         Mounts the given output file or device, expecting it to be a standard device
-        or another kind of container for volumes - LUKS or LVM.
+        or another kind of container for volumes - LVM.
 
         Args:
             output_file (str).          The device or file to mount.
@@ -593,10 +567,6 @@ class Linux:
         #information for that, not the container it's inside.
         if Core.output_file_types[-1] == "Device":
             choices = Linux.get_volumes_std_device(output_file)
-
-        #Unlock LUKS containers.
-        elif Core.output_file_types[-1] == "LUKS":
-            choices = Linux.get_volumes_luks(output_file)
 
         #Find LVM volumes.
         elif Core.output_file_types[-1] == "LVM":
@@ -655,9 +625,6 @@ class Linux:
             else:
                 device_to_mount = "/dev/"+selected_partition
 
-        elif Core.output_file_types[-1] == "LUKS":
-            pass
-
         elif Core.output_file_types[-1] == "LVM":
             device_to_mount = "/dev/"+Linux.volume_group_name+"/"+selected_partition
 
@@ -666,15 +633,12 @@ class Linux:
             Core.output_file_types.append("Partition")
             Core.output_file_devicenames.append(device_to_mount)
 
-        #Caveats for mounting LVM and LUKS volumes just selected.
+        #Caveats for mounting LVM volumes just selected.
         if Core.output_file_types[-1] == "Device" and "LVM" in full_selection:
             Core.output_file_types.append("LVM")
             Core.output_file_devicenames.append(device_to_mount)
 
             Linux.mount_device(device_to_mount)
-
-        elif Core.output_file_types[-1] == "Device" and "LUKS" in full_selection:
-            pass
 
         else:
             if not Linux.mount_partition(device_to_mount):
@@ -688,7 +652,7 @@ class Linux:
     @classmethod
     def unmount_output_file(cls, output_file):
         """
-        Unmounts the output file or device. Handles partitions, devices, LVM and LUKS disks.
+        Unmounts the output file or device. Handles partitions, devices, and LVM disks.
 
         Args:
             output_file (str).      The device or file to unmount.
@@ -707,8 +671,8 @@ class Linux:
 
         #Deactivate volume group if needed.
         elif Core.output_file_types[Core.output_file_devicenames.index(output_file)] == "LVM":
-            #Shouldn't cause an error if volume group is already unmounted.
-            logger.debug("Linux.unmount_output_file(): Pulling down loop device...")
+            #Shouldn't cause an error if volume group is already deactivated.
+            logger.debug("Linux.unmount_output_file(): Deactivating volume group...")
             cmd = "vgchange -a n "+Linux.volume_group_name
 
         elif Core.output_file_types[Core.output_file_devicenames.index(output_file)] == "Partition":
@@ -716,8 +680,7 @@ class Linux:
             return True
 
         if CoreTools.start_process(cmd=cmd, return_output=False, privileged=True) == 0:
-            logger.info("Linux.unmount_output_file(): Successfully pulled down "
-                        "loop device...")
+            logger.info("Linux.unmount_output_file(): Success...")
 
             return True
 
