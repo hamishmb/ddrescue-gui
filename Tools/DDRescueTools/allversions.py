@@ -33,4 +33,8 @@ def get_initial_status(split_line):
     Works with ddrescue versions: 1.14,1.15,1.16,1.17,1.18,1.19,1.20,1.21,1.22,1.23,1.24,1.25,1.26,1.27
     """
 
-    return int(split_line[3]), split_line[4]
+    try:
+        return int(split_line[3]), split_line[4]
+
+    except ValueError:
+        return split_line[3], split_line[4]
