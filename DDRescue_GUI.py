@@ -1224,7 +1224,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.menu_settings.Enable()
         self.menu_mount.Enable()
 
-        #Fix a display on on Fedora/GNOME3 w/ py3.
+        #Fix a display issue on Fedora/GNOME3 w/ py3.
         self.panel.Layout()
 
     def update_file_choices(self):
