@@ -13,7 +13,6 @@ ignore=CVS
 
 # Pickle collected data for later comparisons.
 persistent=yes
-
 # List of plugins (as comma separated values of python modules names) to load,
 # usually to register additional checkers.
 load-plugins=
@@ -322,4 +321,4 @@ exclude-protected=_asdict,_fields,_replace,_source,_make
 
 # Exceptions that will emit a warning when being caught. Defaults to
 # "Exception"
-overgeneral-exceptions=Exception
+overgeneral-exceptions=builtins.Exception
