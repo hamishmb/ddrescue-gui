@@ -1375,10 +1375,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                         user_selection += ".img"
 
                 else:
-                    #Automatically add a file extension of .log for map files if extension is wrong
+                    #Automatically add a file extension of .map for map files if extension is wrong
                     #or missing.
-                    if user_selection[-4:] != ".log":
-                        user_selection += ".log"
+                    if user_selection[-4:] != ".map":
+                        user_selection += ".map"
 
                 #Don't allow user to save output or map files in root's home dir on Pmagic.
                 if PARTED_MAGIC and user_selection[0:5] == "/home/partedmagic":
@@ -1390,8 +1390,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                            "root's home directory in Parted Magic! There's "
                                            "not enough space there, please select a new folder. "
                                            "Note: / is cleared on shutdown on parted magic, "
-                                           "as pmagic is a live disk, so you probably want "
-                                           "to store the file on a different disk drive.",
+                                           "as it is a live disk, so you probably want "
+                                           "to store the file on a different disk.",
                                            'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
 
                     dlg.ShowModal()
@@ -1455,10 +1455,10 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                         user_selection += ".img"
 
                 else:
-                    #Automatically add a file extension of .log for map files if extension is wrong
+                    #Automatically add a file extension of .map for map files if extension is wrong
                     #or missing.
-                    if user_selection[-4:] != ".log":
-                        user_selection += ".log"
+                    if user_selection[-4:] != ".map":
+                        user_selection += ".map"
 
                 #Don't allow user to save output or map files in root's home dir on Pmagic.
                 if PARTED_MAGIC and user_selection[0:5] == "/home/partedmagic":
@@ -1470,8 +1470,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                                            "root's home directory in Parted Magic! There's "
                                            "not enough space there, please select a new folder. "
                                            "Note: / is cleared on shutdown on parted magic, "
-                                           "as pmagic is a live disk, so you probably want "
-                                           "to store the file on a different disk drive.",
+                                           "as it is a live disk, so you probably want "
+                                           "to store the file on a different disk.",
                                            'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
 
                     dlg.ShowModal()
@@ -1620,7 +1620,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         logger.debug("MainWindow().set_map_file(): Calling File Choice Handler...")
         self.file_choice_handler(_type="Map",
                                  user_selection=self.map_choice_box.GetStringSelection(),
-                                 default_dir=self.user_homedir, wildcard="Map Files (*.log)|*.log",
+                                 default_dir=self.user_homedir, wildcard="Map Files (*.map)|*.map",
                                  style=wx.FD_SAVE)
 
     def show_userguide(self, event=None): #pylint: disable=unused-argument
