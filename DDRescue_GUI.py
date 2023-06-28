@@ -1045,7 +1045,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         self.Bind(wx.EVT_MENU, self.on_exit, self.menu_exit)
         self.Bind(wx.EVT_CLOSE, self.on_exit)
 
-    def show_inspector(self, event):
+    def show_inspector(self, event): #pylint: disable=unused-argument
         """
         Shows the wxPython inspection tool.
         """
@@ -1323,32 +1323,11 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             #Return to prevent TypeErrors later.
             return
 
-        #Handle having no map file.
+        #Handle having no map file (this option is only present in the map choicebox)
         if user_selection == "None (not recommended)":
-            dialog = wx.MessageDialog(self.panel, "You have not chosen to use a map file. "
-                                      "If you do not use one, you will have to start from "
-                                      "scratch in the event of a power outage, or if "
-                                      "DDRescue-GUI is interrupted. Additionally, you "
-                                      "can't do a multi-stage recovery without a map file.\n\n"
-                                      "Are you really sure you do not want to use a mapfile?",
-                                      "DDRescue-GUI - Warning", wx.YES_NO | wx.ICON_EXCLAMATION)
+            self.handle_no_mapfile(key, choice_box)
 
-            if dialog.ShowModal() == wx.ID_YES:
-                logger.warning("MainWindow().file_choice_handler(): User isn't using a map file, "
-                               "despite our warning!")
-
-                SETTINGS[key] = ""
-
-            else:
-                logger.info("MainWindow().file_choice_handler(): User decided against not using "
-                            "a map file. Good!")
-
-                SETTINGS[key] = None
-                choice_box.SetStringSelection("-- Please Select --")
-
-            dialog.Destroy()
-
-        elif user_selection == "Specify Path/File":
+        if user_selection == "Specify Path/File":
             file_dialog = wx.FileDialog(self.panel, "Select "+_type+" Path/File...",
                                         defaultDir=default_dir, wildcard=wildcard, style=style)
 
@@ -1367,69 +1346,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             file_dialog.Destroy()
 
             #Handle it according to cases depending on its _type.
-            if _type in ["Output", "Map"]:
-                if _type == "Output":
-                    #Automatically add a file extension of .img if there isn't any (3-letter)
-                    #file extension (fixes bugs on OS X).
-                    if "/dev" not in user_selection and user_selection[-4] != ".":
-                        user_selection += ".img"
-
-                else:
-                    #Automatically add a file extension of .map for map files if extension is wrong
-                    #or missing.
-                    if user_selection[-4:] != ".map":
-                        user_selection += ".map"
-
-                #Don't allow user to save output or map files in root's home dir on Pmagic.
-                if PARTED_MAGIC and user_selection[0:5] == "/home/partedmagic":
-                    logger.warning("MainWindow().file_choice_handler(): "+_type+" File is in "
-                                   "root's home directory on Parted Magic! There is no space "
-                                   "here, warning user and declining selection...")
-
-                    dlg = wx.MessageDialog(self.panel, "You can't save the "+_type+" file in "
-                                           "root's home directory in Parted Magic! There's "
-                                           "not enough space there, please select a new folder. "
-                                           "Note: / is cleared on shutdown on parted magic, "
-                                           "as it is a live disk, so you probably want "
-                                           "to store the file on a different disk.",
-                                           'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
-
-                    dlg.ShowModal()
-                    dlg.Destroy()
-                    choice_box.SetStringSelection("-- Please Select --")
-                    SETTINGS[key] = None
-                    return
-
-            logger.info("MainWindow().file_choice_handler(): User selected custom file: "
-                        +user_selection+"...")
-
-            SETTINGS[key] = user_selection
-
-            #Handle custom paths properly.
-            #If it's in the dictionary or in DISKINFO, don't add it.
-            if user_selection in paths.values():
-                #Set the selection using the unique key in the paths dictionary.
-                unique_key = None
-
-                for _key, value in paths.items():
-                    if value == user_selection:
-                        unique_key = _key
-                        break
-
-                choice_box.SetStringSelection(unique_key)
-
-            elif user_selection in list(DISKINFO):
-                #No need to add it to the choice box.
-                choice_box.SetStringSelection(user_selection)
-
-            else:
-                #Get a unique key for the dictionary using the tools function.
-                unique_key = CoreTools.create_unique_key(paths, user_selection, 30)
-
-                #Use it to organise the data.
-                paths[unique_key] = user_selection
-                choice_box.Append(unique_key)
-                choice_box.SetStringSelection(unique_key)
+            self.handle_user_file_selection(_type, key, user_selection, paths, choice_box)
 
         elif user_selection == "Enter Custom Path":
             te_dialog = wx.TextEntryDialog(self.panel, "Enter a custom path.")
@@ -1447,69 +1364,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             user_selection = te_dialog.GetValue()
 
             #Handle it according to cases depending on its _type.
-            if _type in ["Output", "Map"]:
-                if _type == "Output":
-                    #Automatically add a file extension of .img if there isn't any (3-letter)
-                    #file extension (fixes bugs on OS X).
-                    if "/dev" not in user_selection and user_selection[-4] != ".":
-                        user_selection += ".img"
-
-                else:
-                    #Automatically add a file extension of .map for map files if extension is wrong
-                    #or missing.
-                    if user_selection[-4:] != ".map":
-                        user_selection += ".map"
-
-                #Don't allow user to save output or map files in root's home dir on Pmagic.
-                if PARTED_MAGIC and user_selection[0:5] == "/home/partedmagic":
-                    logger.warning("MainWindow().file_choice_handler(): "+_type+" File is in "
-                                   "root's home directory on Parted Magic! There is no space "
-                                   "here, warning user and declining selection...")
-
-                    dlg = wx.MessageDialog(self.panel, "You can't save the "+_type+" file in "
-                                           "root's home directory in Parted Magic! There's "
-                                           "not enough space there, please select a new folder. "
-                                           "Note: / is cleared on shutdown on parted magic, "
-                                           "as it is a live disk, so you probably want "
-                                           "to store the file on a different disk.",
-                                           'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
-
-                    dlg.ShowModal()
-                    dlg.Destroy()
-                    choice_box.SetStringSelection("-- Please Select --")
-                    SETTINGS[key] = None
-                    return
-
-            logger.info("MainWindow().file_choice_handler(): User selected custom file: "
-                        +user_selection+"...")
-
-            SETTINGS[key] = user_selection
-
-            #Handle custom paths properly.
-            #If it's in the dictionary or in DISKINFO, don't add it.
-            if user_selection in paths.values():
-                #Set the selection using the unique key in the paths dictionary.
-                unique_key = None
-
-                for _key, value in paths.items():
-                    if value == user_selection:
-                        unique_key = _key
-                        break
-
-                choice_box.SetStringSelection(unique_key)
-
-            elif user_selection in list(DISKINFO):
-                #No need to add it to the choice box.
-                choice_box.SetStringSelection(user_selection)
-
-            else:
-                #Get a unique key for the dictionary using the tools function.
-                unique_key = CoreTools.create_unique_key(paths, user_selection, 30)
-
-                #Use it to organise the data.
-                paths[unique_key] = user_selection
-                choice_box.Append(unique_key)
-                choice_box.SetStringSelection(unique_key)
+            self.handle_user_file_selection(_type, key, user_selection, paths, choice_box)
 
         if (user_selection not in [None, "-- Please Select --"] and user_selection in \
            [SETTINGS[others[0]], SETTINGS[others[1]]]):
@@ -1534,61 +1389,180 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         #Handle special cases if the file is the output file.
         if _type == "Output" and SETTINGS[key] is not None:
-            #Check with the user if the output file already exists.
-            if os.path.exists(SETTINGS[key]):
-                logger.info("MainWindow().file_choice_handler(): Selected file already exists! "
-                            "Showing warning to user...")
-
-                dialog = wx.MessageDialog(self.panel, "The file you selected already exists!\n\n"
-                                          "If you're doing a multi-stage recovery, *and you've "
-                                          "selected a mapfile*, DDRescue-GUI will resume where "
-                                          "it left off on the previous run, and it is safe to "
-                                          "continue.\n\nOtherwise, you will lose data on this "
-                                          "file or device.\n\nPlease be sure you selected the "
-                                          "right file or device. Do you want to accept this as "
-                                          "your output file?", 'DDRescue-GUI -- Warning!',
-                                          wx.YES_NO | wx.ICON_EXCLAMATION)
-
-                if dialog.ShowModal() == wx.ID_YES:
-                    logger.warning("MainWindow().file_choice_handler(): Accepted already-present "
-                                   "file as output file!")
-
-                else:
-                    logger.info("MainWindow().file_choice_handler(): User declined the selection. "
-                                "Resetting OutputFile...")
-
-                    SETTINGS[key] = None
-                    choice_box.SetStringSelection("-- Please Select --")
-
-                    #Disable this too to prevent accidental enabling if previous selection
-                    #was a device.
-                    SETTINGS["OverwriteOutputFile"] = ""
-
-                    #Call Layout() on self.panel() to ensure it displays properly.
-                    self.panel.Layout()
-
-                    dialog.Destroy()
-
-                    return
-
-                dialog.Destroy()
-
-            #If the file selected is a Disk, enable the overwrite output file option,
-            #else disable it.
-            if SETTINGS[key][0:5] == "/dev/":
-                logger.info("MainWindow().file_choice_handler(): OutputFile is a disk so enabling "
-                            "ddrescue's overwrite mode...")
-
-                SETTINGS["OverwriteOutputFile"] = "-f"
-
-            else:
-                logger.info("MainWindow().file_choice_handler(): OutputFile isn't a disk so "
-                            "disabling ddrescue's overwrite mode...")
-
-                SETTINGS["OverwriteOutputFile"] = ""
+            self.handle_outputfile_special_cases(key, choice_box)
 
         #Call Layout() on self.panel() to ensure it displays properly.
         self.panel.Layout()
+
+    def handle_no_mapfile(self, key, choice_box):
+        """
+        Handles when the user selects not to have a mapfile.
+
+        Args:
+            key (string):           The unique key used to identify the output file.
+            choice_box (wx.Choice): The output choice box.
+        """
+
+        dialog = wx.MessageDialog(self.panel, "You have not chosen to use a map file. "
+                          "If you do not use one, you will have to start from "
+                          "scratch in the event of a power outage, or if "
+                          "DDRescue-GUI is interrupted. Additionally, you "
+                          "can't do a multi-stage recovery without a map file.\n\n"
+                          "Are you really sure you do not want to use a map file?",
+                          "DDRescue-GUI - Warning", wx.YES_NO | wx.ICON_EXCLAMATION)
+
+        if dialog.ShowModal() == wx.ID_YES:
+            logger.warning("MainWindow().handle_no_mapfile(): User isn't using a map file, "
+                           "despite our warning!")
+
+            SETTINGS[key] = ""
+
+        else:
+            logger.info("MainWindow().handle_no_mapfile(): User decided against not using "
+                        "a map file. Good!")
+
+            SETTINGS[key] = None
+            choice_box.SetStringSelection("-- Please Select --")
+
+        dialog.Destroy()
+
+    def handle_user_file_selection(self, _type, key, user_selection, paths, choice_box):
+        """
+        Handles user file selection for the main settings choiceboxes.
+
+        Args:
+            _type (string):             The type of file we're setting (Input, Output, or Map).
+            key (string):               The unique key used to identify the output file.
+            user_selection (string):    The user's selected path/file.
+            paths (dict):               The custom paths defined for this type of file.
+            choice_box (wx.Choice):     The output choice box.
+        """
+
+        if _type in ["Output", "Map"]:
+            if _type == "Output":
+                #Automatically add a file extension of .img if there isn't any (3-letter)
+                #file extension (fixes bugs on OS X).
+                if "/dev" not in user_selection and user_selection[-4] != ".":
+                    user_selection += ".img"
+
+            else:
+                #Automatically add a file extension of .map for map files if extension is wrong
+                #or missing.
+                if user_selection[-4:] != ".map":
+                    user_selection += ".map"
+
+            #Don't allow user to save output or map files in root's home dir on Pmagic.
+            if PARTED_MAGIC and user_selection[0:5] == "/home/partedmagic":
+                logger.warning("MainWindow().handle_user_file_selection(): "+_type+" File is in "
+                               "root's home directory on Parted Magic! There is no space "
+                               "here, warning user and declining selection...")
+
+                dlg = wx.MessageDialog(self.panel, "You can't save the "+_type+" file in "
+                                       "root's home directory in Parted Magic! There's "
+                                       "not enough space there, please select a new folder. "
+                                       "Note: / is cleared on shutdown on parted magic, "
+                                       "as it is a live disk, so you probably want "
+                                       "to store the file on a different disk.",
+                                       'DDRescue-GUI - Error!', wx.OK | wx.ICON_ERROR)
+
+                dlg.ShowModal()
+                dlg.Destroy()
+                choice_box.SetStringSelection("-- Please Select --")
+                SETTINGS[key] = None
+                return
+
+        logger.info("MainWindow().handle_user_file_selection(): User selected custom file: "
+                    +user_selection+"...")
+
+        SETTINGS[key] = user_selection
+
+        #Handle custom paths properly.
+        #If it's in the dictionary or in DISKINFO, don't add it.
+        if user_selection in paths.values():
+            #Set the selection using the unique key in the paths dictionary.
+            unique_key = None
+
+            for _key, value in paths.items():
+                if value == user_selection:
+                    unique_key = _key
+                    break
+
+            choice_box.SetStringSelection(unique_key)
+
+        elif user_selection in list(DISKINFO):
+            #No need to add it to the choice box.
+            choice_box.SetStringSelection(user_selection)
+
+        else:
+            #Get a unique key for the dictionary using the tools function.
+            unique_key = CoreTools.create_unique_key(paths, user_selection, 30)
+
+            #Use it to organise the data.
+            paths[unique_key] = user_selection
+            choice_box.Append(unique_key)
+            choice_box.SetStringSelection(unique_key)
+
+    def handle_outputfile_special_cases(self, key, choice_box):
+        """
+        Handles special cases for the output choice box.
+
+        Args:
+            key (string):           The unique key used to identify the output file.
+            choice_box (wx.Choice): The output choice box.
+        """
+
+        #Check with the user if the output file already exists.
+        if os.path.exists(SETTINGS[key]):
+            logger.info("MainWindow().handle_outputfile_special_cases(): Selected file already "
+                        "exists! Showing warning to user...")
+
+            dialog = wx.MessageDialog(self.panel, "The file you selected already exists!\n\n"
+                                      "If you're doing a multi-stage recovery, *and you've "
+                                      "selected a mapfile*, DDRescue-GUI will resume where "
+                                      "it left off on the previous run, and it is safe to "
+                                      "continue.\n\nOtherwise, you will lose data on this "
+                                      "file or device.\n\nPlease be sure you selected the "
+                                      "right file or device. Do you want to accept this as "
+                                      "your output file?", 'DDRescue-GUI -- Warning!',
+                                      wx.YES_NO | wx.ICON_EXCLAMATION)
+
+            if dialog.ShowModal() == wx.ID_YES:
+                logger.warning("MainWindow().handle_outputfile_special_cases(): Accepted "
+                               "already-present file as output file!")
+
+            else:
+                logger.info("MainWindow().handle_outputfile_special_cases(): User declined the "
+                            "selection. Resetting OutputFile...")
+
+                SETTINGS[key] = None
+                choice_box.SetStringSelection("-- Please Select --")
+
+                #Disable this too to prevent accidental enabling if previous selection
+                #was a device.
+                SETTINGS["OverwriteOutputFile"] = ""
+
+                #Call Layout() on self.panel() to ensure it displays properly.
+                self.panel.Layout()
+
+                dialog.Destroy()
+
+                return
+
+            dialog.Destroy()
+
+        #If the file selected is a Disk, enable the overwrite output file option,
+        #else disable it.
+        if SETTINGS[key][0:5] == "/dev/":
+            logger.info("MainWindow().handle_outputfile_special_cases(): OutputFile is a disk so "
+                        "enabling ddrescue's overwrite mode...")
+
+            SETTINGS["OverwriteOutputFile"] = "-f"
+
+        else:
+            logger.info("MainWindow().handle_outputfile_special_cases(): OutputFile isn't a disk "
+                        "so disabling ddrescue's overwrite mode...")
+
+            SETTINGS["OverwriteOutputFile"] = ""
 
     def set_input_file(self, event=None): #pylint: disable=unused-argument
         """
@@ -3453,7 +3427,8 @@ class FinishedWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
             recovered_data_num = float(self.recovered_data.split(" ")[0])
             recovered_data_unit = self.recovered_data.split(" ")[1]
 
-            recovered_data_num, recovered_data_unit =  CoreTools.change_units(recovered_data_num, recovered_data_unit, "M")
+            recovered_data_num, recovered_data_unit = \
+                CoreTools.change_units(recovered_data_num, recovered_data_unit, "M")
 
             self.recovered_data = str(int(recovered_data_num))+" "+recovered_data_unit
 
