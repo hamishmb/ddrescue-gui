@@ -96,7 +96,7 @@ def usage():
     print("                                     are encountered, and the user needs help\n")
     print("       -t, --tests                   Run all unit tests.\n")
     print("DDRescue-GUI "+VERSION+" is released under the GNU GPL Version 3")
-    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2022")
+    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2023")
 
 #Determine if running on Linux or Mac.
 if "wxGTK" in wx.PlatformInfo:
@@ -1625,7 +1625,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         aboutbox.SetIcon(APPICON)
         aboutbox.Name = "DDRescue-GUI"
         aboutbox.Version = VERSION
-        aboutbox.Copyright = "(C) 2013-2022 Hamish McIntyre-Bhatty"
+        aboutbox.Copyright = "(C) 2013-2023 Hamish McIntyre-Bhatty"
         aboutbox.Description = "GUI frontend for GNU ddrescue\n\nPython version " \
                                + sys.version.split()[0] \
                                + "\nwxPython version " + wx.version() \
@@ -1704,7 +1704,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
     def check_for_updates(self, event=None, starting_up=False): #pylint: disable=unused-argument
         """
         Check for updates using the plist-formatted update file
-        on my website. If some startup, only display info to the
+        on my website. If on startup, only display info to the
         user if there was an update. Otherwise (aka requested by user),
         always display the information.
 

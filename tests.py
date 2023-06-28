@@ -47,7 +47,7 @@ def usage():
     print("       -a, --all:                    Run all the tests. The default.\n")
     print("       -t, --tests:                  Ignored.")
     print("DDRescue-GUI "+VERSION+" is released under the GNU GPL VERSION 3")
-    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2022")
+    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2023")
 
 if __name__ == "__main__":
     #Check all cmdline options are valid.
