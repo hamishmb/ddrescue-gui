@@ -2213,15 +2213,15 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """
         self.list_ctrl.SetItem(7, 1, label=last_read)
 
-    def update_status_bar(self, messeage):
+    def update_status_bar(self, message):
         """
         Update the status bar with a new message.
 
         Args:
             message (string).           The message to set the status bar to.
         """
-        logger.debug("MainWindow().update_status_bar(): New status bar message: "+messeage)
-        self.status_bar.SetStatusText(messeage, 0)
+        logger.debug("MainWindow().update_status_bar(): New status bar message: "+message)
+        self.status_bar.SetStatusText(message, 0)
 
     def update_progress(self, recovered_data, disk_capacity):
         """
@@ -2281,7 +2281,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         """
         #If we're still recovering data, prompt the user to try killing ddrescue again.
         if SETTINGS["RecoveringData"]:
-            logger.warning("MainWindow().prompt_to_kill_ddrescue(): ddrescue is still running 5 "
+            logger.warning("MainWindow().prompt_to_kill_ddrescue(): ddrescue is still running 10 "
                            "seconds after attempted abort! Asking user whether to wait or try "
                            "stop it again...")
 
