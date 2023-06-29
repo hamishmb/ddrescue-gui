@@ -2958,7 +2958,7 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
                                                             '5', 'Forever'])
 
         self.max_errors_choice = wx.Choice(self.panel, -1,
-                                           choices=['Default (Infinite)', '1000', '500',
+                                           choices=['Default (no limit)', '1000', '500',
                                                     '100', '50', '10'])
 
         self.cluster_size_choice = wx.Choice(self.panel, -1,
@@ -3084,7 +3084,7 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
 
         #Maximum errors before exiting option.
         if SETTINGS["MaxErrors"] == "":
-            self.max_errors_choice.SetStringSelection("Default (Infinite)")
+            self.max_errors_choice.SetStringSelection("Default (no limit)")
 
         else:
             self.max_errors_choice.SetStringSelection(SETTINGS["MaxErrors"][3:])
@@ -3250,7 +3250,7 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
         #Maximum errors before exiting option.
         max_errors_selection = self.max_errors_choice.GetStringSelection()
 
-        if max_errors_selection == "Default (Infinite)":
+        if max_errors_selection == "Default (no limit)":
             SETTINGS["MaxErrors"] = ""
             logger.info("SettingsWindow().save_options(): Allowing an infinite number of "
                         "errors before exiting.")
