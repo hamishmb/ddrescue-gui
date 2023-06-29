@@ -1806,8 +1806,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         #Send a notification about the update status.
         if update_recommended:
-            logger.warning("MainWindow().check_for_updates(): Update is recommended. "
-                           "Sending notification...")
+            logger.info("MainWindow().check_for_updates(): Update is recommended. "
+                        "Sending notification...")
 
             CoreTools.send_notification("Updates are available")
 
