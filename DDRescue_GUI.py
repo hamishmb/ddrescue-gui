@@ -2302,7 +2302,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
                 self.on_abort()
 
             else:
-                #Prompt user to try again in 5 seconds time.
+                #Prompt user to try again in 10 seconds time.
                 logger.info("MainWindow().prompt_to_kill_ddrescue(): Asking user again in 10 "
                             "seconds time if ddrescue hasn't stopped...")
 
@@ -2325,9 +2325,8 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
             disk_capacity (string).    The capacity of the input file or disk.
             recovered_data (string).   The amount of data we recovered.
 
-        Kwargs:
-            return_code[=None] (int).       GNU ddrescue's return code. Useful if
-                                            the recovery failed for some reason.
+            return_code[=None] (int).  GNU ddrescue's return code. Useful if
+                                       the recovery failed for some reason.
         """
 
         #Return immediately if session is ending.
@@ -2934,7 +2933,7 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
 
         else:
             self.direct_disk_access_check_box = wx.CheckBox(self.panel, -1, "Use Direct Disk "
-                                                            "Access (Not available on Cygwin)")
+                                                            "Access (Not available on Windows)")
 
             self.direct_disk_access_check_box.Disable()
 
