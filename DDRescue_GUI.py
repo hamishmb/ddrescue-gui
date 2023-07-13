@@ -3252,7 +3252,7 @@ class SettingsWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,to
 
         if max_errors_selection == "Default (no limit)":
             SETTINGS["MaxErrors"] = ""
-            logger.info("SettingsWindow().save_options(): Allowing an infinite number of "
+            logger.info("SettingsWindow().save_options(): Allowing an unlimited number of "
                         "errors before exiting.")
 
         else:
