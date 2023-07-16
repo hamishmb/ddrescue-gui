@@ -118,6 +118,7 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-ancestors,too-many-instanc
 
         self.title_text = wx.StaticText(self.panel, -1,
                                         "DDRescue-GUI requires authentication.")
+
         self.body_text = wx.StaticText(self.panel, -1, "DDRescue-GUI requires authentication "
                                        + "to\nperform privileged actions.")
 
@@ -241,7 +242,6 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-ancestors,too-many-instanc
             self.throbber.Play()
 
             while cmd.poll() is None:
-                #wx.GetApp().Yield()
                 time.sleep(0.04)
 
             output = cmd.stdout.read().decode("utf-8")
@@ -274,7 +274,6 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-ancestors,too-many-instanc
 
                 time.sleep(0.02)
                 self.SetPosition((x_pos, y_pos))
-                #wx.GetApp().Yield()
                 count += 1
 
             #Set the password field colour to pink, and select its text.
@@ -418,8 +417,7 @@ def start_process(cmd, return_output=False, privileged=False):
             cmd = helper+" "+cmd
 
         else:
-            #Pre-authenticate with the auth dialog. Not py2 compatible, but only used
-            #on OS X builds, which are py3-only anyway.
+            #Pre-authenticate with the auth dialog.
             if threading.current_thread() == threading.main_thread():
                 AuthWindow.run()
 
