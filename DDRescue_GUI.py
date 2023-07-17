@@ -333,7 +333,7 @@ class ShowSplash(wxSplashScreen): #pylint: disable=too-few-public-methods,no-mem
         """
         Close the splash screen and start MainWindow.
 
-        Kwargs:
+        Args:
             event[=None] (object).              The event object passed by
                                                 wxPython when the splash times
                                                 out.
@@ -1708,7 +1708,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         user if there was an update. Otherwise (aka requested by user),
         always display the information.
 
-        Kwargs:
+        Args:
             starting_up[=True] (boolean).   If the GUI is starting up, specify
                                             True, otherwise leave unspecified.
         """

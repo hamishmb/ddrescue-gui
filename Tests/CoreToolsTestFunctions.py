@@ -198,7 +198,7 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-ancestors,too-many-instanc
         try again. If so, exit as all we need to do is pre-authenticate on
         macOS.
 
-        Kwargs:
+        Args:
             event.      The event object passed by wxpython (optional).
         """
 
@@ -358,7 +358,6 @@ def start_process(cmd, return_output=False, privileged=False):
     Args:
         cmd (string).               The command(s) to run.
 
-    Kwargs:
         return_output[=False]       Whether to return the output or not. If not
                                     specified, the default is False.
 
@@ -464,7 +463,6 @@ def read(cmd, testing=False):
     Args:
         cmd.            The subprocess object that represents the command.
 
-    Kwargs:
         testing[=False].        Used during unit tests, disables some of the
                                 cleanup done to the output. **Do not use in
                                 production.**

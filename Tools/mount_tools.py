@@ -787,7 +787,6 @@ class Mac:
         Args:
             output_file (str).          The output file or device to investigate.
 
-        Kwargs:
             cdimage[=False] (bool).     Whether or not we are finding volumes on a CD device/image.
 
         Returns.
@@ -899,7 +898,6 @@ class Mac:
         Args:
             partition (str).            The partition or file to mount.
 
-        Kwargs:
             attach[=False] (bool).      Whether to attach the file first.
 
         Returns:
