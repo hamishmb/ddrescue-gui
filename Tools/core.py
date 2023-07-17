@@ -220,7 +220,7 @@ class AuthWindow(wx.Frame): #pylint: disable=too-many-ancestors,too-many-instanc
         try again. If so, exit as all we need to do is pre-authenticate on
         macOS.
 
-        Kwargs:
+        Args:
             event.      The event object passed by wxpython (optional).
         """
 
@@ -386,7 +386,6 @@ def start_process(cmd, return_output=False, privileged=False):
     Args:
         cmd (string).               The command(s) to run.
 
-    Kwargs:
         return_output[=False]       Whether to return the output or not. If not
                                     specified, the default is False.
 
@@ -497,7 +496,6 @@ def read(cmd, testing=False):
     Args:
         cmd.            The subprocess object that represents the command.
 
-    Kwargs:
         testing[=False].        Used during unit tests, disables some of the
                                 cleanup done to the output. **Do not use in
                                 production.**
@@ -816,7 +814,6 @@ def is_mounted(partition, mount_point=None):
     Args:
         partition (string).                 The partition to check.
 
-    Kwargs:
         mount_point[=None] (string).        If specified, check that partition
                                             is mounted at this mount point.
                                             Otherwise, just check that it is
@@ -912,7 +909,6 @@ def mount_disk(partition, mount_point, options=""):
         mount_point (string).           The path where the partition is to be \
                                         mounted.
 
-    Kwargs:
         options[=""] (string).          Any options to pass to the mount command.
                                         If not specified, no options are passed.
 
@@ -943,7 +939,7 @@ def mount_disk(partition, mount_point, options=""):
     #There is a partition mounted here. Check if it's ours.
     if mount_point == get_mount_point(partition):
         #The correct partition is already mounted here.
-        logger.debug("mount_disk(): partition: "+partition+" was already mounted at: "
+        logger.debug("mount_disk(): Partition: "+partition+" was already mounted at: "
                      +mount_point+". Continuing...")
         return 0
 
@@ -1064,9 +1060,9 @@ def emergency_exit(msg):
         user to save a log file.
 
     """
-    logger.critical("CoreEmergencyExit(): Emergency exit has been triggered! "
+    logger.critical("emergency_exit(): Emergency exit has been triggered! "
                     +"Giving user message dialog and saving the logfile...")
-    logger.critical("CoreEmergencyExit(): The error is: "+msg)
+    logger.critical("emergency_exit(): The error is: "+msg)
 
     #Warn the user.
     dialog = wx.MessageDialog(None, "Emergency exit triggered.\n\n"+msg
