@@ -230,6 +230,9 @@ class Linux:
         """
         Determines output File Type (partition or device).
 
+        Args:
+            output_file (str):          The output file or device to determine the type of.
+
         Returns:
             tuple(string, bool).
 
@@ -279,7 +282,7 @@ class Linux:
 
                 output_file_type = "Device"
 
-            #If the type is unknown, this might be an ISO file (which we treat as partitions).
+            #If the type is unknown, this might be an ISO file (which we treat as a partition).
             elif output[5] == "unknown":
                 if "ISO 9660 CD-ROM filesystem data" in magic.from_file(output_file):
                     output_file_type = "Partition"
@@ -398,7 +401,6 @@ class Linux:
                 #Now get rid of the partition number to get just the loop device name.
                 target_device = 'p'.join(temp.split("p")[0:2])
 
-
             except IndexError:
                 return []
 
@@ -469,7 +471,7 @@ class Linux:
             logger.error("Linux.get_volumes_lvm(): Could not obtain information about LVM PVs!")
             return []
 
-        #Read pvdisplay's output to find the volume group name for this device.
+        #Read pvs's output to find the volume group name for this device.
         for line in output.split("\n"):
             if pv_device in line:
                 Linux.volume_group_name = line.split()[1]
@@ -1215,7 +1217,7 @@ class Mac:
         if "Resource temporarily unavailable" in output or retval != 0:
             logger.warning("Mac.run_hdiutil(): Attempting to fix hdiutil resource error...")
             #Fix by detaching all disks - certain disks eg system disk will fail, but it should
-            #fix our problem. On OS X >= 10.11 can check for "(disk image)", but cos we support
+            #fix our problem. On OS X >= 10.11 we can check for "(disk image)", but cos we support
             #10.10, we have to just detach all possible disks and ignore failures.
 
             #TODO Consider dropping support for macOS 10.10 to improve reliability.
