@@ -571,10 +571,10 @@ def find_ddrescue():
 
     if not found_ddrescue:
         dlg = wx.MessageDialog(None, "Couldn't find ddrescue! Are you sure it is "
-                               "installed on your system? If you're on a "
-                               "mac, this indicates an issue with the "
-                               "packaging, and if so please email me at "
-                               "hamishmb@live.co.uk.", 'DDRescue-GUI - Error!',
+                               "installed on your system? If you're running macOS or Windows "
+                               ", this indicates an issue with the "
+                               "packaging, and if so please contact me using the form at "
+                               "https://hamishmb.com/contact.", 'DDRescue-GUI - Error!',
                                wx.OK | wx.ICON_ERROR)
         dlg.ShowModal()
         dlg.Destroy()
@@ -1071,7 +1071,7 @@ def emergency_exit(msg):
     #Warn the user.
     dialog = wx.MessageDialog(None, "Emergency exit triggered.\n\n"+msg
                               +"\n\nYou'll now be asked for a location to save the log file."
-                              +"\nIf you email me at hamishmb@live.co.uk with the contents of "
+                              +"\nIf you email me at contact@hamishmb.com with the contents of "
                               +"that file I'll be happy to help you fix this problem."
                               , "DDRescue-GUI - Emergency Exit!", wx.OK | wx.ICON_ERROR)
     dialog.ShowModal()
