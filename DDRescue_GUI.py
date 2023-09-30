@@ -642,6 +642,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
 
         #Call Layout() on self.panel() to ensure it displays properly.
         self.panel.Layout()
+        self.output_box.Hide()
 
         #Raise the window to the top on macOS - otherwise it starts in the background.
         #This is a bit ugly, but it works. Yay for Stack Overflow.
