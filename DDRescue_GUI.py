@@ -1717,17 +1717,22 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         CoreTools.send_notification("Checking for updates...")
 
         try:
+            headers = {'User-Agent': 'DDRescue-GUI Update Checker'}
+
             updateinfo = \
             requests.get("https://www.hamishmb.com/files/updateinfo/ddrescue-gui.plist",
-                         timeout=5)
+                         headers=headers, timeout=5)
 
             #Raise an error if our status code was bad.
             updateinfo.raise_for_status()
 
             updateinfo = updateinfo.text
 
-        except requests.exceptions.RequestException:
+        except requests.exceptions.RequestException as e:
             #Flag to user.
+            logger.error("MainWindow().check_for_updates(): Failed to check for updates, error was: "
+                         +str(e))
+
             CoreTools.send_notification("Failed to check for updates!")
 
             #Also send a message dialog.
