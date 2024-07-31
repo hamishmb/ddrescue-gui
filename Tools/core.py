@@ -623,7 +623,7 @@ def determine_ddrescue_version():
 
     #Warn if not on a supported version.
     if ddrescue_version not in ("1.14", "1.15", "1.16", "1.17", "1.18", "1.18.1", "1.19", "1.20",
-                                "1.21", "1.22", "1.23", "1.24", "1.25", "1.26", "1.27"):
+                                "1.21", "1.22", "1.23", "1.24", "1.25", "1.26", "1.27", "1.28"):
         logger.warning("Unsupported ddrescue version "+ddrescue_version+"! "
                        "Please upgrade DDRescue-GUI if possible.")
 

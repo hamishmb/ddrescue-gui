@@ -64,9 +64,9 @@ def setup_for_ddrescue_version(ddrescue_version):
         #Too old.
         best_version = "1.14"
 
-    elif minor_version > 27:
+    elif minor_version > 28:
         #Too new.
-        best_version = "1.27"
+        best_version = "1.28"
 
     else:
         #Supported version.

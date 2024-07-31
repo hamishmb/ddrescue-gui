@@ -60,7 +60,7 @@ from wx.adv import AboutBox as wxAboutBox
 
 #Define global variables.
 VERSION = "2.2.0"
-RELEASE_DATE = "1/8/2024"
+RELEASE_DATE = "3/8/2024"
 RELEASE_TYPE = "Stable"
 
 if RELEASE_TYPE == "Development":
