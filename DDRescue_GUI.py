@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # DDRescue-GUI Main Script
 # This file is part of DDRescue-GUI.
-# Copyright (C) 2013-2023 Hamish McIntyre-Bhatty
+# Copyright (C) 2013-2024 Hamish McIntyre-Bhatty
 # DDRescue-GUI is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 3 or,
 # at your option, any later version.
@@ -60,14 +60,14 @@ from wx.adv import AboutBox as wxAboutBox
 
 #Define global variables.
 VERSION = "2.2.0"
-RELEASE_DATE = "9/5/2023"
-RELEASE_TYPE = "Development"
+RELEASE_DATE = "1/8/2024"
+RELEASE_TYPE = "Stable"
 
 if RELEASE_TYPE == "Development":
     import wx.lib.inspection
 
 SESSION_ENDING = False
-DDRESCUE_VERSION = "1.27" #Default to latest version.
+DDRESCUE_VERSION = "1.28" #Default to latest version.
 GETDEVINFO_VERSION = "0.0" #Default to a definitely-unsupported version.
 DDRESCUE_CMD = None
 APPICON = None
@@ -96,7 +96,7 @@ def usage():
     print("                                     are encountered, and the user needs help\n")
     print("       -t, --tests                   Run all unit tests.\n")
     print("DDRescue-GUI "+VERSION+" is released under the GNU GPL Version 3")
-    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2023")
+    print("Copyright (C) Hamish McIntyre-Bhatty 2013-2024")
 
 #Determine if running on Linux or Mac.
 if "wxGTK" in wx.PlatformInfo:
@@ -1625,7 +1625,7 @@ class MainWindow(wx.Frame): #pylint: disable=too-many-instance-attributes,too-ma
         aboutbox.SetIcon(APPICON)
         aboutbox.Name = "DDRescue-GUI"
         aboutbox.Version = VERSION
-        aboutbox.Copyright = "(C) 2013-2023 Hamish McIntyre-Bhatty"
+        aboutbox.Copyright = "(C) 2013-2024 Hamish McIntyre-Bhatty"
         aboutbox.Description = "GUI frontend for GNU ddrescue\n\nPython version " \
                                + sys.version.split()[0] \
                                + "\nwxPython version " + wx.version() \
