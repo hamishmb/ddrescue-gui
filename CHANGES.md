@@ -1,3 +1,12 @@
+DDRescue-GUI (2.2.0):
+
+  * Changes since v2.1.1:
+  *
+  * Add support for GNU ddrescue 1.27 and 1.28
+  * Fix update checker broken by website changes.
+  * Various code cleanups.
+  * Use .map file extension for map files, rather than old .log.
+
 DDRescue-GUI (2.1.1):
 
   * Changes since v2.1.0:
