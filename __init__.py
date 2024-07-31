@@ -20,6 +20,5 @@ This is DDRescue-GUI.
 """
 
 from . import DDRescue_GUI
-from . import setup
 from . import Tests
 from . import Tools

@@ -12,7 +12,6 @@ Contents:
     :maxdepth: 2
 
     main_file
-    py2app_setup_file
     unit_tests_file
     unit_tests_pkg
     tools_pkg
@@ -34,4 +33,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
